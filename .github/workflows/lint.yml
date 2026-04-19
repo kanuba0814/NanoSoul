@@ -1,0 +1,19 @@
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repo boundary checks
+        run: |
+          test -f docs/ARCHITECTURE.md
+          test -f docs/MODULE_CONTRACTS.md
+          test -f .github/CODEOWNERS
+

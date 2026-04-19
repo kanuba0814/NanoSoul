@@ -1,0 +1,8 @@
+menu "bsp_board"
+
+config P4_SOULDESK_BSP_BOARD_ENABLE
+    bool "Enable bsp_board"
+    default y
+
+endmenu
+

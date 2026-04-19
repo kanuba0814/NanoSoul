@@ -1,0 +1,8 @@
+menu "ui_core"
+
+config P4_SOULDESK_UI_CORE_ENABLE
+    bool "Enable ui_core"
+    default y
+
+endmenu
+

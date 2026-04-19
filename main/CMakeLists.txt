@@ -1,0 +1,24 @@
+idf_component_register(
+    SRCS
+        "app_main.c"
+        "app_startup.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        app_core
+        audio_core
+        bsp_board
+        diag_core
+        input_core
+        log_core
+        motion_core
+        net_core
+        sense_core
+        soul_core
+        speech_core
+        storage_core
+        task_core
+        ui_core
+        vision_core
+)
+

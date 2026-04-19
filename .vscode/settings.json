@@ -1,0 +1,13 @@
+{
+  "idf.currentSetup": "/home/gxxl/.espressif/v5.5.2/esp-idf",
+  "idf.openOcdConfigs": [
+    "board/esp32p4-builtin.cfg"
+  ],
+  "clangd.path": "/home/gxxl/.espressif/tools/esp-clang/esp-19.1.2_20250312/esp-clang/bin/clangd",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=/home/gxxl/NanoSoul/build"
+  ],
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json"
+}

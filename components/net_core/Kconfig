@@ -1,0 +1,8 @@
+menu "net_core"
+
+config P4_SOULDESK_NET_CORE_ENABLE
+    bool "Enable net_core"
+    default y
+
+endmenu
+

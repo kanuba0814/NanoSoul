@@ -1,0 +1,4 @@
+#pragma once
+
+#define AUDIO_CORE_DEFAULT_VOLUME_PERCENT 60
+
