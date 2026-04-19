@@ -17,7 +17,7 @@ interaction robot MVP.
 This repository intentionally starts as a controlled scaffold:
 
 - Component interfaces and ownership are frozen
-- Documentation skeletons are present for all required subsystems
+- Frozen architecture and subsystem specs are present under `docs/`
 - CI/workflows are placeholders until the team pins an ESP-IDF version
 
 ## Layout
@@ -48,4 +48,3 @@ the exact host setup for reproducible builds.
 - `develop` is the integration branch
 - `bsp_board/`, `main/`, `sdkconfig.defaults`, and `partitions.csv` are lead-only
 - Every PR must update docs when contracts or behavior change
-# NanoSoul
