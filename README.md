@@ -48,3 +48,4 @@ the exact host setup for reproducible builds.
 - `develop` is the integration branch
 - `bsp_board/`, `main/`, `sdkconfig.defaults`, and `partitions.csv` are lead-only
 - Every PR must update docs when contracts or behavior change
+# NanoSoul
