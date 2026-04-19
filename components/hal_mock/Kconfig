@@ -1,0 +1,8 @@
+menu "hal_mock"
+
+config P4_SOULDESK_HAL_MOCK_ENABLE
+    bool "Enable hal_mock adapters"
+    default n
+
+endmenu
+

@@ -1,0 +1,6 @@
+CONFIG_IDF_TARGET="esp32p4"
+CONFIG_ESPTOOLPY_FLASHSIZE_32MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="32MB"
+CONFIG_LOG_DEFAULT_LEVEL_WARN=y
+
+# CI stays minimal until the team pins the ESP-IDF version and board setup.

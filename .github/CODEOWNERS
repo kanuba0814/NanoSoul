@@ -1,0 +1,31 @@
+# Core governance
+* @team-lead
+
+/main/ @team-lead
+/components/bsp_board/ @team-lead
+/components/diag_core/ @team-lead
+/components/motion_core/ @team-lead
+/sdkconfig.defaults @team-lead
+/partitions.csv @team-lead
+/docs/BOARD_MAPPING.md @team-lead
+
+/components/ui_core/ @member-b
+/components/soul_core/ @member-b
+/components/task_core/ @member-b
+/components/input_core/ @member-b
+/assets/faces/ @member-b
+/docs/UI_SPEC.md @member-b
+/docs/SOUL_SPEC.md @member-b
+/docs/TASK_SPEC.md @member-b
+/docs/INPUT_SPEC.md @member-b
+
+/components/speech_core/ @member-c
+/components/vision_core/ @member-c
+/components/net_core/ @member-c
+/components/audio_core/ @member-c
+/components/sense_core/ @member-c
+/assets/sounds/ @member-c
+/docs/SPEECH_SPEC.md @member-c
+/docs/VISION_SPEC.md @member-c
+/docs/SENSOR_SPEC.md @member-c
+

@@ -1,0 +1,10 @@
+menu "P4-SoulDesk"
+
+config P4_SOULDESK_ENABLE_MOTION_CORE
+    bool "Enable motion_core (P1 only)"
+    default n
+    help
+        Keep disabled for the MVP mainline. Motion support is a P1 extension.
+
+endmenu
+

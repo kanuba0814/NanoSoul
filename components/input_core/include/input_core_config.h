@@ -1,0 +1,5 @@
+#pragma once
+
+#define INPUT_CORE_DEBOUNCE_MS 30
+#define INPUT_CORE_LONG_PRESS_MS 800
+
