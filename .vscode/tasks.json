@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "env": {
+      "IDF_EXPORT": "${env:HOME}/.espressif/v5.5.2/esp-idf/export.sh"
+    }
+  },
+  "tasks": [
+    {
+      "label": "IDF: Set Target (esp32p4)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        ". \"$IDF_EXPORT\" && idf.py set-target esp32p4"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "IDF: Build",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        ". \"$IDF_EXPORT\" && idf.py build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "IDF: Full Clean",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        ". \"$IDF_EXPORT\" && idf.py fullclean"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

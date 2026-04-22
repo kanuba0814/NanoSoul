@@ -2,6 +2,10 @@
 
 P4-SoulDesk 是一个面向 ESP32-P4-WIFI6 桌面交互机器人 MVP 的单固件 ESP-IDF 项目。
 
+## 开发入口
+
+工作区指引（环境命令、模块归属速查、当前开放工作项、参考文档索引）见 [docs/DEV_SETUP.md](docs/DEV_SETUP.md)。
+
 ## 冻结的工程边界
 
 - 框架：仅使用 ESP-IDF

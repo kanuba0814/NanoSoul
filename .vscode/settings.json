@@ -9,5 +9,7 @@
     "--query-driver=**",
     "--compile-commands-dir=/home/gxxl/NanoSoul/build"
   ],
-  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json"
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "idf.port": "/dev/ttyACM0",
+  "idf.flashType": "UART"
 }
