@@ -17,8 +17,8 @@
 
 | 类别 | 冻结项 | 公共归属 |
 | --- | --- | --- |
-| LCD | 外接 3.5-inch SPI LCD | `bsp_board` -> `ui_core` |
-| Touch | `TOUCH_DISC` 和屏幕触摸 | `bsp_board` -> `input_core` |
+| LCD | ST7701S MIPI-DSI panel, 480x640 | `bsp_board` -> `ui_core` |
+| Touch | FT6x36-compatible capacitive touch | `bsp_board` -> `ui_core` / `input_core` |
 | Audio | codec、speaker path、麦克风 | `bsp_board` -> `audio_core` / `speech_core` |
 | SD | TF over SDMMC | `bsp_board` -> `storage_core` |
 | Wi-Fi | 板载 C6 | `bsp_board` -> `net_core` |
@@ -45,7 +45,10 @@ typedef struct {
 - `HW_STATUS_OK`
 - `HW_STATUS_ABSENT`
 - `HW_STATUS_STALE`
-- `HW_STATUS_FAULT`
+- `HW_STATUS_ERROR`
+- `HW_STATUS_DISABLED`
+
+`HW_STATUS_FAULT` remains a compatibility alias for older docs/code and maps to `HW_STATUS_ERROR`.
 
 Phase 0 只实现 stub/mock，不直接接真实 I2C。
 
@@ -69,4 +72,3 @@ UI、task、Agent、speech 不得消费或展示运动内部参数。
 - 改公共类型必须同步更新 `docs/MODULE_CONTRACTS.md`
 - 改运动边界必须同步更新 `docs/MOTION_BOUNDARY.md`
 - Captain-owned 路径的 PR 必须单独说明
-

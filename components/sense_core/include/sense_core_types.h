@@ -3,13 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef enum {
-    HW_STATUS_UNKNOWN = 0,
-    HW_STATUS_OK,
-    HW_STATUS_ABSENT,
-    HW_STATUS_STALE,
-    HW_STATUS_FAULT,
-} hw_status_t;
+#include "bsp_board_types.h"
 
 typedef enum {
     SENSE_DISTANCE_UNKNOWN = 0,

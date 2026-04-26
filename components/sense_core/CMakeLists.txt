@@ -1,2 +1,9 @@
-idf_component_register(SRCS "src/sense_core.c" INCLUDE_DIRS "include")
-
+idf_component_register(
+    SRCS
+        "src/sense_core.c"
+        "src/drivers/bh1750/bh1750.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        bsp_board
+)

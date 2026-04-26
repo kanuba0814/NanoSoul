@@ -1,2 +1,14 @@
-idf_component_register(SRCS "src/net_core.c" INCLUDE_DIRS "include")
-
+idf_component_register(
+    SRCS
+        "src/net_core.c"
+        "src/net_wifi.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        bsp_board
+        esp_event
+        esp_netif
+        esp_wifi
+        lwip
+        nvs_flash
+)

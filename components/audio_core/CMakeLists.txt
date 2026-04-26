@@ -1,2 +1,14 @@
-idf_component_register(SRCS "src/audio_core.c" INCLUDE_DIRS "include")
-
+idf_component_register(
+    SRCS
+        "src/audio_core.c"
+        "src/audio_player.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        bsp_board
+        driver
+        esp_driver_gpio
+        esp_driver_i2s
+        esp_codec_dev
+        fatfs
+)

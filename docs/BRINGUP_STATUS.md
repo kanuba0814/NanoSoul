@@ -1,50 +1,28 @@
-# BRINGUP_STATUS.md
+# NanoSoul Bring-up Status
 
-## 1. 当前阶段
+Source baseline: `/home/gxxl/testP4` commit `ec763431a7efbbc9b8143a049ed3e34a9a476d6a`.
 
-NanoSoul 当前处于 PRD v2.0 Phase 0/P0：公共契约、mock/stub、文档和验收口径对齐。
+| Module | Hardware | Bus / GPIO | Status | Test Method | Notes |
+|---|---|---|---|---|---|
+| Display | ST7701S WLK2802MIPI-15P V2 | MIPI DSI | MIGRATED | `idf.py build`; boot UI pending board flash | migrated from testP4 |
+| Touch | FT6x36 / FT5x06 compatible | I2C0 GPIO7/8 | MIGRATED | LVGL pointer path; board flash pending | transform preserved from testP4 |
+| Light | BH1750 | I2C1 GPIO20/21 | MIGRATED | `sense_core_read_bh1750()`; board flash pending | missing device is non-fatal |
+| Audio | ES8311 + NS4150B speaker | I2S GPIO9-13, PA GPIO53, I2C0 | MIGRATED | UI audio tone button; board flash pending | testP4 player imported |
+| SD | TF card | GPIO39-44 via SDSPI fallback path | MIGRATED | mount/list WAV path; board flash pending | missing card is non-fatal |
+| Camera | OV5647 MIPI-CSI | CSI + SCCB on I2C0 | MIGRATED | `vision_core_init()` / preview wrappers; board flash pending | esp_video path imported |
+| Wi-Fi | ESP32-C6 hosted | board hosted link | MIGRATED | `net_core_init()`; board flash pending | local UI does not depend on connect success |
+| VL6180X-L | VL6180X | I2C1 planned, XSHUT GPIO22 | ABSENT | status placeholder | future |
+| VL6180X-C | VL6180X | I2C1 planned, XSHUT GPIO23 | ABSENT | status placeholder | future |
+| VL6180X-R | VL6180X | I2C1 planned, XSHUT GPIO26 | ABSENT | status placeholder | future |
+| Motion | 3 omni wheels | frozen pins only | DISABLED | not initialized by default | out of this migration |
 
-## 2. 已冻结
-
-- ESP-IDF target：`esp32p4`
-- 启动顺序：见 `docs/ARCHITECTURE.md`
-- 组件结构：见 `docs/MODULE_CONTRACTS.md`
-- ToF：`VL6180X-L/C/R` 三路阵列
-- `world_state_t`：统一状态输入
-- `motion_core`：默认 disabled 的抽象边界
-- 状态页设备列表：LCD、Touch、Audio、SD、Wi-Fi-C6、Camera、BH1750、VL6180X-L/C/R、IMU、Motion
-
-## 3. Stub 状态
-
-| 模块 | P0 行为 |
-| --- | --- |
-| `sense_core` | ToF 默认 `HW_STATUS_ABSENT` |
-| `motion_core` | 默认 `MOTION_STATE_DISABLED`，请求失败 |
-| `vision_core` | 默认 `PRESENCE_STATE_ABSENT` |
-| `speech_core` | 默认 `SPEECH_COMMAND_NONE` |
-| `net_core` | Wi-Fi 未配置，cloud unavailable |
-| `task_core` | 仅最小规则结构校验 |
-
-## 4. 需要 Captain Bring-Up
-
-- 真实 LCD/touch 初始化
-- SDMMC 挂载验证
-- 音频 codec 和 speaker path
-- Camera path
-- `BH1750`
-- `VL6180X-L/C/R`
-- IMU 型号和方向
-- 运动硬件 enable path
-
-## 5. 验收命令
+## Current Verification
 
 ```sh
 . ~/.espressif/v5.5.2/esp-idf/export.sh
-idf.py set-target esp32p4
 idf.py build
 ./tools/run_host_tests.sh
 ./tools/run_target_tests.sh
 ```
 
-当前 test scripts 仍是集成入口占位；新增真实测试时必须继续使用这两个入口。
-
+`idf.py build` passes. Host and target scripts are still integration placeholders.

@@ -7,4 +7,15 @@ config NANOSOUL_ENABLE_MOTION_CORE
         Keep disabled by default. Motion support is Captain-owned and guarded
         by the abstract motion_core state/request boundary.
 
+config APP_DEFAULT_VOLUME
+    int "Default speaker output volume"
+    range 0 100
+    default 70
+    help
+        ES8311 output volume used by the migrated audio test path.
+
+config APP_SDCARD_MOUNT_POINT
+    string "SD card mount point"
+    default "/sdcard"
+
 endmenu
