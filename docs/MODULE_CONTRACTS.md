@@ -131,11 +131,11 @@ typedef enum {
 
 ```c
 typedef enum {
-    HW_STATUS_UNKNOWN = 0,
+    HW_STATUS_ABSENT = 0,
     HW_STATUS_OK,
-    HW_STATUS_ABSENT,
     HW_STATUS_STALE,
-    HW_STATUS_FAULT,
+    HW_STATUS_ERROR,
+    HW_STATUS_DISABLED,
 } hw_status_t;
 
 typedef struct {
@@ -216,4 +216,3 @@ typedef struct {
 - 不得绕过 `bsp_board` 抢硬件
 - 不得把 `motion_core` 变成启动或发布阻塞项
 - 不得把 WebUI 升级为主逻辑入口
-

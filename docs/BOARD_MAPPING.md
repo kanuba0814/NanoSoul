@@ -38,16 +38,25 @@ GPIO 约束：
 | `I2C0_SDA` | `GPIO7` |
 | `I2C0_SCL` | `GPIO8` |
 
-`BH1750` 与 `VL6180X-L/C/R` 都挂在这条总线上。真实地址、上电顺序和多设备选择方式由 Captain bring-up 确认。
+`ES8311`、FT6x36 触摸和 OV5647 SCCB 使用这条板载总线。
+
+### I2C1 External Sensors
+
+| 功能 | 引脚 |
+| --- | --- |
+| `I2C1_SDA` | `GPIO21` |
+| `I2C1_SCL` | `GPIO20` |
+
+`BH1750` 和未来 `VL6180X-L/C/R` 使用外部 I2C1。外部传感器不得复用板载 `GPIO7/8` 总线。
 
 ### Audio
 
 | 功能 | 引脚 |
 | --- | --- |
-| `I2S_DIN` | `GPIO9` |
-| `I2S_LRCK` | `GPIO10` |
-| `I2S_DOUT` | `GPIO11` |
-| `I2S_SCLK` | `GPIO12` |
+| `I2S_DOUT` | `GPIO9` |
+| `I2S_WS` | `GPIO10` |
+| `I2S_DIN` | `GPIO11` |
+| `I2S_BCLK` | `GPIO12` |
 | `I2S_MCLK` | `GPIO13` |
 | `PA_EN` | `GPIO53` |
 
@@ -71,7 +80,7 @@ P4 无原生 Wi-Fi / BLE。仓库内无线主线只允许使用板载 `ESP32-C6`
 ### MIPI
 
 - 摄像头主线固定走板载 `MIPI-CSI`
-- 显示主线固定走外接 `SPI LCD`
+- 显示主线固定走 `MIPI-DSI` ST7701S panel
 
 ## 4. 项目自定义分配
 
@@ -82,36 +91,31 @@ P4 无原生 Wi-Fi / BLE。仓库内无线主线只允许使用板载 `ESP32-C6`
 | `SYS_BUTTON` | `GPIO3` | 外接物理键，默认上拉，低有效 |
 | `TOUCH_DISC` | `GPIO2` | 单 pad touch |
 
-### 外接 3.5-inch SPI LCD + Touch
+### MIPI-DSI Display + Touch
 
-| 功能 | 引脚 |
+| 功能 | 映射 |
 | --- | --- |
-| `SPI_MISO` | `GPIO20` |
-| `LCD_CS` | `GPIO21` |
-| `SPI_SCLK` | `GPIO22` |
-| `SPI_MOSI` | `GPIO23` |
-| `LCD_DC` | `GPIO26` |
-| `LCD_RST` | `GPIO27` |
-| `LCD_BL` | `GPIO32` |
-| `TOUCH_IRQ` | `GPIO33` |
-| `TOUCH_CS` | `GPIO46` |
+| LCD | ST7701S, 480x640, 1-lane MIPI-DSI |
+| DPHY LDO | LDO channel 3, 2500 mV |
+| Touch | FT6x36-compatible controller at `0x38` on I2C0 |
+| Touch transform | `swap_xy=0`, `mirror_x=1`, `mirror_y=1` |
 
 ### I2C Sensors
 
 | 设备 | 总线 | 公共名 |
 | --- | --- | --- |
-| `BH1750` | `I2C0` on `GPIO7/8` | light |
-| `VL6180X` | `I2C0` on `GPIO7/8` | `VL6180X-L` |
-| `VL6180X` | `I2C0` on `GPIO7/8` | `VL6180X-C` |
-| `VL6180X` | `I2C0` on `GPIO7/8` | `VL6180X-R` |
+| `BH1750` | `I2C1` on `GPIO20/21` | light |
+| `VL6180X` | `I2C1` on `GPIO20/21`, XSHUT `GPIO22` | `VL6180X-L` |
+| `VL6180X` | `I2C1` on `GPIO20/21`, XSHUT `GPIO23` | `VL6180X-C` |
+| `VL6180X` | `I2C1` on `GPIO20/21`, XSHUT `GPIO26` | `VL6180X-R` |
 
 ToF 公共契约不暴露真实选择脚或地址策略。真实 bring-up 结果更新本文档。
 
 ### 预留 GPIO
 
-`GPIO4, GPIO5, GPIO28, GPIO29, GPIO30, GPIO31, GPIO47, GPIO48, GPIO49, GPIO50, GPIO51, GPIO52`
+`GPIO4, GPIO5, GPIO28, GPIO29, GPIO30, GPIO31`
 
-这些 GPIO 可以用于后续诊断夹具、IMU、ToF 选择或 Captain-owned 运动 bring-up。未冻结前不得进入默认初始化链路。
+这些 GPIO 可以用于后续诊断夹具或 IMU bring-up。未冻结前不得进入默认初始化链路。`GPIO47/48/49/50/51/52` 已冻结给三路电机驱动，但 motion 默认不初始化。
 
 ## 5. BSP 公共接口边界
 
@@ -136,7 +140,7 @@ void *bsp_board_wifi_get(void);
 ## 6. 资源优先级
 
 1. Camera
-2. SPI LCD / touch
+2. MIPI-DSI LCD / touch
 3. Audio
 4. C6 wireless
 5. I2C sensors
@@ -159,4 +163,3 @@ void *bsp_board_wifi_get(void);
 - Espressif ESP32-P4 docs
 - Waveshare ESP32-P4-WIFI6 docs
 - `docs/HARDWARE_FREEZE.md`
-

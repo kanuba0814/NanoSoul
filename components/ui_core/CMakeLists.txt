@@ -1,2 +1,14 @@
-idf_component_register(SRCS "src/ui_core.c" INCLUDE_DIRS "include")
-
+idf_component_register(
+    SRCS
+        "src/ui_core.c"
+        "src/ui_lvgl_port.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        audio_core
+        bsp_board
+        diag_core
+        esp_lcd
+        esp_timer
+        lvgl
+)

@@ -1,2 +1,19 @@
-idf_component_register(SRCS "src/bsp_board.c" INCLUDE_DIRS "include")
-
+idf_component_register(
+    SRCS
+        "src/bsp_board.c"
+        "src/bsp_i2c.c"
+        "src/bsp_i2c_ext.c"
+        "src/bsp_display_st7701.c"
+        "src/bsp_touch_ft6x36.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        driver
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_lcd
+        esp_lcd_st7701
+        esp_hw_support
+        esp_timer
+        lvgl
+)

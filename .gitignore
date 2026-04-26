@@ -9,6 +9,7 @@ managed_components/*
 !managed_components/.gitkeep
 sdkconfig
 sdkconfig.old
+testP4
 coverage/
 htmlcov/
 pytest_embedded.log

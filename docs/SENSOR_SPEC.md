@@ -34,11 +34,11 @@ raw PCM、声学前端、唤醒词识别属于 `speech_core`。
 
 ```c
 typedef enum {
-    HW_STATUS_UNKNOWN = 0,
+    HW_STATUS_ABSENT = 0,
     HW_STATUS_OK,
-    HW_STATUS_ABSENT,
     HW_STATUS_STALE,
-    HW_STATUS_FAULT,
+    HW_STATUS_ERROR,
+    HW_STATUS_DISABLED,
 } hw_status_t;
 
 typedef struct {
@@ -77,8 +77,8 @@ esp_err_t sense_get_tof_array(tof_array_state_t *out);
 - 设备未接入：`HW_STATUS_ABSENT`
 - 最近样本过期：`HW_STATUS_STALE`
 - 读数可用：`HW_STATUS_OK`
-- 硬件或总线错误：`HW_STATUS_FAULT`
-- 不确定状态：`HW_STATUS_UNKNOWN`
+- 硬件或总线错误：`HW_STATUS_ERROR`
+- 软件配置关闭：`HW_STATUS_DISABLED`
 
 缺失设备不得导致崩溃。Phase 0 默认三路 ToF 都返回 `HW_STATUS_ABSENT`。
 
@@ -116,4 +116,3 @@ UI 和 task 可以读取 `range_mm`，但不得假设 raw driver 时序或寄存
 - `components/sense_core/include/sense_core_types.h`
 - `docs/HARDWARE_FREEZE.md`
 - `docs/BOARD_MAPPING.md`
-

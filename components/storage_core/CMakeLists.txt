@@ -1,2 +1,15 @@
-idf_component_register(SRCS "src/storage_core.c" INCLUDE_DIRS "include")
-
+idf_component_register(
+    SRCS
+        "src/storage_core.c"
+        "src/sd_storage.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        bsp_board
+        driver
+        esp_driver_gpio
+        esp_driver_spi
+        fatfs
+        sdmmc
+        vfs
+)
