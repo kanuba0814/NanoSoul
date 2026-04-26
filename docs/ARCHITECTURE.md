@@ -2,15 +2,13 @@
 
 ## 1. 目标
 
-本文档冻结 `P4-SoulDesk` 的系统级架构，而不是给出某个阶段性的实现建议。
+本文档冻结 NanoSoul PRD v2.0 的系统级架构。
 
 一句话定义：
 
-> 这是一个单固件、单主控、ESP-IDF 组件化、事件驱动、主线稳定优先的 ESP32-P4 工程；所有硬件通过 `bsp_board` 暴露，所有行为通过 `task_core` 编排。
+> NanoSoul 是一个单固件、单主控、ESP-IDF component 化、事件驱动的 ESP32-P4 工程；所有硬件通过 `bsp_board` 暴露，所有行为通过 `task_core` 编排。
 
 ## 2. 系统形态
-
-系统固定为：
 
 - 单仓库
 - 单 ESP-IDF app
@@ -20,58 +18,43 @@
 
 禁止项：
 
-- Arduino / PlatformIO / MicroPython / Rust / Zephyr 并行主线
 - 第二固件入口
 - 第二主控板
 - WebUI 主导系统行为
+- Arduino / PlatformIO / MicroPython / Rust / Zephyr 主线并行
 
 ## 3. 运行时分层
 
-系统分层冻结为：
-
-1. **Board Layer**
-   `bsp_board`、`diag_core`、`log_core`
-2. **State Layer**
-   `storage_core`、`app_core`
-3. **Interaction Layer**
-   `input_core`、`ui_core`
-4. **Capability Layer**
-   `soul_core`、`sense_core`、`speech_core`、`vision_core`
-5. **Orchestration Layer**
-   `task_core`
-6. **Service Layer**
-   `net_core`、`audio_core`
-7. **P1 Placeholder Layer**
-   `motion_core`
+1. **Board Layer**：`bsp_board`、`diag_core`、`log_core`
+2. **State Layer**：`storage_core`、`app_core`、`world_state_t`
+3. **Interaction Layer**：`input_core`、`ui_core`
+4. **Capability Layer**：`soul_core`、`sense_core`、`speech_core`、`vision_core`
+5. **Orchestration Layer**：`task_core`
+6. **Service Layer**：`net_core`、`audio_core`
+7. **Motion Boundary Layer**：`motion_core`
 
 规则：
 
 - 上层可以依赖下层公共接口
 - 下层不得反向依赖上层业务
-- `task_core` 是唯一合法编排行为层
+- `task_core` 是唯一合法行为编排层
+- `motion_core` 是 Captain-owned 安全边界，不是通用业务层
 
-## 4. 顶层结构图
+## 4. 顶层结构
 
 ```text
-                 +--------------------+
-                 |      app_core      |
-                 | mode / lifecycle   |
-                 +----------+---------+
-                            |
-                            v
-input_core  speech_core  sense_core  vision_core
-     \           |           |           /
-      \          |           |          /
-       +---------+-----------+---------+
+input_core  speech_core  sense_core  vision_core  net_core
+     \           |           |           |           /
+      \          |           |           |          /
+       +---------+-----------+-----------+---------+
                          |
-                    event_bus
+                    world_state_t
                          |
-                         v
                     task_core
-               trigger/condition/action
-             /         |          |        \
-            v          v          v         v
-        ui_core   audio_core  net_core  motion_core(P1)
+              Trigger -> Condition -> Action
+             /       |        |        |        \
+            v        v        v        v         v
+       app_core  ui_core  audio_core net_core  motion_core
 
 Board ownership: bsp_board
 Persistence ownership: storage_core
@@ -96,18 +79,19 @@ Health ownership: diag_core
 12. `task_core`
 13. `net_core`
 14. `audio_core`
-15. `motion_core`（默认 disabled）
+15. optional `motion_core`
 16. `app_core_start_loop()`
 
 原则：
 
-- 先硬件，再配置
-- 先基础状态，再高层行为
-- `task_core` 必须在感知能力之后启动
+- `main/` 只负责启动编排
+- 基础状态先于行为编排
+- 感知能力先于任务规则
+- 运动初始化可选，失败不得阻断主线
 
 ## 6. 系统主状态
 
-当前 `app_mode_t` 冻结为：
+`app_mode_t` 固定为：
 
 - `APP_MODE_BOOT`
 - `APP_MODE_IDLE`
@@ -115,116 +99,35 @@ Health ownership: diag_core
 - `APP_MODE_FOCUS`
 - `APP_MODE_SLEEP`
 
-说明：
+模式切换仲裁入口是 `task_core`。`app_core` 负责持有当前模式，`ui_core` 只能呈现模式。
 
-- 模式切换的仲裁入口是 `task_core`
-- `app_core` 负责持有当前模式
-- `ui_core` 只能显示模式，不决定模式
+## 7. 数据流
 
-## 7. 模块职责边界
-
-### 7.1 `main/`
-
-只负责：
-
-- 启动顺序
-- 组件初始化编排
-- 顶层事件循环启动
-
-禁止：
-
-- 业务逻辑
-- GPIO 直控
-- 页面细节
-- 语音 / 视觉算法实现
-
-### 7.2 `bsp_board`
-
-是全仓库唯一合法的板级资源拥有者。
-
-### 7.3 `task_core`
-
-是全仓库唯一合法的行为编排入口。
-
-### 7.4 `hal_mock`
-
-是 host/mock 开发与测试专用，不得污染真实板级路径。
-
-## 8. 数据与控制流
-
-### 8.1 事件上行
-
-以下模块是主线事件生产者：
+上行事件来源：
 
 - `input_core`
 - `sense_core`
 - `speech_core`
 - `vision_core`
-- `net_core`（仅状态类事件）
-- `diag_core`（仅健康类事件）
+- `net_core`
+- `diag_core`
 
-### 8.2 行为下行
+下行动作入口：
 
-`task_core` 根据规则决定以下动作：
+- `app_core`：模式
+- `ui_core`：页面和状态
+- `audio_core`：提示音与 profile
+- `net_core`：联网流程
+- `motion_core`：抽象运动请求
 
-- 请求 `app_core` 切换模式
-- 请求 `ui_core` 切页或刷新状态
-- 请求 `audio_core` 播放提示
-- 请求 `net_core` 进入特定联网流程
-- 请求 `motion_core` 执行 P1 动作占位
+所有动作都必须由 `task_core` 或明确的系统启动链触发。
 
-禁止：
-
-- `input_core`、`speech_core`、`vision_core` 自行直接切模式
-- `ui_core` 成为行为决策中心
-- `net_core` 成为主脑
-
-## 9. MVP 功能闭环
-
-MVP 主线只允许这 6 个主功能：
-
-1. 表情 UI
-2. soul 系统
-3. 本地任务引擎
-4. 环境感知
-5. 离线语音命令
-6. 轻量视觉 presence
-
-`motion_core` 仅作为 P1 占位存在：
-
-- 可编译
-- 默认不启用
-- 不阻塞主线发布
-
-## 10. 测试架构
-
-测试路线固定为两套：
-
-- host tests：逻辑、状态机、mock
-- target tests：板级、设备、集成
-
-说明：
-
-- host 测试适合快速迭代、自动化和 mock
-- target 测试承担真实外设验证
-- 两者不可互相替代
-
-## 11. 非目标
-
-以下内容不属于 v1.0 主线架构：
+## 8. 非目标
 
 - 本地 LLM
 - 本地 RAG
 - 原生手机 App
-- 复杂云端依赖
+- 复杂云端强依赖
 - 多自由度机械臂
-- 多页面复杂 UI 框架移植
+- 运动内部算法公开化
 
-## 12. 文档优先级
-
-当文档发生冲突时，解释优先级为：
-
-1. `docs/BOARD_MAPPING.md`
-2. `docs/MODULE_CONTRACTS.md`
-3. 本文档
-4. 各子模块专项规格文档

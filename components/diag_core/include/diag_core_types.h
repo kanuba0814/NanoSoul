@@ -7,3 +7,17 @@ typedef enum {
     DIAG_HEALTH_ERROR,
 } diag_health_state_t;
 
+typedef enum {
+    DIAG_DEVICE_LCD = 0,
+    DIAG_DEVICE_TOUCH,
+    DIAG_DEVICE_AUDIO,
+    DIAG_DEVICE_SD,
+    DIAG_DEVICE_WIFI_C6,
+    DIAG_DEVICE_CAMERA,
+    DIAG_DEVICE_BH1750,
+    DIAG_DEVICE_VL6180X_L,
+    DIAG_DEVICE_VL6180X_C,
+    DIAG_DEVICE_VL6180X_R,
+    DIAG_DEVICE_IMU,
+    DIAG_DEVICE_MOTION,
+} diag_device_id_t;

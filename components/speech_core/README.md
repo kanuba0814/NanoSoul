@@ -1,4 +1,3 @@
 # speech_core
 
-Owns wake word, command phrase recognition, command events, and simple playback control.
-
+Owns wake word, the PRD v2.0 offline command set, command events, and simple playback requests.

@@ -1,4 +1,44 @@
 {
-  "rules": []
+  "rules": [
+    {
+      "id": "sleep_on_voice",
+      "enabled": true,
+      "priority": 90,
+      "cooldown_ms": 1000,
+      "trigger": {
+        "type": "voice_command",
+        "name": "SPEECH_COMMAND_SLEEP"
+      },
+      "conditions": [
+        {
+          "left": "world.app_mode",
+          "op": "!=",
+          "right": "APP_MODE_SLEEP"
+        }
+      ],
+      "actions": [
+        {
+          "type": "set_app_mode",
+          "mode": "APP_MODE_SLEEP"
+        }
+      ]
+    },
+    {
+      "id": "motion_state_status",
+      "enabled": true,
+      "priority": 40,
+      "cooldown_ms": 500,
+      "trigger": {
+        "type": "motion_state_change",
+        "name": "MOTION_STATE_FAULT"
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "type": "notify_status",
+          "status": "Motion Fault"
+        }
+      ]
+    }
+  ]
 }
-

@@ -1,6 +1,15 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
+
+typedef enum {
+    HW_STATUS_UNKNOWN = 0,
+    HW_STATUS_OK,
+    HW_STATUS_ABSENT,
+    HW_STATUS_STALE,
+    HW_STATUS_FAULT,
+} hw_status_t;
 
 typedef enum {
     SENSE_DISTANCE_UNKNOWN = 0,
@@ -21,9 +30,21 @@ typedef enum {
 } sense_noise_state_t;
 
 typedef struct {
+    hw_status_t status;
+    uint16_t range_mm;
+    uint32_t timestamp_ms;
+} tof_sensor_state_t;
+
+typedef struct {
+    tof_sensor_state_t tof_l;
+    tof_sensor_state_t tof_c;
+    tof_sensor_state_t tof_r;
+} tof_array_state_t;
+
+typedef struct {
     sense_distance_state_t distance;
     sense_light_state_t light;
     sense_noise_state_t noise;
+    tof_array_state_t tof;
     bool user_near;
 } sense_snapshot_t;
-
