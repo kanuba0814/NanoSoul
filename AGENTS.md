@@ -17,7 +17,7 @@ idf.py fullclean
 Run test entry points with `./tools/run_host_tests.sh` and `./tools/run_target_tests.sh`. Both scripts are placeholders today, so treat them as the required integration points when adding real test harnesses.
 
 ## Coding Style & Naming Conventions
-Follow the existing C style: 4-space indentation, braces on their own line, `#pragma once` in headers, and small `esp_err_t` init functions such as `task_core_init()`. Use `snake_case` for files, functions, and local statics (`s_app_mode`), and `ALL_CAPS` for macros and enum constants such as `VISION_PRESENCE_PRESENT`. Keep component boundaries strict: `bsp_board` owns hardware, `task_core` owns behavior orchestration, and `main/` stays orchestration-only.
+Follow the existing C style: 4-space indentation, braces on their own line, `#pragma once` in headers, and small `esp_err_t` init functions such as `task_core_init()`. Use `snake_case` for files, functions, and local statics (`s_app_mode`), and `ALL_CAPS` for macros and enum constants such as `PRESENCE_STATE_PRESENT`. Keep component boundaries strict: `bsp_board` owns hardware, `task_core` owns behavior orchestration, and `main/` stays orchestration-only.
 
 ## Testing Guidelines
 Mirror the architecture split. Put mock or state-machine coverage in `test/host/`; put real-board validation in `test/target/`; keep reusable JSON and sample inputs in `test/fixtures/`. Name new tests after the component or behavior they cover, for example `task_core_rules_test.c` or `vision_presence_test.py`. Before merging, the documented bar is `idf.py build` plus passing host tests; target plans and cases must exist even if board time is limited.

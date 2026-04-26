@@ -1,15 +1,18 @@
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+
 typedef enum {
-    VISION_PRESENCE_ABSENT = 0,
-    VISION_PRESENCE_PRESENT,
-    VISION_PRESENCE_RETURNING,
-    VISION_PRESENCE_LEAVING,
-} vision_presence_state_t;
+    PRESENCE_STATE_UNKNOWN = 0,
+    PRESENCE_STATE_ABSENT,
+    PRESENCE_STATE_PRESENT,
+} presence_state_t;
 
 typedef struct {
-    vision_presence_state_t presence;
-    int center_offset_x;
-    int center_offset_y;
+    presence_state_t presence;
+    bool user_present;
+    int x_offset;
+    uint8_t confidence;
+    uint32_t timestamp_ms;
 } vision_presence_snapshot_t;
-

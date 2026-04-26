@@ -103,7 +103,7 @@ typedef enum {
 
 说明：
 
-- `TOUCH_DISC` 是 MVP 日常交互主入口
+- `TOUCH_DISC` 是 P0 日常交互主入口
 - `TOUCH_DISC` 的误触容忍应优先通过硬件阈值和软件稳定窗口解决，不得把误触处理甩给 `ui_core`
 
 ### 5.3 屏幕触摸

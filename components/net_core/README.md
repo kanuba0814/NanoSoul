@@ -1,4 +1,3 @@
 # net_core
 
-Owns C6-backed network state, BLE provisioning, WebUI status pages, and OTA entry.
-
+Owns C6-backed local Wi-Fi state, cloud availability state, provisioning, WebUI status data, and OTA entry.

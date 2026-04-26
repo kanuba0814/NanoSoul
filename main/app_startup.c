@@ -36,7 +36,7 @@ esp_err_t app_startup_init(void)
     ESP_ERROR_CHECK(task_core_init());
     ESP_ERROR_CHECK(net_core_init());
     ESP_ERROR_CHECK(audio_core_init());
-#if CONFIG_P4_SOULDESK_ENABLE_MOTION_CORE
+#if CONFIG_NANOSOUL_ENABLE_MOTION_CORE
     ESP_ERROR_CHECK(motion_core_init());
 #endif
 

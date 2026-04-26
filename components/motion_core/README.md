@@ -1,4 +1,3 @@
 # motion_core
 
-P1-only placeholder for yaw servo and wheel-drive interfaces. It must not block the MVP.
-
+Captain-owned motion boundary. The default implementation starts in `MOTION_STATE_DISABLED` and rejects requests until board-specific enablement is added.

@@ -1,9 +1,11 @@
 #include "vision_core.h"
 
 static vision_presence_snapshot_t s_snapshot = {
-    .presence = VISION_PRESENCE_ABSENT,
-    .center_offset_x = 0,
-    .center_offset_y = 0,
+    .presence = PRESENCE_STATE_ABSENT,
+    .user_present = false,
+    .x_offset = 0,
+    .confidence = 0,
+    .timestamp_ms = 0,
 };
 
 esp_err_t vision_core_init(void)
@@ -15,4 +17,3 @@ vision_presence_snapshot_t vision_core_get_snapshot(void)
 {
     return s_snapshot;
 }
-
