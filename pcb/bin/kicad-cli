@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Shim: KiCad 10 是 flatpak 装的，kicad-cli 不在 PATH。
+# 把本目录(pcb/bin)前置进 PATH，circuit-synth / 脚本即可像本地命令一样调用 kicad-cli。
+exec flatpak run --command=kicad-cli org.kicad.KiCad "$@"

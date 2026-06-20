@@ -1,0 +1,34 @@
+{
+  // 共享任务：默认板外可跑，**不含** flash / monitor / JTAG（队友可能没开发板）。
+  // 烧录/监视谁有板子谁本地手动跑：idf.py -p <port> flash monitor
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ESP-IDF: Build (板外)",
+      "type": "shell",
+      "command": "source /home/gxxl/.espressif/v5.5.2/esp-idf/export.sh && idf.py build",
+      "options": { "shell": { "executable": "bash", "args": ["-lc"] } },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "ESP-IDF: Set-target esp32p4",
+      "type": "shell",
+      "command": "source /home/gxxl/.espressif/v5.5.2/esp-idf/export.sh && idf.py set-target esp32p4",
+      "options": { "shell": { "executable": "bash", "args": ["-lc"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "PCB: 生成 (circuit-synth → KiCad)",
+      "type": "shell",
+      "command": "fish ${workspaceFolder}/pcb/scripts/generate.fish",
+      "problemMatcher": []
+    },
+    {
+      "label": "PCB: 渲染顶视图 PNG",
+      "type": "shell",
+      "command": "flatpak run --command=kicad-cli org.kicad.KiCad pcb render ${workspaceFolder}/pcb/output/NanoSoul/NanoSoul.kicad_pcb -o ${workspaceFolder}/pcb/output/nanosoul_pcb_top.png --side top --background opaque",
+      "problemMatcher": []
+    }
+  ]
+}

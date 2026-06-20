@@ -1,0 +1,14 @@
+{
+  // 固件：用构建产物的 compile_commands.json 做 IntelliSense
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+  // PCB：circuit-synth 的 Python 解释器 = conda env nanosoul-eda
+  "python.defaultInterpreterPath": "/home/gxxl/miniconda3/envs/nanosoul-eda/bin/python",
+  // ESP-IDF 扩展（若安装）
+  "idf.espIdfPath": "/home/gxxl/.espressif/v5.5.2/esp-idf",
+  "idf.toolsPath": "/home/gxxl/.espressif",
+  "files.associations": {
+    "*.kicad_sch": "scheme",
+    "*.kicad_pcb": "scheme",
+    "*.net": "scheme"
+  }
+}

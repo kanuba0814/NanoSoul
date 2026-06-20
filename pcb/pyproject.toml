@@ -1,0 +1,12 @@
+[project]
+name = "nanosoul-pcb"
+version = "0.1.0"
+description = "NanoSoul 载板 PCB — circuit-synth 代码优先描述，生成 KiCad 10 工程"
+requires-python = ">=3.12"
+dependencies = [
+    "circuit-synth>=0.12.1",
+    "easyeda2kicad>=1.0.0",   # 按 LCSC 号下载真实符号/封装到 libs/
+]
+
+# 环境用 conda env `nanosoul-eda`（见 scripts/setup.fish），非 PEP-621 安装；
+# 此文件记录依赖与 Python 版本，便于复现。

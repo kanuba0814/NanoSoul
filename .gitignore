@@ -1,0 +1,29 @@
+# ---- ESP-IDF / 固件 ----
+build/
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+*.map
+*.bin
+*.elf
+
+# ---- Python / circuit-synth ----
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# ---- circuit-synth 生成的 3D / 缓存（保留 .kicad_sym/.pretty 源） ----
+pcb/libs/**/*.3dshapes/
+pcb/libs/**/*.wrl
+pcb/libs/**/*.step
+pcb/output/**/*-backups/
+pcb/output/**/fp-info-cache
+*.kicad_prl
+
+# ---- 杂项 ----
+*.bak
+*.tmp
+.DS_Store

@@ -1,0 +1,10 @@
+## 托管组件依赖。初版**不拉重型组件**（保板外快编、无真机依赖）。
+## 后续按「能用现成不写」逐步加（见 docs/03 §5 可复用速查）：
+##   espressif/esp_lvgl_port      # MIPI-DSI 屏 + LVGL
+##   espressif/esp_video          # OV5647 摄像头
+##   espressif/esp-sr             # 语音唤醒/命令词/AFE
+##   espressif/bh1750             # 环境光（现成组件）
+##   espressif/esp_hosted         # ESP32-C6 联网
+dependencies:
+  idf:
+    version: ">=5.5.0"

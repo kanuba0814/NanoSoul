@@ -1,0 +1,254 @@
+** Drc report for NanoSoul.kicad_pcb **
+** Created on 2026-06-20T15:29:20 **
+** Report includes: Errors, Warnings **
+
+** Found 58 DRC violations **
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.0000 mm)
+    Rule: board setup constraints edge; error
+    @(150.0000 mm, 100.0000 mm): Circle on Edge.Cuts
+    @(151.4359 mm, 149.6736 mm): Track [MT_FB] on F.Cu, length 18.7270 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.0000 mm)
+    Rule: board setup constraints edge; error
+    @(150.0000 mm, 100.0000 mm): Circle on Edge.Cuts
+    @(170.1629 mm, 149.6736 mm): Track [MT_FB] on F.Cu, length 16.4852 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2350 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.3010 mm, 70.1650 mm): Track [M2_OUT_B] on F.Cu, length 16.1547 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2102 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(142.1463 mm, 70.1650 mm): Track [M2_OUT_B] on F.Cu, length 1.0274 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2258 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(149.6320 mm, 61.9213 mm): Track [VSYS] on B.Cu, length 14.7357 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2506 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 128.8458 mm): Track [IMU_SCLK] on F.Cu, length 1.3520 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2550 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(142.0498 mm, 129.8018 mm): Track [IMU_SCLK] on F.Cu, length 4.4702 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2018 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(157.9440 mm, 129.8018 mm): Track [IMU_SCLK] on F.Cu, length 15.8942 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3651 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.0648 mm, 129.8429 mm): Track [M1_IN2] on B.Cu, length 1.9590 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2154 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.5775 mm, 129.2735 mm): Track [M1_IN2] on B.Cu, length 0.8053 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.2429 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(142.1469 mm, 129.8429 mm): Track [M1_IN2] on B.Cu, length 15.9179 mm
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 74.6000 mm): PTH pad 1 [P4_VBUS] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 77.1400 mm): PTH pad 2 [VSYS] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 79.6800 mm): PTH pad 3 [GND] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 82.2200 mm): PTH pad 4 [P4_EN] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 84.7600 mm): PTH pad 5 [V3V3] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 87.3000 mm): PTH pad 6 [MOT_ISENSE] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 89.8400 mm): PTH pad 7 [I2C1_SDA] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 92.3800 mm): PTH pad 8 [GND] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 94.9200 mm): PTH pad 9 [I2C1_SCL] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 97.4600 mm): PTH pad 10 [P4_GPIO23] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 100.0000 mm): PTH pad 11 [P4_RUN] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 102.5400 mm): PTH pad 12 [M2_PWM] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 105.0800 mm): PTH pad 13 [GND] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 107.6200 mm): PTH pad 14 [M2_IN1] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 110.1600 mm): PTH pad 15 [M1_ENC_A] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 112.7000 mm): PTH pad 16 [M1_ENC_B] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 115.2400 mm): PTH pad 17 [M2_ENC_A] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 117.7800 mm): PTH pad 18 [GND] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 120.3200 mm): PTH pad 19 [M2_ENC_B] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(158.9000 mm, 122.8600 mm): PTH pad 20 [IMU_SCLK] of J4
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 74.6000 mm): PTH pad 1 [IMU_INT] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 77.1400 mm): PTH pad 2 [IMU_CS] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 79.6800 mm): PTH pad 3 [GND] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 82.2200 mm): PTH pad 4 [M0_ENC_B] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 84.7600 mm): PTH pad 5 [M0_ENC_A] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 87.3000 mm): PTH pad 6 [MOTOR_STBY] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 89.8400 mm): PTH pad 7 [M2_IN2] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 92.3800 mm): PTH pad 8 [GND] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 94.9200 mm): PTH pad 9 [IMU_MISO] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 97.4600 mm): PTH pad 10 [IMU_MOSI] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 100.0000 mm): PTH pad 11 [M1_PWM] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 102.5400 mm): PTH pad 12 [M0_IN2] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 105.0800 mm): PTH pad 13 [GND] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 107.6200 mm): PTH pad 14 [M0_IN1] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 110.1600 mm): PTH pad 15 [M0_PWM] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 112.7000 mm): PTH pad 16 [P4_SCL0] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 115.2400 mm): PTH pad 17 [P4_SDA0] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 117.7800 mm): PTH pad 18 [GND] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 120.3200 mm): PTH pad 19 [M1_IN1] of J3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.3000 mm)
+    Rule: board setup constraints edge; error
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(141.1000 mm, 122.8600 mm): PTH pad 20 [M1_IN2] of J3
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(157.5200 mm, 73.2200 mm): Segment of J4 on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(157.5200 mm, 75.8700 mm): Segment of J4 on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(157.5200 mm, 124.2400 mm): Segment of J4 on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(139.7200 mm, 75.8700 mm): Segment of J3 on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(142.2500 mm, 70.5000 mm): Rectangle on Edge.Cuts
+    @(139.7200 mm, 124.2400 mm): Segment of J3 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(180.4200 mm, 100.8800 mm): Segment of U7 on F.Silkscreen
+    @(182.0000 mm, 101.0920 mm): Reference field of U2
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(182.0000 mm, 101.0920 mm): Reference field of U2
+    @(182.0000 mm, 100.0000 mm): Pad 7 [GND] of U7 on F.Cu
+
+** Found 1 unconnected pads **
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(135.9500 mm, 83.3800 mm): Track [VMOT_F] on F.Cu, length 0.9563 mm
+    @(165.1792 mm, 84.0000 mm): Track [VMOT_F] on F.Cu, length 2.2560 mm
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **
