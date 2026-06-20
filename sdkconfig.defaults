@@ -1,0 +1,18 @@
+# NanoSoul 默认配置（目标由 idf.py set-target esp32p4 写入 sdkconfig）
+CONFIG_IDF_TARGET="esp32p4"
+
+# Flash 8MB（ESP32-P4-WIFI6 ≥16MB；A/B 双分区需 ≥4MB）
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+
+# 自定义分区（A/B OTA）
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# 日志
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# —— 以下后续阶段按需开启（初版保板外快编，不启用）——
+# PSRAM（ESP32-P4-WIFI6 模组 32MB）：
+# CONFIG_SPIRAM=y
+# 摄像头 MIPI-CSI IRAM 安全（OV5647 偶发崩溃时开）：
+# CONFIG_CAM_CTLR_MIPI_CSI_ISR_CACHE_SAFE=y
