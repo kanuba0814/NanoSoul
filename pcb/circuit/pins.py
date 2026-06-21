@@ -39,9 +39,9 @@ FP_R0805 = "Resistor_SMD:R_0805_2012Metric"
 FP_C0603 = "Capacitor_SMD:C_0603_1608Metric"
 FP_C0805 = "Capacitor_SMD:C_0805_2012Metric"
 FP_CE_D8 = "Capacitor_SMD:CP_Elec_8x10.5"          # 电解 bulk
-FP_L_12x12 = "Inductor_SMD:L_12x12mm_H8mm"          # boost 电感
+FP_L_12x12 = "Inductor_SMD:L_6.3x6.3_H3"            # boost 电感（6.3×6.3 SMD 功率电感）
 FP_LED0805 = "LED_SMD:LED_0805_2012Metric"
-FP_HDR_1x20 = "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical"
+FP_HDR_1x20 = "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical"  # 母座：开发板插入
 FP_HDR_1x06 = "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
 FP_HDR_1x02 = "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 FP_JST_PH2 = "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
@@ -81,15 +81,17 @@ SIGNALS = [
 PASSTHRU = ["P4_VBUS", "P4_EN", "P4_RUN", "P4_SDA0", "P4_SCL0", "P4_GPIO23"]
 
 # ---- 母排逐脚映射（"GND" 表示接地）----
-# 左排 J1（datasheet 丝印 上→下 = pin 1..20）
+# 与板上分区协同：左排 J3 = 左月牙(M0/M1 电机 + IMU)；右排 J4 = 右月牙(M2 + 光照 I²C1)。
+# 使每个信号的母排脚就在它所连器件那一侧 → 接线最短、少跨中线。
+# 左排 J3（datasheet 丝印 上→下 = pin 1..20；GPIO 顺序 52,51,-,31,30,29,28,-,50,49,5,4,-,3,2,8,7,-,24,25）
 LEFT_HDR = [
-    "IMU_INT", "IMU_CS", "GND", "M0_ENC_B", "M0_ENC_A", "MOTOR_STBY", "M2_IN2", "GND",
-    "IMU_MISO", "IMU_MOSI", "M1_PWM", "M0_IN2", "GND", "M0_IN1", "M0_PWM", "P4_SCL0",
+    "MOTOR_STBY", "IMU_SCLK", "GND", "M0_ENC_B", "M0_ENC_A", "M1_ENC_B", "M1_ENC_A", "GND",
+    "IMU_MOSI", "IMU_MISO", "M1_PWM", "M0_IN2", "GND", "M0_IN1", "M0_PWM", "P4_SCL0",
     "P4_SDA0", "GND", "M1_IN1", "M1_IN2",
 ]
-# 右排 J2（上→下 = pin 1..20）
+# 右排 J4（上→下；GPIO 顺序 VBUS,VSYS,-,EN,3V3,20,21,-,22,23,RUN,26,-,27,32,33,46,-,47,48）
 RIGHT_HDR = [
-    "P4_VBUS", "VSYS", "GND", "P4_EN", "V3V3", "MOT_ISENSE", "I2C1_SDA", "GND",
-    "I2C1_SCL", "P4_GPIO23", "P4_RUN", "M2_PWM", "GND", "M2_IN1", "M1_ENC_A", "M1_ENC_B",
-    "M2_ENC_A", "GND", "M2_ENC_B", "IMU_SCLK",
+    "P4_VBUS", "VSYS", "GND", "P4_EN", "V3V3", "I2C1_SDA", "I2C1_SCL", "GND",
+    "IMU_CS", "IMU_INT", "P4_RUN", "M2_PWM", "GND", "M2_IN1", "M2_IN2", "MOT_ISENSE",
+    "M2_ENC_A", "GND", "M2_ENC_B", "P4_GPIO23",
 ]

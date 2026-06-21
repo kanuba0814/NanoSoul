@@ -1,7 +1,7 @@
 {
   "name": "NanoSoul",
   "description": "",
-  "tstamps": "/nanosoul-140399882004256/",
+  "tstamps": "/nanosoul-140109246727088/",
   "source_file": "NanoSoul.kicad_sch",
   "components": {},
   "nets": {},
@@ -9,7 +9,7 @@
     {
       "name": "Power",
       "description": "",
-      "tstamps": "/power-140399884735440/",
+      "tstamps": "/power-140109250651312/",
       "source_file": "Power.kicad_sch",
       "components": {
         "J1": {
@@ -370,7 +370,7 @@
           "symbol": "Device:L",
           "ref": "L1",
           "value": "2.2uH",
-          "footprint": "Inductor_SMD:L_12x12mm_H8mm",
+          "footprint": "Inductor_SMD:L_6.3x6.3_H3",
           "datasheet": "",
           "description": "Inductor",
           "properties": {
@@ -906,7 +906,7 @@
           "symbol": "Device:L",
           "ref": "L2",
           "value": "4.7uH",
-          "footprint": "Inductor_SMD:L_12x12mm_H8mm",
+          "footprint": "Inductor_SMD:L_6.3x6.3_H3",
           "datasheet": "",
           "description": "Inductor",
           "properties": {
@@ -2192,14 +2192,14 @@
     {
       "name": "Compute_Iface",
       "description": "",
-      "tstamps": "/compute_iface-140399863427680/",
+      "tstamps": "/compute_iface-140109246555984/",
       "source_file": "Compute_Iface.kicad_sch",
       "components": {
         "J3": {
           "symbol": "Connector_Generic:Conn_01x20",
           "ref": "J3",
           "value": "",
-          "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical",
+          "footprint": "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical",
           "datasheet": "",
           "description": "Generic connector, single row, 01x20, script generated (kicad-library-utils/schlib/autogen/connector/)",
           "properties": {
@@ -2415,7 +2415,7 @@
           "symbol": "Connector_Generic:Conn_01x20",
           "ref": "J4",
           "value": "",
-          "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical",
+          "footprint": "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical",
           "datasheet": "",
           "description": "Generic connector, single row, 01x20, script generated (kicad-library-utils/schlib/autogen/connector/)",
           "properties": {
@@ -2629,7 +2629,7 @@
         }
       },
       "nets": {
-        "IMU_INT": {
+        "MOTOR_STBY": {
           "nodes": [
             {
               "component": "J3",
@@ -2646,7 +2646,7 @@
           "impedance": null,
           "properties": {}
         },
-        "IMU_CS": {
+        "IMU_SCLK": {
           "nodes": [
             {
               "component": "J3",
@@ -2763,7 +2763,7 @@
           "impedance": null,
           "properties": {}
         },
-        "MOTOR_STBY": {
+        "M1_ENC_B": {
           "nodes": [
             {
               "component": "J3",
@@ -2780,7 +2780,7 @@
           "impedance": null,
           "properties": {}
         },
-        "M2_IN2": {
+        "M1_ENC_A": {
           "nodes": [
             {
               "component": "J3",
@@ -2797,7 +2797,7 @@
           "impedance": null,
           "properties": {}
         },
-        "IMU_MISO": {
+        "IMU_MOSI": {
           "nodes": [
             {
               "component": "J3",
@@ -2814,7 +2814,7 @@
           "impedance": null,
           "properties": {}
         },
-        "IMU_MOSI": {
+        "IMU_MISO": {
           "nodes": [
             {
               "component": "J3",
@@ -3028,17 +3028,24 @@
           "impedance": null,
           "properties": {}
         },
-        "MOT_ISENSE": [
-          {
-            "component": "J4",
-            "pin": {
-              "number": "6",
-              "name": "Pin_6",
-              "type": "passive"
-            }
-          }
-        ],
         "I2C1_SDA": {
+          "nodes": [
+            {
+              "component": "J4",
+              "pin": {
+                "number": "6",
+                "name": "Pin_6",
+                "type": "passive"
+              }
+            }
+          ],
+          "is_power": false,
+          "power_symbol": null,
+          "trace_current": null,
+          "impedance": null,
+          "properties": {}
+        },
+        "I2C1_SCL": {
           "nodes": [
             {
               "component": "J4",
@@ -3055,7 +3062,7 @@
           "impedance": null,
           "properties": {}
         },
-        "I2C1_SCL": {
+        "IMU_CS": {
           "nodes": [
             {
               "component": "J4",
@@ -3072,7 +3079,7 @@
           "impedance": null,
           "properties": {}
         },
-        "P4_GPIO23": {
+        "IMU_INT": {
           "nodes": [
             {
               "component": "J4",
@@ -3140,7 +3147,7 @@
           "impedance": null,
           "properties": {}
         },
-        "M1_ENC_A": {
+        "M2_IN2": {
           "nodes": [
             {
               "component": "J4",
@@ -3157,23 +3164,16 @@
           "impedance": null,
           "properties": {}
         },
-        "M1_ENC_B": {
-          "nodes": [
-            {
-              "component": "J4",
-              "pin": {
-                "number": "16",
-                "name": "Pin_16",
-                "type": "passive"
-              }
+        "MOT_ISENSE": [
+          {
+            "component": "J4",
+            "pin": {
+              "number": "16",
+              "name": "Pin_16",
+              "type": "passive"
             }
-          ],
-          "is_power": false,
-          "power_symbol": null,
-          "trace_current": null,
-          "impedance": null,
-          "properties": {}
-        },
+          }
+        ],
         "M2_ENC_A": {
           "nodes": [
             {
@@ -3208,7 +3208,7 @@
           "impedance": null,
           "properties": {}
         },
-        "IMU_SCLK": {
+        "P4_GPIO23": {
           "nodes": [
             {
               "component": "J4",
@@ -3232,7 +3232,7 @@
     {
       "name": "Motors",
       "description": "",
-      "tstamps": "/motors-140399863431088/",
+      "tstamps": "/motors-140109228129552/",
       "source_file": "Motors.kicad_sch",
       "components": {
         "U4": {
@@ -5086,7 +5086,7 @@
     {
       "name": "Sensors",
       "description": "",
-      "tstamps": "/sensors-140399863568032/",
+      "tstamps": "/sensors-140109228250112/",
       "source_file": "Sensors.kicad_sch",
       "components": {
         "U6": {

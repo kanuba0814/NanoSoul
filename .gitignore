@@ -27,3 +27,12 @@ pcb/output/**/fp-info-cache
 *.bak
 *.tmp
 .DS_Store
+
+# PCB 生成的临时/报告产物
+pcb/output/**/*.rpt
+pcb/output/**/*.lck
+pcb/output/**/~*
+pcb/output/**/.history/
+pcb/output/**/*.dsn
+pcb/output/**/*.ses
+pcb/output/**/fr.log

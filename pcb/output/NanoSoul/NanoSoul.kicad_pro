@@ -142,7 +142,7 @@
         "max_error": 0.005,
         "min_clearance": 0.0,
         "min_connection": 0.0,
-        "min_copper_edge_clearance": 0.5,
+        "min_copper_edge_clearance": 0.2,
         "min_groove_width": 0.0,
         "min_hole_clearance": 0.25,
         "min_hole_to_hole": 0.25,
@@ -665,23 +665,23 @@
   },
   "sheets": [
     [
-      "8a83f0c7-8320-4874-8ea1-ef8ee28a330a",
+      "cc6d016d-315a-4023-b551-816edf85e992",
       ""
     ],
     [
-      "85fc6c77-a430-45a0-955f-7b8af34024bc",
+      "a77bf63e-85d2-4c47-9dfd-8d8a749147a3",
       "Power"
     ],
     [
-      "60359763-cd92-4546-9917-2db9a92c81de",
+      "faa358a9-3528-4860-8a7e-c200a2a18735",
       "Compute_Iface"
     ],
     [
-      "141aff15-9de1-4cc4-ae85-5a5e6f68a66d",
+      "f503473b-0f14-4d0d-aacf-b88b0a4b8211",
       "Motors"
     ],
     [
-      "2cd6abc3-4316-4c48-b093-a8065fb9c265",
+      "c996e3d5-44a6-422a-991c-9624daad5e1e",
       "Sensors"
     ]
   ],
