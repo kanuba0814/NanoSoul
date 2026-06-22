@@ -302,7 +302,7 @@
       (sheetpath (names "/") (tstamps "/"))
       (tstamps "38d96871-81aa-461e-b72f-2387445f10c7"))
     (comp (ref "R5")
-      (value "91k")
+      (value "82k")
       (footprint "Resistor_SMD:R_0603_1608Metric")
       (description "Resistor")
       (fields

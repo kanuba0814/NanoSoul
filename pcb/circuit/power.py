@@ -67,11 +67,13 @@ def power(n):
     j_chg = Component(symbol="Connector_Generic:Conn_01x02", ref="J", footprint=P.FP_HDR_1x02)
     j_chg[1] += n["CHG_IN"]; j_chg[2] += GND                 # 首版 2Pin；可换 Micro-USB/Type-C
 
-    # ---------- MT3608：电机轨升压 ~6V ----------
+    # ---------- MT3608：电机轨升压 ~5.5V ----------
+    # Vout = 0.6×(1+R_top/R_bot)。R_top=82k/R_bot=10k → 5.52V：6V N20 电机照转，
+    # 且给电机轨 PTC(F1, 0805L150 Vmax=6V) 留耐压余量（原 91k=6.06V 贴着/略超 PTC 额定）。
     mt = Component(symbol=P.SYM_MT3608, ref="U", footprint=P.FP_MT3608)
     l_mt = Component(symbol="Device:L", ref="L", value="4.7uH", footprint=P.FP_L_12x12)
     d_mt = Component(symbol=P.SYM_SS34, ref="D", footprint=P.FP_SS34)
-    r_top = _R("91k"); r_bot = _R("10k")
+    r_top = _R("82k"); r_bot = _R("10k")
     c_min = _C("10uF", fp=P.FP_C0805); c_mout = _C("22uF", fp=P.FP_C0805)
     # MT3608: 1:SW 2:GND 3:FB 4:EN 5:IN 6:NC
     mt[5] += n["VBAT"]; mt[4] += n["VBAT"]; mt[2] += GND

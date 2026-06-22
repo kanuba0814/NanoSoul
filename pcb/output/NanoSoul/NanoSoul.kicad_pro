@@ -449,6 +449,7 @@
       "footprint_filter": "ignore",
       "footprint_link_issues": "warning",
       "four_way_junction": "ignore",
+      "global_label_dangling": "ignore",
       "ground_pin_not_ground": "warning",
       "hier_label_mismatch": "ignore",
       "isolated_pin_label": "ignore",
@@ -480,8 +481,7 @@
       "undefined_netclass": "error",
       "unit_value_mismatch": "error",
       "unresolved_variable": "error",
-      "wire_dangling": "error",
-      "global_label_dangling": "ignore"
+      "wire_dangling": "error"
     }
   },
   "libraries": {

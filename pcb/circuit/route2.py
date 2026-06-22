@@ -304,8 +304,9 @@ def route_ms(b, mynet, width):
     return True
 
 
-b = pcbnew.LoadBoard(P)
-ok1 = route(b, "GND", (137.63, 114.31), (160.29, 119.17), 0.5)
-ok2 = route_ms(b, "MOT_RTN", 0.5)
-pcbnew.SaveBoard(P, b)
-print(f"DONE gnd={ok1} mot={ok2}")
+if __name__ == "__main__":
+    b = pcbnew.LoadBoard(P)
+    ok1 = route(b, "GND", (137.63, 114.31), (160.29, 119.17), 0.5)
+    ok2 = route_ms(b, "MOT_RTN", 0.5)
+    pcbnew.SaveBoard(P, b)
+    print(f"DONE gnd={ok1} mot={ok2}")
