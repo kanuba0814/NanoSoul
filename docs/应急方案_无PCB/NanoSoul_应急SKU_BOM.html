@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 14mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans CJK SC","Noto Sans Mono CJK SC",sans-serif; color:#1a1a1a; font-size:10.2px; line-height:1.5; }
+  h1 { font-size:19px; margin:0 0 2px; color:#1f3a5f; }
+  .sub { color:#666; font-size:10px; margin:0 0 10px; }
+  h2 { font-size:13px; color:#1f3a5f; border-bottom:2px solid #4472C4; padding-bottom:2px; margin:16px 0 7px; }
+  h3 { font-size:11px; margin:10px 0 3px; color:#2a2a2a; }
+  table { width:100%; border-collapse:collapse; margin:6px 0; }
+  th,td { border:1px solid #c4ccd6; padding:3px 5px; text-align:left; vertical-align:top; }
+  th { background:#4472C4; color:#fff; font-size:9.6px; }
+  td { font-size:9.6px; }
+  tr:nth-child(even) td { background:#f2f5fa; }
+  .kw { font-family:"Noto Sans Mono CJK SC",monospace; background:#eef1f6; padding:0 2px; border-radius:2px; font-size:9px; }
+  .box { border:1px solid #d0d7e2; border-radius:5px; padding:8px 11px; margin:8px 0; background:#f8fafc; }
+  .warn { border-left:4px solid #d9822b; background:#fdf6ee; }
+  .danger { border-left:4px solid #c0392b; background:#fcefed; }
+  .ok { border-left:4px solid #2e8b57; background:#eef7f1; }
+  .muted { color:#666; }
+  ul { margin:3px 0 3px 0; padding-left:17px; }
+  li { margin:1px 0; }
+  .right { text-align:right; }
+  .small { font-size:9px; color:#555; }
+  .tag { display:inline-block; font-size:8.5px; padding:0 5px; border-radius:8px; color:#fff; }
+  .t-rec { background:#2e8b57; } .t-risk { background:#c0392b; } .t-opt { background:#888; }
+  .pagebreak { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>NanoSoul 无 PCB 应急方案 · 模块级 SKU BOM</h1>
+<p class="sub">桌面陪伴机器人 · 自制载板 PCB 的后备方案：现成模块 + 杜邦线 + 绝缘胶带手工搭建 &nbsp;|&nbsp; 计算核心 = Waveshare ESP32-P4-WIFI6 开发板（已有，从两排 2.54 排针引出）</p>
+
+<div class="box">
+<b>这份清单是什么</b>：万一自制 PCB 来不及打样/装配，用这套<b>现成 breakout 模块 + 杜邦线 + 绝缘胶带/热缩管</b>把同样的功能手工搭起来。供电注入点 = <b>VSYS</b>，逻辑 3V3 由开发板回灌。<br>
+<b class="muted">关于 SKU</b>：立创商城(LCSC)这些功能块<b>几乎只卖裸芯片</b>、不卖带排针的成品模块，且页面 C 号在检索环境读不到可信值（验证过一个"看似匹配"的 C 号实为板间隔柱）。<b>按"不编造 SKU"的红线，本表不给 LCSC C 号</b>，改给已核对的<b>淘宝/AliExpress 搜索关键词 + 实测规格/行情价</b>——这才是这类 GY 系列 hobby 模块的真实买处。下单按关键词核对实物图与间距。
+</div>
+
+<h2>汇总采购表</h2>
+<table>
+<thead><tr>
+  <th style="width:3%">#</th><th style="width:15%">功能</th><th style="width:21%">推荐模块</th><th style="width:27%">淘宝关键词</th><th style="width:5%">数量</th><th style="width:9%">单价≈</th><th style="width:20%">备注</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>电池保护<span class="small"> (DW01A+FS8205A)</span></td><td>1S 锂电保护板</td><td><span class="kw">1S锂电池保护板 过充过放</span></td><td>1(+备)</td><td>¥0.5~2</td><td>选 3A+ 大电流版；若用带保护版 TP4056 可省此块</td></tr>
+<tr><td>2</td><td>充电+5V升压+电量计<span class="small"> (IP5306 I²C)</span></td><td><b>TP4056带保护 + MT3608 + MAX17048</b> <span class="tag t-rec">推荐替代</span></td><td><span class="kw">TP4056 Type-C 带保护</span> / <span class="kw">MAX17048 模块</span></td><td>各1</td><td>¥3+2+<b>30</b></td><td>比 IP5306 I²C 更可控，且能读<b>真实电量%/电压</b></td></tr>
+<tr><td>2′</td><td><span class="muted">(赌一把) 同上一块板搞定</span></td><td>IP5306 I²C 模块 (PB01) <span class="tag t-risk">高风险</span></td><td><span class="kw">IP5306 I2C 模块</span> / <span class="kw">PB01 IP5306</span></td><td>1</td><td>¥5~12</td><td>⚠️批次常砍 I²C、到货靠运气；电量计只有 4 档(25%)</td></tr>
+<tr><td>3</td><td>电机轨升压 ~5.5V<span class="small"> (MT3608)</span></td><td>MT3608 可调升压模块</td><td><span class="kw">MT3608 升压模块 可调 2A</span></td><td>1</td><td>¥1~2</td><td><b>空载先调到 5.5V</b> 再接负载（设计值，给 PTC 留耐压余量）</td></tr>
+<tr><td>4</td><td>电机驱动<span class="small"> (2×TB6612FNG)</span></td><td>TB6612FNG 模块（备选 DRV8833）</td><td><span class="kw">TB6612FNG 电机驱动模块</span></td><td><b>2</b></td><td>¥4~8</td><td>每块驱 2 路；VCC接<b>3.3V</b>；两块 STBY 并联=全急停</td></tr>
+<tr><td>5</td><td>N20 编码减速电机 6V</td><td>GA12-N20 6V 霍尔编码电机</td><td><span class="kw">N20 编码器电机 6V 霍尔</span></td><td><b>3</b></td><td>¥15~30</td><td>减速比 <b>1:50~1:100 三个统一</b>；编码器供 3.3V；别买无编码版</td></tr>
+<tr><td>6</td><td>IMU 6 轴<span class="small"> (ICM-42688-P)</span></td><td><b>QMI8658 模块</b>(默认) / ICM-42688-P(稀有) <span class="tag t-risk">高风险</span></td><td><span class="kw">QMI8658 模块</span> / <span class="kw">ICM42688 模块</span></td><td>1</td><td>¥8~20<br>/¥35~70</td><td>ICM 成品模块稀缺/有假；QMI8658 现货便宜，改型走 I²C 需更新引脚表</td></tr>
+<tr><td>7</td><td>环境光<span class="small"> (BH1750FVI)</span></td><td>GY-302 BH1750 模块 <span class="tag t-rec">直接平替</span></td><td><span class="kw">GY-302 光照传感器</span></td><td>1</td><td>¥3~6</td><td>原设计直接平替，无替代之忧；ADDR 悬空=0x23</td></tr>
+<tr><td>8</td><td>电机电流检测<span class="small"> (shunt→ADC)</span></td><td>GY-INA219 模块</td><td><span class="kw">INA219 电流传感器模块</span></td><td>1</td><td>¥6~12</td><td>比手焊 shunt 干净、读真实电流；可省→纯编码器堵转判定</td></tr>
+<tr><td>9</td><td>电源键<span class="small"> (IP5306 KEY)</span></td><td>带线轻触按钮</td><td><span class="kw">带线轻触按钮 焊线</span></td><td>1</td><td>¥0.2~0.5</td><td>一端接 KEY、一端接 GND（点动非自锁）</td></tr>
+<tr><td>10</td><td>指示灯</td><td>LED+电阻 / 带线灯</td><td><span class="kw">LED 指示灯 带线 3V</span></td><td>0~2</td><td>¥0.1~0.5</td><td>模块自带电量灯/充电灯则可省</td></tr>
+<tr><td>11</td><td>杜邦线</td><td>三色套装 20cm（公母/母母/公公）</td><td><span class="kw">杜邦线 公母 母母 40P 20cm</span></td><td>1~2套</td><td>¥10~18</td><td><b>母-母买最多</b>（开发板与模块多为公针）</td></tr>
+<tr><td>11</td><td>绝缘</td><td>PVC 电工胶带 + 热缩管套装</td><td><span class="kw">PVC电工胶带</span> / <span class="kw">热缩管套装 560pcs</span></td><td>—</td><td>¥12~25</td><td>裸露端子/JST 焊点全包；机器人会晃，绝缘要到位</td></tr>
+<tr><td>11</td><td>电池</td><td>1S LiPo 3000mAh 带保护板 PH2.0</td><td><span class="kw">3.7V 锂电池 3000mAh JST 保护板</span></td><td>1~2</td><td>¥18~30</td><td><b>插头 PH2.0 非 XH2.54</b>；选 3000 不选 5000(偏大重)</td></tr>
+<tr><td>11</td><td>JST 对插线</td><td>PH2.0(电池) + XH2.54(电机)</td><td><span class="kw">JST PH2.0 对插线</span> / <span class="kw">XH2.54 对插线</span></td><td>2+4</td><td>¥0.5~1.5/条</td><td>电池 PH、电机 XH，<b>两者不通用别混</b>；可插拔免焊死</td></tr>
+<tr><td>11</td><td>总开关</td><td>带线船型/拨动开关</td><td><span class="kw">船型开关 带线 KCD1</span></td><td>1</td><td>¥0.5~2</td><td>串电池正极</td></tr>
+<tr><td>—</td><td>(可选)电源汇流</td><td>迷你面包板 / 洞洞板 5×7</td><td><span class="kw">迷你面包板</span> / <span class="kw">洞洞板 5x7</span></td><td>选</td><td>¥1.5~8</td><td>电源主汇流点别全靠面包板，关键节点焊洞洞板更稳</td></tr>
+</tbody>
+</table>
+<p class="small"><b>整套估算（替代组合方案，不含开发板）：约 ¥170~290（MAX17048 约 ¥30）。</b> 万用表视为已有（调 MT3608 输出、量电池/通断、验端子导通）。</p>
+<div class="box warn"><b>⚠️ 选购防买错（版本 / 引脚 不同，最容易踩）</b><ul><li><b>N20 电机</b>：必须买<b>【带编码器·6 线】</b>版，别买无编码 4 线的便宜款（只有电机、没编码器）。</li><li><b>TP4056</b>：买 <b>Type-C + 带保护</b>版（有 Micro/Type-C、带保护/不带保护 之分；带保护版才顶替 1S 保护板）。</li><li><b>MT3608</b>：买<b>可调版</b>（板上有电位器），<b>#1 调 5V、#2 调 5.5V</b>，别买固定输出版。</li><li><b>IMU</b>：ICM-42688-P 走 <b>SPI</b>（认丝印 SCLK/MOSI/MISO/CS/INT）；替代款 QMI8658 走 <b>I²C</b>（SDA/SCL/INT）——<b>引脚不一样，按你买到的那款接</b>。</li><li><b>电池</b>：插头要 <b>PH2.0</b>（不是 XH2.54），选带保护板成品。</li><li><b>TB6612</b>：各家排针顺序略不同，<b>按模块丝印脚名接</b>（PWMA/AIN1/AIN2/BIN.../STBY/<b>VM/VCC</b>）。</li><li><b>杜邦线</b>：公-母 / 母-母 / 公-公 三种分清，<b>母-母买最多</b>（开发板和模块多是公针）。</li><li><b>MAX17048</b>：商家约 <b>¥30 偏贵</b>；省钱可<b>不买</b>，改用 2 个电阻分压 → 开发板 ADC 读电池电压（粗略电量，约 ¥0），或接受没有精确电量。</li></ul></div>
+<div class="box"><b>🔋 电池详细参数</b>（按<b>整机峰值电流</b>选，别只看容量）
+<table><thead><tr><th style="width:16%">参数</th><th style="width:32%">值 / 选型要求</th><th style="width:52%">说明</th></tr></thead><tbody><tr><td>类型</td><td>1S 单节锂聚合物 LiPo（软包）</td><td>桌面机器人用软包合适；也可 1×18650+保护板（更耐用但更重/圆柱形）</td></tr><tr><td>标称电压</td><td>3.7V（满充 4.2V / 过放截止 ~3.0V）</td><td>升压模块从这个电压往上升 5V/5.5V</td></tr><tr><td>容量</td><td>3000mAh ≈ 11.1Wh</td><td>待机 ~9h、连续运动 ~2.5–3h；选 3000 不选 5000（5000 偏大偏重）</td></tr><tr><td><b>持续放电 C 率</b></td><td><b>≥2C（≥6A）推荐</b></td><td>⚠️ 整机峰值约 3A；<b>低 C 率(1C)电池在峰值会压降 → 开发板掉电/重启</b>。买标注 ≥2C 或 ≥5A 放电的</td></tr><tr><td>峰值电流需求</td><td>~3A（WiFi6 突发 + 电机，两路升压一起从电池抽）</td><td>持续约 1.5A（≈0.5C）</td></tr><tr><td>接口 / 保护</td><td>JST-PH <b>2.0mm</b> 2P，<b>带保护板成品</b></td><td>过充 4.25–4.3V / 过放 2.4–2.5V / 过流短路；<b>插头别买成 XH2.54</b>（间距不同插不上）</td></tr><tr><td>充电</td><td>TP4056 限流 1A，0→满 ~3.3h</td><td>1A≈0.33C 安全；充电电流别超电池的充电 C 率</td></tr><tr><td>尺寸 / 重量</td><td>3000mAh 软包约 ~60×40×8mm / ~55–60g</td><td>具体以卖家为准；留够壳内空间与配重</td></tr><tr><td>温度</td><td>充电 0–45°C / 放电 −20–60°C</td><td>LiPo 典型；<b>别在 &lt;0°C 充电</b></td></tr><tr><td>循环寿命</td><td>~300–500 次</td><td>LiPo 典型，容量随循环衰减</td></tr></tbody></table></div>
+<div class="box danger">
+<b>⚠️ 两件最可能买不到原型号、必须走替代（重点）</b>
+<ul>
+<li><b>IP5306 I²C 版（#2）</b>：同型号不同批次会砍 I²C，到货是不是 I²C 全凭运气；且就算是 I²C 版，它的"电量计"只有 4 档 LED 段位(25% 台阶)、<b>读不到真实 SoC%/电压</b>。<b>建议直接放弃赌它，走 TP4056(带保护)+MT3608+MAX17048</b>——每块功能确定、读数准，MAX17048 还能给到 IP5306 给不了的精确电量%。</li>
+<li><b>ICM-42688-P 模块（#6）</b>：成品 breakout 稀有、缺货涨价、市场有假片。<b>建议默认上 QMI8658 模块</b>（国产现货、便宜、Waveshare 生态成熟；精度略逊 ICM-42688-P 但远优于 MPU6050）。除非你有正品 ICM-42688-P 渠道。<b>改型后 IMU 多半从 SPI 转 I²C → 先更新 docs/BOARD_MAPPING.md 和 pcb/circuit/pins.py 再接线</b>，确认 I²C 地址不撞（QMI8658 0x6B、BH1750 0x23、INA219 0x40，默认不冲突）。</li>
+</ul>
+</div>
+
+<div class="pagebreak"></div>
+<h2>接线 / 供电总则（先看这条再插线）</h2>
+<div class="box ok">
+<ul>
+<li><b>三条电压轨</b>：① 逻辑 <b>3V3</b>（开发板回灌）→ 给 IMU/BH1750/INA219/编码器/TB6612 的 VCC；② 电机轨 <b>5.5V</b>（MT3608 输出）→ 只给 TB6612 的 VM；③ 电池 VBAT(3.0~4.2V) → 给保护板/充电/升压输入。<b>三轨共地(GND)，但电压别接错</b>——TB6612 的 VCC=3.3V / VM=5.5V 是两个脚，最容易插反。</li>
+<li><b>共地是底线</b>：所有模块、开发板、电池负极必须连到同一 GND，否则信号/I²C 全乱。</li>
+<li><b>母-母杜邦为主</b>：开发板排针和多数模块都是公针，靠母-母对插；先想好走线再插，关键节点用热缩管包。</li>
+<li><b>可插拔免焊死</b>：电池用 PH2.0、电机用 XH2.54 对插线，方便拆装/换件。</li>
+<li><b>上电顺序</b>：先空载用万用表把 MT3608 调到 5.5V，确认无短路再接电机/驱动；总开关串电池正极，调试时随时断电。</li>
+</ul>
+</div>
+
+<h2>逐块接线要点</h2>
+
+<h3>① 1S 锂电保护板</h3>
+<p class="small"><span class="kw">B+/B-</span> 接电芯，<span class="kw">P+/P-</span> 为受保护输出当 VBAT；<b>B- 与 P- 不能短接</b>。过充 4.25~4.3V / 过放 2.4~2.5V。用带保护版 TP4056 则此块省。</p>
+
+<h3>② 充电+升压+电量计（推荐替代组合）</h3>
+<p class="small"><b>TP4056(带保护)</b>：Type-C/Micro 进 → B+/B- 接电池、OUT+/OUT- 出 VBAT（板上 DW01A+FS8205A 顺带顶掉 #1）。<b>MT3608</b> 升到 ~5V 给 VSYS。<b>MAX17048</b>：VCC=3.3V、I²C(SDA/SCL) 接 I²C1、并接电池正极采电压 → 直接读电压+百分比。电源键改用总开关或 TP4056 旁路。</p>
+
+<h3>③ MT3608 升压（电机轨）</h3>
+<p class="small"><span class="kw">IN+/IN-</span>=VBAT，<span class="kw">OUT+/OUT-</span>=驱动 VM；<b>空载先调电位器到 5.5V</b>（power.py 设计值 R82k/10k=5.52V，刻意压在 6V 下给保险丝留余量）。三电机同堵转输入逼近 2A 偏紧，吃力就换 XL6009/SX1308(4~5A)。</p>
+
+<h3>④ TB6612FNG ×2（驱 3 路 N20）</h3>
+<p class="small">每块：<span class="kw">VM</span>→5.5V电机轨、<span class="kw">VCC</span>→<b>3.3V</b>、<span class="kw">GND</span>共地、<span class="kw">STBY</span>→一个 GPIO（<b>两块 STBY 并联</b>，低=全急停）；每电机 = PWMx+xIN1+xIN2(3 线)+AO/BO 接电机。第 1 块驱 2 个电机、第 2 块驱第 3 个+1 路备用。备选 DRV8833(更便宜、自带过流过温，PWM 直打 IN1/IN2、方向逻辑略改)。</p>
+
+<h3>⑤ N20 编码电机 ×3</h3>
+<p class="small">6 线（颜色以卖家线序表为准）：M+/M- 接驱动 AO/BO；编码器 VCC→<b>3.3V</b>、GND 共地、C1/C2=编码 A/B 接 GPIO（多数板内已带上拉）。<b>三个减速比必须一致</b>，否则全向运动学标定很痛苦。3 电机编码共占 6 个 GPIO。</p>
+
+<h3>⑥ IMU（QMI8658 默认 / ICM-42688-P 若有正品）</h3>
+<p class="small">SPI：VCC→3.3V / SCLK / MOSI / MISO / CS / INT；I²C(QMI8658/MPU6050)：VCC→3.3V / SDA / SCL / INT。<b>放离电机远点</b>避磁干扰。ICM-42688-P 经核实 32kHz ODR/低噪声/APEX(Tap=碰撞,Raise/WoM/Tilt=抬起) 完全满足；QMI8658 是现货友好的次优替代。</p>
+
+<h3>⑦ GY-302 BH1750（环境光，最省心）</h3>
+<p class="small">VCC→3.3V、GND、SDA→I²C1(GPIO21)、SCL→I²C1(GPIO22)；ADDR 悬空/接 GND=<b>0x23</b>，接 VCC=0x5C。贴外壳内壁用 4 线引出几十 cm：上拉调小(2.2k~3.3k)、SDA/SCL 别与电机线长距并行、速率别拉满(≤100kHz 更稳)。1–65535lx 室内绰绰有余。</p>
+
+<h3>⑧ GY-INA219（电机电流，可选）</h3>
+<p class="small">VCC→3.3V、GND、SDA/SCL→I²C1、<span class="kw">Vin+/Vin-</span> 串入电机供电高边（别接反），地址 0x40。可整块省→纯编码器堵转判定（下指令但编码器不动=堵转）；但 CLAUDE.md 写明"堵转过流保护是硬需求"，求稳建议装。</p>
+
+<div class="box warn">
+<b>与传感器核实报告的衔接</b>：原 PCB 方案三颗传感器(ICM-42688-P / BH1750FVI / IP5306-I²C)均经 datasheet 核实满足要求；唯 <b>IP5306 电量只有 4 档(25%)</b>。本应急方案用 <b>MAX17048</b> 替代 IP5306 的电量计，<b>反而拿到了精确电量%+电压</b>——若最终走应急方案，电量 UI 不必再受 4 档限制。
+</div>
+
+<div class="pagebreak"></div>
+<h2>详细接线图（每根箭头都标了引脚）</h2>
+<div class="box ok"><b>怎么看</b>：跟着箭头走，箭头上的字就是<b>哪个脚接哪个脚</b>（如 <span class="kw">IO2→PWMA</span> = 开发板 IO2 接 TB6612 的 PWMA）。轨色：<span style="color:#b9892f">━VBAT</span> <span style="color:#7b5cb8">━5V</span> <span style="color:#c0392b">━5.5V电机</span> <span style="color:#c0397b">━电机输出</span> <span style="color:#2160c0">━SPI</span> <span style="color:#2e8b57">━I²C</span> <span style="color:#777">━控制</span>。<b>图中没逐一画、但每个模块都要接的统一线（别漏）</b>：①<b>每个模块 VCC → 开发板 3V3</b>；②<b>TB6612 的 VM → 5.5V</b>（<span style="background:#fcefed;padding:0 3px">⚠️ VM=5.5V、VCC=3V3 是两个脚，插反烧件</span>）；③<b>所有 GND 共地</b>；④电池→TP4056→VBAT，总开关串 VBAT 正极。</div>
+<div style="text-align:center;margin:4px 0"><!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 949.00 1153.00" width="96%">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 1138.64)">
+<title>G</title>
+<polygon fill="white" stroke="none" points="-14.4,14.4 -14.4,-1138.64 934.75,-1138.64 934.75,14.4 -14.4,14.4"/>
+<!-- BAT -->
+<g id="node1" class="node">
+<title>BAT</title>
+<path fill="#fdf3e7" stroke="#b9892f" d="M271.55,-1124.24C271.55,-1124.24 215.75,-1124.24 215.75,-1124.24 209.75,-1124.24 203.75,-1118.24 203.75,-1112.24 203.75,-1112.24 203.75,-1073.96 203.75,-1073.96 203.75,-1067.96 209.75,-1061.96 215.75,-1061.96 215.75,-1061.96 271.55,-1061.96 271.55,-1061.96 277.55,-1061.96 283.55,-1067.96 283.55,-1073.96 283.55,-1073.96 283.55,-1112.24 283.55,-1112.24 283.55,-1118.24 277.55,-1124.24 271.55,-1124.24"/>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-1101.35" font-family="Noto Sans CJK SC" font-size="15.00">1S LiPo</text>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-1078.85" font-family="Noto Sans CJK SC" font-size="15.00">3.7V</text>
+</g>
+<!-- TP -->
+<g id="node2" class="node">
+<title>TP</title>
+<path fill="#fdf3e7" stroke="#b9892f" d="M291.05,-980.46C291.05,-980.46 196.25,-980.46 196.25,-980.46 190.25,-980.46 184.25,-974.46 184.25,-968.46 184.25,-968.46 184.25,-930.18 184.25,-930.18 184.25,-924.18 190.25,-918.18 196.25,-918.18 196.25,-918.18 291.05,-918.18 291.05,-918.18 297.05,-918.18 303.05,-924.18 303.05,-930.18 303.05,-930.18 303.05,-968.46 303.05,-968.46 303.05,-974.46 297.05,-980.46 291.05,-980.46"/>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-957.57" font-family="Noto Sans CJK SC" font-size="15.00">TP4056</text>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-935.07" font-family="Noto Sans CJK SC" font-size="15.00">充电·带保护</text>
+</g>
+<!-- BAT&#45;&gt;TP -->
+<g id="edge1" class="edge">
+<title>BAT&#45;&gt;TP</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M243.65,-1061.68C243.65,-1041.31 243.65,-1014.24 243.65,-991.88"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="246.8,-992.11 243.65,-983.11 240.5,-992.11 246.8,-992.11"/>
+<text xml:space="preserve" text-anchor="middle" x="268.02" y="-1018.61" font-family="Noto Sans CJK SC" font-size="13.00">电池 +/−</text>
+</g>
+<!-- MT1 -->
+<g id="node3" class="node">
+<title>MT1</title>
+<path fill="#f3eefb" stroke="#7b5cb8" d="M282.8,-836.68C282.8,-836.68 204.5,-836.68 204.5,-836.68 198.5,-836.68 192.5,-830.68 192.5,-824.68 192.5,-824.68 192.5,-786.4 192.5,-786.4 192.5,-780.4 198.5,-774.4 204.5,-774.4 204.5,-774.4 282.8,-774.4 282.8,-774.4 288.8,-774.4 294.8,-780.4 294.8,-786.4 294.8,-786.4 294.8,-824.68 294.8,-824.68 294.8,-830.68 288.8,-836.68 282.8,-836.68"/>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-813.79" font-family="Noto Sans CJK SC" font-size="15.00">MT3608 #1</text>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-791.29" font-family="Noto Sans CJK SC" font-size="15.00">升 5V</text>
+</g>
+<!-- TP&#45;&gt;MT1 -->
+<g id="edge2" class="edge">
+<title>TP&#45;&gt;MT1</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M243.65,-917.9C243.65,-897.53 243.65,-870.46 243.65,-848.1"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="246.8,-848.33 243.65,-839.33 240.5,-848.33 246.8,-848.33"/>
+<text xml:space="preserve" text-anchor="middle" x="301.4" y="-874.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ → IN+ (VBAT)</text>
+</g>
+<!-- MT2 -->
+<g id="node4" class="node">
+<title>MT2</title>
+<path fill="#fcecec" stroke="#c0392b" d="M725.8,-836.68C725.8,-836.68 647.5,-836.68 647.5,-836.68 641.5,-836.68 635.5,-830.68 635.5,-824.68 635.5,-824.68 635.5,-786.4 635.5,-786.4 635.5,-780.4 641.5,-774.4 647.5,-774.4 647.5,-774.4 725.8,-774.4 725.8,-774.4 731.8,-774.4 737.8,-780.4 737.8,-786.4 737.8,-786.4 737.8,-824.68 737.8,-824.68 737.8,-830.68 731.8,-836.68 725.8,-836.68"/>
+<text xml:space="preserve" text-anchor="middle" x="686.65" y="-813.79" font-family="Noto Sans CJK SC" font-size="15.00">MT3608 #2</text>
+<text xml:space="preserve" text-anchor="middle" x="686.65" y="-791.29" font-family="Noto Sans CJK SC" font-size="15.00">升 5.5V</text>
+</g>
+<!-- TP&#45;&gt;MT2 -->
+<g id="edge3" class="edge">
+<title>TP&#45;&gt;MT2</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M303.39,-929.2C387.22,-902.37 539.01,-853.79 624.25,-826.51"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="625.14,-829.53 632.76,-823.79 623.22,-823.53 625.14,-829.53"/>
+<text xml:space="preserve" text-anchor="middle" x="528.42" y="-874.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ → IN+</text>
+</g>
+<!-- MAX -->
+<g id="node5" class="node">
+<title>MAX</title>
+<path fill="#eef7f1" stroke="#2e8b57" d="M87.3,-836.68C87.3,-836.68 12,-836.68 12,-836.68 6,-836.68 0,-830.68 0,-824.68 0,-824.68 0,-786.4 0,-786.4 0,-780.4 6,-774.4 12,-774.4 12,-774.4 87.3,-774.4 87.3,-774.4 93.3,-774.4 99.3,-780.4 99.3,-786.4 99.3,-786.4 99.3,-824.68 99.3,-824.68 99.3,-830.68 93.3,-836.68 87.3,-836.68"/>
+<text xml:space="preserve" text-anchor="middle" x="49.65" y="-813.79" font-family="Noto Sans CJK SC" font-size="15.00">MAX17048</text>
+<text xml:space="preserve" text-anchor="middle" x="49.65" y="-791.29" font-family="Noto Sans CJK SC" font-size="15.00">电量计</text>
+</g>
+<!-- TP&#45;&gt;MAX -->
+<g id="edge4" class="edge">
+<title>TP&#45;&gt;MAX</title>
+<path fill="none" stroke="#b9892f" d="M200.48,-917.68C186.9,-907.98 171.86,-897.18 158.15,-887.18 138.66,-872.97 117.34,-857.18 98.79,-843.36"/>
+<polygon fill="#b9892f" stroke="#b9892f" points="100.79,-840.92 91.69,-838.07 97.02,-845.97 100.79,-840.92"/>
+<text xml:space="preserve" text-anchor="middle" x="196.4" y="-874.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ → VCC</text>
+</g>
+<!-- P4 -->
+<g id="node7" class="node">
+<title>P4</title>
+<path fill="#d7e3f4" stroke="#1f3a5f" stroke-width="2" d="M296.3,-692.9C296.3,-692.9 191,-692.9 191,-692.9 185,-692.9 179,-686.9 179,-680.9 179,-680.9 179,-645.62 179,-645.62 179,-639.62 185,-633.62 191,-633.62 191,-633.62 296.3,-633.62 296.3,-633.62 302.3,-633.62 308.3,-639.62 308.3,-645.62 308.3,-645.62 308.3,-680.9 308.3,-680.9 308.3,-686.9 302.3,-692.9 296.3,-692.9"/>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-670.96" font-family="Noto Sans CJK SC" font-size="14.00">ESP32&#45;P4&#45;WIFI6</text>
+<text xml:space="preserve" text-anchor="middle" x="243.65" y="-649.96" font-family="Noto Sans CJK SC" font-size="14.00">开发板</text>
+</g>
+<!-- MT1&#45;&gt;P4 -->
+<g id="edge5" class="edge">
+<title>MT1&#45;&gt;P4</title>
+<path fill="none" stroke="#7b5cb8" stroke-width="2.3" d="M243.65,-774.1C243.65,-754.16 243.65,-727.84 243.65,-705.96"/>
+<polygon fill="#7b5cb8" stroke="#7b5cb8" stroke-width="2.3" points="246.8,-706.16 243.65,-697.16 240.5,-706.16 246.8,-706.16"/>
+<text xml:space="preserve" text-anchor="middle" x="304.4" y="-731.05" font-family="Noto Sans CJK SC" font-size="13.00" fill="#7b5cb8">OUT+(5V) → VSYS 脚</text>
+</g>
+<!-- INA -->
+<g id="node6" class="node">
+<title>INA</title>
+<path fill="#eef7f1" stroke="#2e8b57" d="M476.42,-349.84C476.42,-349.84 422.88,-349.84 422.88,-349.84 416.88,-349.84 410.88,-343.84 410.88,-337.84 410.88,-337.84 410.88,-299.56 410.88,-299.56 410.88,-293.56 416.88,-287.56 422.88,-287.56 422.88,-287.56 476.42,-287.56 476.42,-287.56 482.42,-287.56 488.42,-293.56 488.42,-299.56 488.42,-299.56 488.42,-337.84 488.42,-337.84 488.42,-343.84 482.42,-349.84 476.42,-349.84"/>
+<text xml:space="preserve" text-anchor="middle" x="449.65" y="-326.95" font-family="Noto Sans CJK SC" font-size="15.00">INA219</text>
+<text xml:space="preserve" text-anchor="middle" x="449.65" y="-304.45" font-family="Noto Sans CJK SC" font-size="15.00">电流计</text>
+</g>
+<!-- MT2&#45;&gt;INA -->
+<g id="edge6" class="edge">
+<title>MT2&#45;&gt;INA</title>
+<path fill="none" stroke="#c0392b" stroke-width="2.3" d="M708.11,-774.08C758.63,-698.32 873.69,-498.98 775.65,-380.84 741.36,-339.52 584.05,-325.96 501.14,-321.64"/>
+<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2.3" points="501.36,-318.49 492.22,-321.2 501.05,-324.79 501.36,-318.49"/>
+<text xml:space="preserve" text-anchor="middle" x="862.97" y="-580.52" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">OUT+(5.5V) → Vin+</text>
+</g>
+<!-- TB1 -->
+<g id="node9" class="node">
+<title>TB1</title>
+<path fill="#eef2f7" stroke="#9aa3ad" d="M540.67,-206.06C540.67,-206.06 464.62,-206.06 464.62,-206.06 458.62,-206.06 452.62,-200.06 452.62,-194.06 452.62,-194.06 452.62,-155.78 452.62,-155.78 452.62,-149.78 458.62,-143.78 464.62,-143.78 464.62,-143.78 540.67,-143.78 540.67,-143.78 546.67,-143.78 552.67,-149.78 552.67,-155.78 552.67,-155.78 552.67,-194.06 552.67,-194.06 552.67,-200.06 546.67,-206.06 540.67,-206.06"/>
+<text xml:space="preserve" text-anchor="middle" x="502.65" y="-183.17" font-family="Noto Sans CJK SC" font-size="15.00">TB6612 #1</text>
+<text xml:space="preserve" text-anchor="middle" x="502.65" y="-160.67" font-family="Noto Sans CJK SC" font-size="15.00">驱 M0 / M1</text>
+</g>
+<!-- INA&#45;&gt;TB1 -->
+<g id="edge7" class="edge">
+<title>INA&#45;&gt;TB1</title>
+<path fill="none" stroke="#c0392b" stroke-width="2" d="M449.02,-287.34C449.61,-271.84 451.79,-252.96 457.9,-237.06 460.69,-229.8 464.58,-222.63 468.91,-215.9"/>
+<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2" points="471.24,-218.07 473.77,-208.88 466.06,-214.49 471.24,-218.07"/>
+<text xml:space="preserve" text-anchor="middle" x="489.77" y="-244.21" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">Vin− → VM</text>
+</g>
+<!-- TB2 -->
+<g id="node10" class="node">
+<title>TB2</title>
+<path fill="#eef2f7" stroke="#9aa3ad" d="M142.68,-206.06C142.68,-206.06 66.62,-206.06 66.62,-206.06 60.62,-206.06 54.63,-200.06 54.63,-194.06 54.63,-194.06 54.63,-155.78 54.63,-155.78 54.63,-149.78 60.63,-143.78 66.62,-143.78 66.62,-143.78 142.68,-143.78 142.68,-143.78 148.68,-143.78 154.68,-149.78 154.68,-155.78 154.68,-155.78 154.68,-194.06 154.68,-194.06 154.68,-200.06 148.68,-206.06 142.68,-206.06"/>
+<text xml:space="preserve" text-anchor="middle" x="104.65" y="-183.17" font-family="Noto Sans CJK SC" font-size="15.00">TB6612 #2</text>
+<text xml:space="preserve" text-anchor="middle" x="104.65" y="-160.67" font-family="Noto Sans CJK SC" font-size="15.00">驱 M2</text>
+</g>
+<!-- INA&#45;&gt;TB2 -->
+<g id="edge8" class="edge">
+<title>INA&#45;&gt;TB2</title>
+<path fill="none" stroke="#c0392b" stroke-width="2" d="M410.56,-298.82C402.37,-295 393.76,-291.08 385.65,-287.56 310.81,-255.11 223.29,-220.92 166.06,-199.06"/>
+<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2" points="167.39,-196.2 157.86,-195.93 165.15,-202.08 167.39,-196.2"/>
+<text xml:space="preserve" text-anchor="middle" x="340.96" y="-244.21" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">Vin− → VM</text>
+</g>
+<!-- BUS -->
+<g id="node8" class="node">
+<title>BUS</title>
+<polygon fill="#eaf7ef" stroke="#2e8b57" points="236.8,-525.12 104.5,-525.12 104.5,-477.84 236.8,-477.84 236.8,-525.12"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-506.98" font-family="Noto Sans CJK SC" font-size="10.00">I²C1 总线</text>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-491.98" font-family="Noto Sans CJK SC" font-size="10.00">IO20=SDA · IO21=SCL</text>
+</g>
+<!-- P4&#45;&gt;BUS -->
+<g id="edge15" class="edge">
+<title>P4&#45;&gt;BUS</title>
+<path fill="none" stroke="#2e8b57" stroke-width="2.2" d="M205.32,-632.82C196.4,-624.07 187.91,-613.8 182.4,-602.62 172.56,-582.65 169.6,-557.82 169.11,-537.88"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" stroke-width="2.2" points="172.26,-537.9 169.1,-528.91 165.96,-537.91 172.26,-537.9"/>
+<text xml:space="preserve" text-anchor="middle" x="216.53" y="-580.52" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">IO20 / IO21</text>
+</g>
+<!-- P4&#45;&gt;TB1 -->
+<g id="edge9" class="edge">
+<title>P4&#45;&gt;TB1</title>
+<path fill="none" stroke="#777777" stroke-width="1.5" d="M309.23,-657.78C384.13,-651.14 499.8,-635.72 526.65,-602.62 618.23,-489.73 555.58,-299.73 521.13,-216.75"/>
+<polygon fill="#777777" stroke="#777777" stroke-width="1.5" points="524.07,-215.62 517.66,-208.56 518.27,-218.08 524.07,-215.62"/>
+<text xml:space="preserve" text-anchor="start" x="574.06" y="-426.99" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO2→PWMA &#160;IO3→AIN1 &#160;IO4→AIN2</text>
+<text xml:space="preserve" text-anchor="start" x="574.06" y="-407.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO5→PWMB &#160;IO24→BIN1 &#160;IO25→BIN2</text>
+<text xml:space="preserve" text-anchor="start" x="574.06" y="-387.99" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO52→STBY</text>
+</g>
+<!-- P4&#45;&gt;TB2 -->
+<g id="edge10" class="edge">
+<title>P4&#45;&gt;TB2</title>
+<path fill="none" stroke="#777777" stroke-width="1.5" d="M194.48,-632.85C138.86,-595.98 52.69,-526.87 27.15,-439.34 4.01,-360.02 47.73,-267.35 78.38,-215.77"/>
+<polygon fill="#777777" stroke="#777777" stroke-width="1.5" points="80.96,-217.6 82.95,-208.27 75.58,-214.32 80.96,-217.6"/>
+<text xml:space="preserve" text-anchor="start" x="27.15" y="-417.24" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO26→PWMA &#160;IO27→AIN1 &#160;IO32→AIN2</text>
+<text xml:space="preserve" text-anchor="start" x="27.15" y="-397.74" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO52→STBY</text>
+</g>
+<!-- IMU -->
+<g id="node14" class="node">
+<title>IMU</title>
+<path fill="#eef2f7" stroke="#2160c0" d="M376.92,-532.62C376.92,-532.62 284.38,-532.62 284.38,-532.62 278.38,-532.62 272.38,-526.62 272.38,-520.62 272.38,-520.62 272.38,-482.34 272.38,-482.34 272.38,-476.34 278.38,-470.34 284.38,-470.34 284.38,-470.34 376.92,-470.34 376.92,-470.34 382.92,-470.34 388.92,-476.34 388.92,-482.34 388.92,-482.34 388.92,-520.62 388.92,-520.62 388.92,-526.62 382.92,-532.62 376.92,-532.62"/>
+<text xml:space="preserve" text-anchor="middle" x="330.65" y="-509.73" font-family="Noto Sans CJK SC" font-size="15.00">IMU</text>
+<text xml:space="preserve" text-anchor="middle" x="330.65" y="-487.23" font-family="Noto Sans CJK SC" font-size="15.00">ICM&#45;42688&#45;P</text>
+</g>
+<!-- P4&#45;&gt;IMU -->
+<g id="edge14" class="edge">
+<title>P4&#45;&gt;IMU</title>
+<path fill="none" stroke="#2160c0" stroke-width="2" d="M257.08,-632.93C266.41,-613.09 279.4,-586.44 292.15,-563.62 295.97,-556.78 300.22,-549.63 304.46,-542.74"/>
+<polygon fill="#2160c0" stroke="#2160c0" stroke-width="2" points="306.92,-544.76 309.02,-535.46 301.58,-541.42 306.92,-544.76"/>
+<text xml:space="preserve" text-anchor="start" x="292.15" y="-590.27" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2160c0">IO51→SCLK &#160;IO50→MOSI &#160;IO49→MISO</text>
+<text xml:space="preserve" text-anchor="start" x="292.15" y="-570.77" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2160c0">IO22→CS &#160;IO23→INT</text>
+</g>
+<!-- BUS&#45;&gt;MAX -->
+<g id="edge18" class="edge">
+<title>BUS&#45;&gt;MAX</title>
+<path fill="none" stroke="#2e8b57" d="M143.38,-525.37C117.03,-549.33 78.58,-589.53 60.9,-633.62 44.03,-675.7 43.26,-728.28 45.4,-763.92"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" points="42.23,-763.69 46,-772.45 48.51,-763.25 42.23,-763.69"/>
+<text xml:space="preserve" text-anchor="middle" x="110.78" y="-660.66" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x36)</text>
+</g>
+<!-- BUS&#45;&gt;INA -->
+<g id="edge17" class="edge">
+<title>BUS&#45;&gt;INA</title>
+<path fill="none" stroke="#2e8b57" d="M233.33,-477.45C240.49,-474.98 247.71,-472.56 254.65,-470.34 303.03,-454.86 323.35,-468.91 364.65,-439.34 390.31,-420.97 386.63,-406.58 404.9,-380.84 410.04,-373.59 415.59,-365.91 420.97,-358.53"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" points="423.51,-360.4 426.27,-351.27 418.42,-356.68 423.51,-360.4"/>
+<text xml:space="preserve" text-anchor="middle" x="454.77" y="-407.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x40)</text>
+</g>
+<!-- BH -->
+<g id="node15" class="node">
+<title>BH</title>
+<path fill="#eef7f1" stroke="#2e8b57" d="M356.05,-349.84C356.05,-349.84 261.25,-349.84 261.25,-349.84 255.25,-349.84 249.25,-343.84 249.25,-337.84 249.25,-337.84 249.25,-299.56 249.25,-299.56 249.25,-293.56 255.25,-287.56 261.25,-287.56 261.25,-287.56 356.05,-287.56 356.05,-287.56 362.05,-287.56 368.05,-293.56 368.05,-299.56 368.05,-299.56 368.05,-337.84 368.05,-337.84 368.05,-343.84 362.05,-349.84 356.05,-349.84"/>
+<text xml:space="preserve" text-anchor="middle" x="308.65" y="-326.95" font-family="Noto Sans CJK SC" font-size="15.00">BH1750</text>
+<text xml:space="preserve" text-anchor="middle" x="308.65" y="-304.45" font-family="Noto Sans CJK SC" font-size="15.00">环境光·贴壳</text>
+</g>
+<!-- BUS&#45;&gt;BH -->
+<g id="edge16" class="edge">
+<title>BUS&#45;&gt;BH</title>
+<path fill="none" stroke="#2e8b57" stroke-width="1.6" d="M221.89,-477.43C238.74,-467.73 256.29,-455.01 268.65,-439.34 286.47,-416.75 296.53,-385.83 302.11,-361.09"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" stroke-width="1.6" points="305.13,-362.03 303.88,-352.58 298.96,-360.75 305.13,-362.03"/>
+<text xml:space="preserve" text-anchor="middle" x="326.05" y="-407.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL</text>
+</g>
+<!-- M0 -->
+<g id="node11" class="node">
+<title>M0</title>
+<path fill="#ffffff" stroke="#9aa3ad" d="M755.17,-62.28C755.17,-62.28 580.12,-62.28 580.12,-62.28 574.12,-62.28 568.12,-56.28 568.12,-50.28 568.12,-50.28 568.12,-12 568.12,-12 568.12,-6 574.12,0 580.12,0 580.12,0 755.17,0 755.17,0 761.17,0 767.17,-6 767.17,-12 767.17,-12 767.17,-50.28 767.17,-50.28 767.17,-56.28 761.17,-62.28 755.17,-62.28"/>
+<text xml:space="preserve" text-anchor="middle" x="667.65" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M0</text>
+<text xml:space="preserve" text-anchor="middle" x="667.65" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO30 / IO31</text>
+</g>
+<!-- TB1&#45;&gt;M0 -->
+<g id="edge11" class="edge">
+<title>TB1&#45;&gt;M0</title>
+<path fill="none" stroke="#c0397b" d="M543.43,-143.54C555.89,-133.94 569.51,-123.13 581.65,-112.78 597.57,-99.21 614.48,-83.63 629.06,-69.8"/>
+<polygon fill="#c0397b" stroke="#c0397b" points="631.02,-72.28 635.35,-63.79 626.67,-67.72 631.02,-72.28"/>
+<text xml:space="preserve" text-anchor="middle" x="652.61" y="-100.43" font-family="Noto Sans CJK SC" font-size="13.00">AO1/AO2 → 电机</text>
+</g>
+<!-- M1 -->
+<g id="node12" class="node">
+<title>M1</title>
+<path fill="#ffffff" stroke="#9aa3ad" d="M520.17,-62.28C520.17,-62.28 345.12,-62.28 345.12,-62.28 339.12,-62.28 333.12,-56.28 333.12,-50.28 333.12,-50.28 333.12,-12 333.12,-12 333.12,-6 339.12,0 345.12,0 345.12,0 520.17,0 520.17,0 526.17,0 532.17,-6 532.17,-12 532.17,-12 532.17,-50.28 532.17,-50.28 532.17,-56.28 526.17,-62.28 520.17,-62.28"/>
+<text xml:space="preserve" text-anchor="middle" x="432.65" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M1</text>
+<text xml:space="preserve" text-anchor="middle" x="432.65" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO28 / IO29</text>
+</g>
+<!-- TB1&#45;&gt;M1 -->
+<g id="edge12" class="edge">
+<title>TB1&#45;&gt;M1</title>
+<path fill="none" stroke="#c0397b" d="M487.63,-143.5C477.3,-122.57 463.47,-94.56 452.26,-71.87"/>
+<polygon fill="#c0397b" stroke="#c0397b" points="455.12,-70.54 448.31,-63.86 449.47,-73.33 455.12,-70.54"/>
+<text xml:space="preserve" text-anchor="middle" x="522.09" y="-100.43" font-family="Noto Sans CJK SC" font-size="13.00">BO1/BO2 → 电机</text>
+</g>
+<!-- M2 -->
+<g id="node13" class="node">
+<title>M2</title>
+<path fill="#ffffff" stroke="#9aa3ad" d="M192.18,-62.28C192.18,-62.28 17.12,-62.28 17.12,-62.28 11.12,-62.28 5.12,-56.28 5.12,-50.28 5.12,-50.28 5.12,-12 5.12,-12 5.12,-6 11.12,0 17.12,0 17.12,0 192.18,0 192.18,0 198.18,0 204.18,-6 204.18,-12 204.18,-12 204.18,-50.28 204.18,-50.28 204.18,-56.28 198.18,-62.28 192.18,-62.28"/>
+<text xml:space="preserve" text-anchor="middle" x="104.65" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M2</text>
+<text xml:space="preserve" text-anchor="middle" x="104.65" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO46 / IO47</text>
+</g>
+<!-- TB2&#45;&gt;M2 -->
+<g id="edge13" class="edge">
+<title>TB2&#45;&gt;M2</title>
+<path fill="none" stroke="#c0397b" d="M104.65,-143.5C104.65,-122.85 104.65,-95.31 104.65,-72.78"/>
+<polygon fill="#c0397b" stroke="#c0397b" points="107.8,-73.02 104.65,-64.02 101.5,-73.02 107.8,-73.02"/>
+<text xml:space="preserve" text-anchor="middle" x="153.78" y="-100.43" font-family="Noto Sans CJK SC" font-size="13.00">AO1/AO2 → 电机</text>
+</g>
+</g>
+</svg>
+</div>
+<div class="pagebreak"></div>
+<h2>电气验证（系统级）</h2>
+<p class="small">模块是黑盒、跑不了器件级 SPICE，下面做的是<b>系统级电气验证</b>（电压兼容 / 功率电流预算 / 续航 / I²C 地址 / GPIO 预算）+ 一处真仿真（I²C 长线上升时间，ngspice）。</p>
+
+<h3>① 电压兼容矩阵</h3>
+<table>
+<thead><tr><th>模块/件</th><th>供电需求</th><th>接的轨</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td>IMU ICM-42688-P / QMI8658</td><td>1.71–3.6V / 1.71–3.6V</td><td>3V3</td><td>✅</td></tr>
+<tr><td>BH1750FVI</td><td>2.4–3.6V</td><td>3V3</td><td>✅</td></tr>
+<tr><td>INA219</td><td>3–5.5V（Vin± 可测到 26V）</td><td>3V3（Vin± 串 5.5V 高边）</td><td>✅</td></tr>
+<tr><td>MAX17048</td><td>2.5–4.5V</td><td>VBAT 直供</td><td>✅</td></tr>
+<tr><td>TB6612FNG</td><td>VCC 2.7–5.5V / VM 2.5–13.5V</td><td>VCC=3V3 · VM=5.5V</td><td>✅ <span class="small">(VCC≠VM,别插反)</span></td></tr>
+<tr><td>N20 电机 / 编码器</td><td>电机 6V额定 · 编码器 3.3–5V</td><td>电机=5.5V · 编码器=3V3</td><td>✅ <span class="small">6V件跑5.5V约-8%可忽略</span></td></tr>
+</tbody>
+</table>
+<p class="small">逻辑电平全 3V3，与开发板 IO 一致 ✅。唯一易错：<b>TB6612 的 VCC(逻辑)=3V3、VM(功率)=5.5V 是两个脚，最容易插反烧件。</b></p>
+
+<h3>② 功率/电流预算 + 续航</h3>
+<table>
+<thead><tr><th style="width:16%">轨</th><th style="width:18%">源能力</th><th style="width:30%">负载估算</th><th style="width:36%">结论</th></tr></thead>
+<tbody>
+<tr><td>3V3 逻辑</td><td>开发板 LDO 余量（需查，常 ≥100mA）</td><td>编码器 3×~8mA + 传感器 ~3mA + TB6612逻辑 ~5mA ≈ <b>32mA</b></td><td>✅ 大概率够；下单后实测开发板 3V3 余量，不足则 VSYS 旁挂 AMS1117 单独供 3V3</td></tr>
+<tr><td>5.5V 电机轨</td><td>MT3608#2 输出 ≈1.2A<span class="small">(2A 是开关限流；5.5V 输出≈Isw·3.7/5.5·η)</span></td><td>常态行进 3×~0.2A≈0.6A；全堵转 3×~1A&gt;3A</td><td>✅ 常态够(约 2× 余量)；⚠️ 多电机同堵转远超能力会拉垮轨（MT3608 限流=粗保护），靠固件堵转急停+编码器兜底</td></tr>
+<tr><td>5V VSYS</td><td>MT3608#1 输出 ≈1.3A<span class="small">(2A 开关限流，5V 输出实约 1.3A)</span></td><td>P4-WIFI6 峰值(WiFi6发射+算力) ~1.3–1.5A@5V</td><td>⚠️<b>偏弱/不够！</b> 原 IP5306 是 2.1A 升压。MT3608 5V 实际只出 ~1.3A &lt; P4 峰值 → <b>VSYS 这路必须换 XL6009/SX1308(4A，5V 可出 ~2.6A) 或 2A+ 专用升压</b></td></tr>
+<tr><td>VBAT/续航</td><td>3000mAh@3.7V=11.1Wh；TP4056 充 1A≈3.3h</td><td>待机 ~1.2W；运动峰值 ~4W</td><td>✅ 待机 ~9h、连续运动 ~2.5–3h（与 docs 一致）</td></tr>
+</tbody>
+</table>
+
+<h3>③ I²C1 地址表（挂同一总线，查冲突）</h3>
+<table>
+<thead><tr><th>设备</th><th>7-bit 地址</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>BH1750FVI</td><td>0x23</td><td>ADDR 悬空/低；拉高=0x5C</td></tr>
+<tr><td>MAX17048</td><td>0x36</td><td>固定</td></tr>
+<tr><td>INA219</td><td>0x40</td><td>A0/A1 低；可改址</td></tr>
+<tr><td>QMI8658（若替代 ICM 走 I²C）</td><td>0x6B</td><td>SA0 高；或 0x6A</td></tr>
+</tbody>
+</table>
+<p class="small">✅ <b>四地址互不冲突</b>（0x23/0x36/0x40/0x6B）。ICM-42688-P 走 SPI 时不占 I²C。</p>
+
+<h3>④ GPIO 预算</h3>
+<p class="small">用脚：3 PWM + 6 IN + 1 STBY + 6 编码器 + IMU(SPI 5 脚) + I²C 2 + ADC 1 = <b>24 个</b>；可用池 ≈ 28（避开 IO7/8 音频I²C0、IO9-13/53 音频I²S、IO39-44 microSD、调试脚）→ <b>✅ 够用，余 ~4</b>。换 QMI8658(I²C) 则释放 SPI 4 脚、用脚降到 <b>20</b>，更宽裕。</p>
+
+<h3>⑤ 仿真：I²C 长线上升时间（ngspice，验证 BH1750 贴壳引线）</h3>
+<p class="small">开漏释放 → 上拉 Rp 对总线电容 Cb（含 40cm 杜邦引线）充电，测 10–90% 上升时间，对照 I²C 规范（快速模式≤300ns / 标准模式≤1000ns）：</p>
+<table>
+<thead><tr><th>场景</th><th>Rp</th><th>Cb</th><th>t_rise(10–90%)</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td>板上(无引线)</td><td>4.7k</td><td>30pF</td><td>310 ns</td><td>标准✓ / 快速✗</td></tr>
+<tr><td>40cm引线·默认上拉</td><td>4.7k</td><td>80pF</td><td>826 ns</td><td>标准✓ / 快速✗</td></tr>
+<tr><td><b>40cm引线·改 2.2k</b></td><td>2.2k</td><td>80pF</td><td><b>387 ns</b></td><td><b>标准✓(余量足) / 快速✗</b></td></tr>
+<tr><td>长/捆扎最坏</td><td>2.2k</td><td>150pF</td><td>725 ns</td><td>标准✓ / 快速✗</td></tr>
+<tr><td>40cm引线·1.5k</td><td>1.5k</td><td>80pF</td><td><b>264 ns</b></td><td><b>快速✓+标准✓</b></td></tr>
+</tbody>
+</table>
+<p class="small"><b>结论</b>：BH1750 贴壳 40cm 引线 → 用 <b>100kHz + 2.2k 上拉</b>（387ns，远在标准 1000ns 内，最稳）；若一定要 400kHz 快速模式 → 用 <b>1.5k 上拉</b>（264ns&lt;300ns，灌电流 3.3V/1.5k=2.2mA 仍在 BH1750 与 I²C 规范的 3mA 之内）。默认 4.7k 在长线上跑 400kHz 会超时。</p>
+
+<div class="box ok">
+<b>电气验证总结</b>：电压兼容全过；I²C 四地址不冲突；GPIO 24/28 够用；续航与 docs 一致。<b>唯一要改的硬点</b>：<span class="danger" style="padding:1px 4px;border-radius:3px;">5V VSYS 升压用 MT3608 实际只出 ~1.3A，不够 P4-WIFI6 ~1.5A 峰值</span> → <b>VSYS 这路换 XL6009/SX1308(4A 级)</b>（电机轨那片 MT3608 维持 5.5V 不变）。次级提醒：MT3608 的 2A 是开关限流、升压后实际输出打折；多电机同堵转会拉垮电机轨（属预期，靠固件急停）；下单后实测开发板 3V3 余量。
+</div>
+
+<p class="small muted" style="margin-top:14px;border-top:1px solid #ccc;padding-top:6px;">
+NanoSoul 应急 SKU BOM · 模块/规格经厂商 datasheet、立创开发板 wiki、Waveshare、Adafruit 多源核对 · GPIO 取自 pcb/circuit/pins.py · I²C 上升时间为 ngspice 实仿 · 不含未经核实的 LCSC C 号(立创无成品模块) · 下单按淘宝关键词核对实物图、间距与电压(尤其电池 PH2.0、IMU 是否 3.3V 直供、IP5306 是否真 I²C)。
+</p>
+
+</body>
+</html>
