@@ -39,6 +39,8 @@
 <b>这份清单是什么</b>：万一自制 PCB 来不及打样/装配，用这套<b>现成 breakout 模块 + 杜邦线 + 绝缘胶带/热缩管</b>把同样的功能手工搭起来。供电注入点 = <b>VSYS</b>，逻辑 3V3 由开发板回灌。<br>
 <b class="muted">关于 SKU</b>：立创商城(LCSC)这些功能块<b>几乎只卖裸芯片</b>、不卖带排针的成品模块，且页面 C 号在检索环境读不到可信值（验证过一个"看似匹配"的 C 号实为板间隔柱）。<b>按"不编造 SKU"的红线，本表不给 LCSC C 号</b>，改给已核对的<b>淘宝/AliExpress 搜索关键词 + 实测规格/行情价</b>——这才是这类 GY 系列 hobby 模块的真实买处。下单按关键词核对实物图与间距。
 </div>
+<div class="box danger"><b>⚠️ 下单前必须定（按你拍的实际模块，一次买齐别漏）</b><ol style="margin:3px 0 3px 16px;padding:0"><li><b>【最关键】给开发板的 5V 升压买 <span style="background:#fcefed;padding:0 3px">XL6009(4A)</span>，不要 MT3608</b>——MT3608 升 5V 实际只出 ~1.3A，扛不住 P4-WIFI6 ~1.5A 峰值会掉电/重启。<b>或先确认开发板 VSYS 能否直接吃电池 3–4.2V</b>，能则连这个升压都省。<b>电机轨那路 MT3608 够用</b>(0.6A)。</li><li><b>N20 电机务必【带编码器·6 线】版</b>，别买无编码 4 线便宜款。</li><li><b>面包板只走 3V3 和信号</b>；大电流(VBAT/5V/5.5V)<b>用粗杜邦直连或焊小洞洞板汇流</b>，别走面包板电源轨（~1–2A 会发热压降）。</li><li><b>总开关额定 ≥3A</b>，串在 TP4056 的 <b>OUT+</b>。</li><li><b>I²C 上拉</b>：BH1750/INA219/QMI8658/MAX17048 多半各自带上拉，4 个并联约 2.5k 正好够，<b>一般不用再加电阻</b>（都接 3V3 安全）。</li><li><b>MAX17048</b>：<b>VLogic→3V3、Bat→电池+</b>（分开两脚，别都接电池，否则 I²C 顶到 4.2V 伤开发板）。</li><li><b>QMI8658</b>：ADO 接 GND=0x6A 或 VCC=0x6B 定地址（固件按这个）；与 0x23/0x36/0x40 不冲突。</li><li><b>还要一起买</b>：MT3608×1(电机轨) + <b>XL6009×1(VSYS)</b> + N20 编码电机×3 + 杜邦线(母-母为主) + 绝缘/热缩 + 电池(PH2.0 带保护) + JST 对插线 + 小洞洞板。</li></ol></div>
+
 
 <h2>汇总采购表</h2>
 <table>
@@ -49,10 +51,10 @@
 <tr><td>1</td><td>电池保护<span class="small"> (DW01A+FS8205A)</span></td><td>1S 锂电保护板</td><td><span class="kw">1S锂电池保护板 过充过放</span></td><td>1(+备)</td><td>¥0.5~2</td><td>选 3A+ 大电流版；若用带保护版 TP4056 可省此块</td></tr>
 <tr><td>2</td><td>充电+5V升压+电量计<span class="small"> (IP5306 I²C)</span></td><td><b>TP4056带保护 + MT3608 + MAX17048</b> <span class="tag t-rec">推荐替代</span></td><td><span class="kw">TP4056 Type-C 带保护</span> / <span class="kw">MAX17048 模块</span></td><td>各1</td><td>¥3+2+<b>30</b></td><td>比 IP5306 I²C 更可控，且能读<b>真实电量%/电压</b></td></tr>
 <tr><td>2′</td><td><span class="muted">(赌一把) 同上一块板搞定</span></td><td>IP5306 I²C 模块 (PB01) <span class="tag t-risk">高风险</span></td><td><span class="kw">IP5306 I2C 模块</span> / <span class="kw">PB01 IP5306</span></td><td>1</td><td>¥5~12</td><td>⚠️批次常砍 I²C、到货靠运气；电量计只有 4 档(25%)</td></tr>
-<tr><td>3</td><td>电机轨升压 ~5.5V<span class="small"> (MT3608)</span></td><td>MT3608 可调升压模块</td><td><span class="kw">MT3608 升压模块 可调 2A</span></td><td>1</td><td>¥1~2</td><td><b>空载先调到 5.5V</b> 再接负载（设计值，给 PTC 留耐压余量）</td></tr>
+<tr><td>3</td><td>电机轨升压 5.5V<span class="small"> (MT3608)</span></td><td>MT3608 可调升压模块</td><td><span class="kw">MT3608 升压模块 可调 2A</span></td><td>1</td><td>¥1~2</td><td><b>空载调到 5.5V</b>；够电机轨 0.6A</td></tr><tr><td>3b</td><td><b>开发板 5V 升压 (VSYS)</b></td><td><b>XL6009 升压模块 (4A)</b> <span class="tag t-rec">改用</span></td><td><span class="kw">XL6009 升压模块 4A 可调</span></td><td>1</td><td>¥3~5</td><td>⚠️<b>别用 MT3608</b>(出力~1.3A不够)；调到 5.0V 接 VSYS。先确认 VSYS 能否直吃电池则可省</td></tr>
 <tr><td>4</td><td>电机驱动<span class="small"> (2×TB6612FNG)</span></td><td>TB6612FNG 模块（备选 DRV8833）</td><td><span class="kw">TB6612FNG 电机驱动模块</span></td><td><b>2</b></td><td>¥4~8</td><td>每块驱 2 路；VCC接<b>3.3V</b>；两块 STBY 并联=全急停</td></tr>
 <tr><td>5</td><td>N20 编码减速电机 6V</td><td>GA12-N20 6V 霍尔编码电机</td><td><span class="kw">N20 编码器电机 6V 霍尔</span></td><td><b>3</b></td><td>¥15~30</td><td>减速比 <b>1:50~1:100 三个统一</b>；编码器供 3.3V；别买无编码版</td></tr>
-<tr><td>6</td><td>IMU 6 轴<span class="small"> (ICM-42688-P)</span></td><td><b>QMI8658 模块</b>(默认) / ICM-42688-P(稀有) <span class="tag t-risk">高风险</span></td><td><span class="kw">QMI8658 模块</span> / <span class="kw">ICM42688 模块</span></td><td>1</td><td>¥8~20<br>/¥35~70</td><td>ICM 成品模块稀缺/有假；QMI8658 现货便宜，改型走 I²C 需更新引脚表</td></tr>
+<tr><td>6</td><td>IMU 6 轴<span class="small"> (ICM-42688-P)</span></td><td><b>QMI8658 模块</b>(你已选) <span class="tag t-rec">现货</span></td><td><span class="kw">QMI8658 模块</span></td><td>1</td><td>¥8~20</td><td><b>走 I²C</b>(SDA/SCL/INT/ADO)；与 BH/INA/MAX 同总线，地址不冲突</td></tr>
 <tr><td>7</td><td>环境光<span class="small"> (BH1750FVI)</span></td><td>GY-302 BH1750 模块 <span class="tag t-rec">直接平替</span></td><td><span class="kw">GY-302 光照传感器</span></td><td>1</td><td>¥3~6</td><td>原设计直接平替，无替代之忧；ADDR 悬空=0x23</td></tr>
 <tr><td>8</td><td>电机电流检测<span class="small"> (shunt→ADC)</span></td><td>GY-INA219 模块</td><td><span class="kw">INA219 电流传感器模块</span></td><td>1</td><td>¥6~12</td><td>比手焊 shunt 干净、读真实电流；可省→纯编码器堵转判定</td></tr>
 <tr><td>9</td><td>电源键<span class="small"> (IP5306 KEY)</span></td><td>带线轻触按钮</td><td><span class="kw">带线轻触按钮 焊线</span></td><td>1</td><td>¥0.2~0.5</td><td>一端接 KEY、一端接 GND（点动非自锁）</td></tr>
@@ -120,249 +122,262 @@
 </div>
 
 <div class="pagebreak"></div>
-<h2>详细接线图（每根箭头都标了引脚）</h2>
-<div class="box ok"><b>怎么看</b>：跟着箭头走，箭头上的字就是<b>哪个脚接哪个脚</b>（如 <span class="kw">IO2→PWMA</span> = 开发板 IO2 接 TB6612 的 PWMA）。轨色：<span style="color:#b9892f">━VBAT</span> <span style="color:#7b5cb8">━5V</span> <span style="color:#c0392b">━5.5V电机</span> <span style="color:#c0397b">━电机输出</span> <span style="color:#2160c0">━SPI</span> <span style="color:#2e8b57">━I²C</span> <span style="color:#777">━控制</span>。<b>图中没逐一画、但每个模块都要接的统一线（别漏）</b>：①<b>每个模块 VCC → 开发板 3V3</b>；②<b>TB6612 的 VM → 5.5V</b>（<span style="background:#fcefed;padding:0 3px">⚠️ VM=5.5V、VCC=3V3 是两个脚，插反烧件</span>）；③<b>所有 GND 共地</b>；④电池→TP4056→VBAT，总开关串 VBAT 正极。</div>
+<h2>详细接线图（每根箭头都标了引脚，按你的实际模块）</h2>
+<div class="box ok"><b>怎么看</b>：跟着箭头走，箭头上的字就是<b>哪个脚接哪个脚</b>（如 <span class="kw">IO2→PWMA</span>）。轨色：<span style="color:#b9892f">━VBAT</span> <span style="color:#7b5cb8">━5V</span> <span style="color:#c0392b">━5.5V电机</span> <span style="color:#c0397b">━电机输出</span> <span style="color:#2e8b57">━I²C</span> <span style="color:#777">━控制</span>。（你的 IMU 是 <b>QMI8658 走 I²C</b>，原 SPI 那几脚不用了。）<br><b>图中没逐一画、但每个模块都要接的统一线（别漏）</b>：①<b>每个模块 VCC → 开发板 3V3</b>（MAX17048 是 <b>VLogic→3V3</b>）；②<b>TB6612 的 VM → 5.5V</b>（<span style="background:#fcefed;padding:0 3px">⚠️ VM=5.5V、VCC=3V3 两个脚，插反烧件</span>）；③<b>所有 GND 共地</b>；④<b>大电流(VBAT/5V/5.5V)走粗杜邦直连或焊洞洞板，别走面包板电源轨</b>（面包板轨~1–2A 会压降发热）；面包板只走 3V3 和信号。</div>
 <div style="text-align:center;margin:4px 0"><!-- Generated by graphviz version 14.1.2 (20260126.1125)
  -->
 <!-- Title: G Pages: 1 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 949.00 1153.00" width="96%">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 1138.64)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 1185.00 1220.00" width="92%">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 1205.42)">
 <title>G</title>
-<polygon fill="white" stroke="none" points="-14.4,14.4 -14.4,-1138.64 934.75,-1138.64 934.75,14.4 -14.4,14.4"/>
+<polygon fill="white" stroke="none" points="-14.4,14.4 -14.4,-1205.42 1171.09,-1205.42 1171.09,14.4 -14.4,14.4"/>
 <!-- BAT -->
 <g id="node1" class="node">
 <title>BAT</title>
-<path fill="#fdf3e7" stroke="#b9892f" d="M271.55,-1124.24C271.55,-1124.24 215.75,-1124.24 215.75,-1124.24 209.75,-1124.24 203.75,-1118.24 203.75,-1112.24 203.75,-1112.24 203.75,-1073.96 203.75,-1073.96 203.75,-1067.96 209.75,-1061.96 215.75,-1061.96 215.75,-1061.96 271.55,-1061.96 271.55,-1061.96 277.55,-1061.96 283.55,-1067.96 283.55,-1073.96 283.55,-1073.96 283.55,-1112.24 283.55,-1112.24 283.55,-1118.24 277.55,-1124.24 271.55,-1124.24"/>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-1101.35" font-family="Noto Sans CJK SC" font-size="15.00">1S LiPo</text>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-1078.85" font-family="Noto Sans CJK SC" font-size="15.00">3.7V</text>
+<path fill="#fdf3e7" stroke="#b9892f" d="M544.11,-1191.02C544.11,-1191.02 396.06,-1191.02 396.06,-1191.02 390.06,-1191.02 384.06,-1185.02 384.06,-1179.02 384.06,-1179.02 384.06,-1140.74 384.06,-1140.74 384.06,-1134.74 390.06,-1128.74 396.06,-1128.74 396.06,-1128.74 544.11,-1128.74 544.11,-1128.74 550.11,-1128.74 556.11,-1134.74 556.11,-1140.74 556.11,-1140.74 556.11,-1179.02 556.11,-1179.02 556.11,-1185.02 550.11,-1191.02 544.11,-1191.02"/>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-1168.13" font-family="Noto Sans CJK SC" font-size="15.00">1S LiPo 3.7V</text>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-1145.63" font-family="Noto Sans CJK SC" font-size="15.00">(插 TP4056 的 B+/B−)</text>
 </g>
 <!-- TP -->
 <g id="node2" class="node">
 <title>TP</title>
-<path fill="#fdf3e7" stroke="#b9892f" d="M291.05,-980.46C291.05,-980.46 196.25,-980.46 196.25,-980.46 190.25,-980.46 184.25,-974.46 184.25,-968.46 184.25,-968.46 184.25,-930.18 184.25,-930.18 184.25,-924.18 190.25,-918.18 196.25,-918.18 196.25,-918.18 291.05,-918.18 291.05,-918.18 297.05,-918.18 303.05,-924.18 303.05,-930.18 303.05,-930.18 303.05,-968.46 303.05,-968.46 303.05,-974.46 297.05,-980.46 291.05,-980.46"/>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-957.57" font-family="Noto Sans CJK SC" font-size="15.00">TP4056</text>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-935.07" font-family="Noto Sans CJK SC" font-size="15.00">充电·带保护</text>
+<path fill="#fdf3e7" stroke="#b9892f" d="M522.36,-1051.24C522.36,-1051.24 417.81,-1051.24 417.81,-1051.24 411.81,-1051.24 405.81,-1045.24 405.81,-1039.24 405.81,-1039.24 405.81,-1000.96 405.81,-1000.96 405.81,-994.96 411.81,-988.96 417.81,-988.96 417.81,-988.96 522.36,-988.96 522.36,-988.96 528.36,-988.96 534.36,-994.96 534.36,-1000.96 534.36,-1000.96 534.36,-1039.24 534.36,-1039.24 534.36,-1045.24 528.36,-1051.24 522.36,-1051.24"/>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-1028.35" font-family="Noto Sans CJK SC" font-size="15.00">TP4056 二合一</text>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-1005.85" font-family="Noto Sans CJK SC" font-size="15.00">充电+保护</text>
 </g>
 <!-- BAT&#45;&gt;TP -->
 <g id="edge1" class="edge">
 <title>BAT&#45;&gt;TP</title>
-<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M243.65,-1061.68C243.65,-1041.31 243.65,-1014.24 243.65,-991.88"/>
-<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="246.8,-992.11 243.65,-983.11 240.5,-992.11 246.8,-992.11"/>
-<text xml:space="preserve" text-anchor="middle" x="268.02" y="-1018.61" font-family="Noto Sans CJK SC" font-size="13.00">电池 +/−</text>
+<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M470.09,-1128.3C470.09,-1109.04 470.09,-1083.91 470.09,-1062.83"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="473.24,-1063.01 470.09,-1054.01 466.94,-1063.01 473.24,-1063.01"/>
+<text xml:space="preserve" text-anchor="middle" x="491.46" y="-1087.39" font-family="Noto Sans CJK SC" font-size="13.00">B+ / B−</text>
 </g>
-<!-- MT1 -->
+<!-- SW -->
 <g id="node3" class="node">
-<title>MT1</title>
-<path fill="#f3eefb" stroke="#7b5cb8" d="M282.8,-836.68C282.8,-836.68 204.5,-836.68 204.5,-836.68 198.5,-836.68 192.5,-830.68 192.5,-824.68 192.5,-824.68 192.5,-786.4 192.5,-786.4 192.5,-780.4 198.5,-774.4 204.5,-774.4 204.5,-774.4 282.8,-774.4 282.8,-774.4 288.8,-774.4 294.8,-780.4 294.8,-786.4 294.8,-786.4 294.8,-824.68 294.8,-824.68 294.8,-830.68 288.8,-836.68 282.8,-836.68"/>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-813.79" font-family="Noto Sans CJK SC" font-size="15.00">MT3608 #1</text>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-791.29" font-family="Noto Sans CJK SC" font-size="15.00">升 5V</text>
+<title>SW</title>
+<polygon fill="#fff3d6" stroke="#b9892f" points="502.49,-911.46 437.69,-911.46 437.69,-858.18 502.49,-858.18 502.49,-911.46"/>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-891.42" font-family="Noto Sans CJK SC" font-size="12.00">总开关</text>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-873.42" font-family="Noto Sans CJK SC" font-size="12.00">(≥3A)</text>
 </g>
-<!-- TP&#45;&gt;MT1 -->
+<!-- TP&#45;&gt;SW -->
 <g id="edge2" class="edge">
-<title>TP&#45;&gt;MT1</title>
-<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M243.65,-917.9C243.65,-897.53 243.65,-870.46 243.65,-848.1"/>
-<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="246.8,-848.33 243.65,-839.33 240.5,-848.33 246.8,-848.33"/>
-<text xml:space="preserve" text-anchor="middle" x="301.4" y="-874.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ → IN+ (VBAT)</text>
+<title>TP&#45;&gt;SW</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.8" d="M470.09,-988.52C470.09,-969.12 470.09,-943.88 470.09,-923.28"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.8" points="473.24,-923.49 470.09,-914.49 466.94,-923.49 473.24,-923.49"/>
+<text xml:space="preserve" text-anchor="middle" x="533.84" y="-947.61" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ (=VBAT) → 开关</text>
 </g>
-<!-- MT2 -->
+<!-- XL -->
 <g id="node4" class="node">
-<title>MT2</title>
-<path fill="#fcecec" stroke="#c0392b" d="M725.8,-836.68C725.8,-836.68 647.5,-836.68 647.5,-836.68 641.5,-836.68 635.5,-830.68 635.5,-824.68 635.5,-824.68 635.5,-786.4 635.5,-786.4 635.5,-780.4 641.5,-774.4 647.5,-774.4 647.5,-774.4 725.8,-774.4 725.8,-774.4 731.8,-774.4 737.8,-780.4 737.8,-786.4 737.8,-786.4 737.8,-824.68 737.8,-824.68 737.8,-830.68 731.8,-836.68 725.8,-836.68"/>
-<text xml:space="preserve" text-anchor="middle" x="686.65" y="-813.79" font-family="Noto Sans CJK SC" font-size="15.00">MT3608 #2</text>
-<text xml:space="preserve" text-anchor="middle" x="686.65" y="-791.29" font-family="Noto Sans CJK SC" font-size="15.00">升 5.5V</text>
+<title>XL</title>
+<path fill="#f3eefb" stroke="#7b5cb8" d="M523.86,-780.68C523.86,-780.68 416.31,-780.68 416.31,-780.68 410.31,-780.68 404.31,-774.68 404.31,-768.68 404.31,-768.68 404.31,-730.4 404.31,-730.4 404.31,-724.4 410.31,-718.4 416.31,-718.4 416.31,-718.4 523.86,-718.4 523.86,-718.4 529.86,-718.4 535.86,-724.4 535.86,-730.4 535.86,-730.4 535.86,-768.68 535.86,-768.68 535.86,-774.68 529.86,-780.68 523.86,-780.68"/>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-757.79" font-family="Noto Sans CJK SC" font-size="15.00">XL6009 升 5V</text>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-735.29" font-family="Noto Sans CJK SC" font-size="15.00">(4A，给开发板)</text>
 </g>
-<!-- TP&#45;&gt;MT2 -->
+<!-- SW&#45;&gt;XL -->
 <g id="edge3" class="edge">
-<title>TP&#45;&gt;MT2</title>
-<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M303.39,-929.2C387.22,-902.37 539.01,-853.79 624.25,-826.51"/>
-<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="625.14,-829.53 632.76,-823.79 623.22,-823.53 625.14,-829.53"/>
-<text xml:space="preserve" text-anchor="middle" x="528.42" y="-874.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ → IN+</text>
+<title>SW&#45;&gt;XL</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M470.09,-857.81C470.09,-839.27 470.09,-813.95 470.09,-792.57"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="473.24,-792.58 470.09,-783.58 466.94,-792.58 473.24,-792.58"/>
+<text xml:space="preserve" text-anchor="middle" x="485.09" y="-816.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">VBAT</text>
+</g>
+<!-- MT -->
+<g id="node5" class="node">
+<title>MT</title>
+<path fill="#fcecec" stroke="#c0392b" d="M210.99,-780.68C210.99,-780.68 101.19,-780.68 101.19,-780.68 95.19,-780.68 89.19,-774.68 89.19,-768.68 89.19,-768.68 89.19,-730.4 89.19,-730.4 89.19,-724.4 95.19,-718.4 101.19,-718.4 101.19,-718.4 210.99,-718.4 210.99,-718.4 216.99,-718.4 222.99,-724.4 222.99,-730.4 222.99,-730.4 222.99,-768.68 222.99,-768.68 222.99,-774.68 216.99,-780.68 210.99,-780.68"/>
+<text xml:space="preserve" text-anchor="middle" x="156.09" y="-757.79" font-family="Noto Sans CJK SC" font-size="15.00">MT3608 升 5.5V</text>
+<text xml:space="preserve" text-anchor="middle" x="156.09" y="-735.29" font-family="Noto Sans CJK SC" font-size="15.00">(给电机)</text>
+</g>
+<!-- SW&#45;&gt;MT -->
+<g id="edge4" class="edge">
+<title>SW&#45;&gt;MT</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.6" d="M437.37,-869.93C389.51,-849.62 298.99,-811.2 233.54,-783.42"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.6" points="235.01,-780.62 225.49,-780 232.55,-786.42 235.01,-780.62"/>
+<text xml:space="preserve" text-anchor="middle" x="356.21" y="-816.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">VBAT</text>
 </g>
 <!-- MAX -->
-<g id="node5" class="node">
+<g id="node6" class="node">
 <title>MAX</title>
-<path fill="#eef7f1" stroke="#2e8b57" d="M87.3,-836.68C87.3,-836.68 12,-836.68 12,-836.68 6,-836.68 0,-830.68 0,-824.68 0,-824.68 0,-786.4 0,-786.4 0,-780.4 6,-774.4 12,-774.4 12,-774.4 87.3,-774.4 87.3,-774.4 93.3,-774.4 99.3,-780.4 99.3,-786.4 99.3,-786.4 99.3,-824.68 99.3,-824.68 99.3,-830.68 93.3,-836.68 87.3,-836.68"/>
-<text xml:space="preserve" text-anchor="middle" x="49.65" y="-813.79" font-family="Noto Sans CJK SC" font-size="15.00">MAX17048</text>
-<text xml:space="preserve" text-anchor="middle" x="49.65" y="-791.29" font-family="Noto Sans CJK SC" font-size="15.00">电量计</text>
+<path fill="#eef7f1" stroke="#2e8b57" d="M755.74,-776.18C755.74,-776.18 602.44,-776.18 602.44,-776.18 596.44,-776.18 590.44,-770.18 590.44,-764.18 590.44,-764.18 590.44,-734.9 590.44,-734.9 590.44,-728.9 596.44,-722.9 602.44,-722.9 602.44,-722.9 755.74,-722.9 755.74,-722.9 761.74,-722.9 767.74,-728.9 767.74,-734.9 767.74,-734.9 767.74,-764.18 767.74,-764.18 767.74,-770.18 761.74,-776.18 755.74,-776.18"/>
+<text xml:space="preserve" text-anchor="middle" x="679.09" y="-756.14" font-family="Noto Sans CJK SC" font-size="12.00">MAX17048 电量计</text>
+<text xml:space="preserve" text-anchor="middle" x="679.09" y="-738.14" font-family="Noto Sans CJK SC" font-size="12.00">VLogic→3V3 · Bat→电池+</text>
 </g>
-<!-- TP&#45;&gt;MAX -->
-<g id="edge4" class="edge">
-<title>TP&#45;&gt;MAX</title>
-<path fill="none" stroke="#b9892f" d="M200.48,-917.68C186.9,-907.98 171.86,-897.18 158.15,-887.18 138.66,-872.97 117.34,-857.18 98.79,-843.36"/>
-<polygon fill="#b9892f" stroke="#b9892f" points="100.79,-840.92 91.69,-838.07 97.02,-845.97 100.79,-840.92"/>
-<text xml:space="preserve" text-anchor="middle" x="196.4" y="-874.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">OUT+ → VCC</text>
+<!-- SW&#45;&gt;MAX -->
+<g id="edge5" class="edge">
+<title>SW&#45;&gt;MAX</title>
+<path fill="none" stroke="#b9892f" stroke-width="1.4" d="M502.74,-862.99C536.65,-841.37 590.11,-807.28 629.29,-782.3"/>
+<polygon fill="#b9892f" stroke="#b9892f" stroke-width="1.4" points="630.74,-785.11 636.63,-777.61 627.35,-779.8 630.74,-785.11"/>
+<text xml:space="preserve" text-anchor="middle" x="623.23" y="-816.83" font-family="Noto Sans CJK SC" font-size="13.00" fill="#b9892f">VBAT → Bat 脚</text>
 </g>
 <!-- P4 -->
-<g id="node7" class="node">
+<g id="node8" class="node">
 <title>P4</title>
-<path fill="#d7e3f4" stroke="#1f3a5f" stroke-width="2" d="M296.3,-692.9C296.3,-692.9 191,-692.9 191,-692.9 185,-692.9 179,-686.9 179,-680.9 179,-680.9 179,-645.62 179,-645.62 179,-639.62 185,-633.62 191,-633.62 191,-633.62 296.3,-633.62 296.3,-633.62 302.3,-633.62 308.3,-639.62 308.3,-645.62 308.3,-645.62 308.3,-680.9 308.3,-680.9 308.3,-686.9 302.3,-692.9 296.3,-692.9"/>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-670.96" font-family="Noto Sans CJK SC" font-size="14.00">ESP32&#45;P4&#45;WIFI6</text>
-<text xml:space="preserve" text-anchor="middle" x="243.65" y="-649.96" font-family="Noto Sans CJK SC" font-size="14.00">开发板</text>
+<path fill="#d7e3f4" stroke="#1f3a5f" stroke-width="2" d="M528.36,-640.9C528.36,-640.9 411.81,-640.9 411.81,-640.9 405.81,-640.9 399.81,-634.9 399.81,-628.9 399.81,-628.9 399.81,-590.62 399.81,-590.62 399.81,-584.62 405.81,-578.62 411.81,-578.62 411.81,-578.62 528.36,-578.62 528.36,-578.62 534.36,-578.62 540.36,-584.62 540.36,-590.62 540.36,-590.62 540.36,-628.9 540.36,-628.9 540.36,-634.9 534.36,-640.9 528.36,-640.9"/>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-618.01" font-family="Noto Sans CJK SC" font-size="15.00">ESP32&#45;P4&#45;WIFI6</text>
+<text xml:space="preserve" text-anchor="middle" x="470.09" y="-595.51" font-family="Noto Sans CJK SC" font-size="15.00">开发板</text>
 </g>
-<!-- MT1&#45;&gt;P4 -->
-<g id="edge5" class="edge">
-<title>MT1&#45;&gt;P4</title>
-<path fill="none" stroke="#7b5cb8" stroke-width="2.3" d="M243.65,-774.1C243.65,-754.16 243.65,-727.84 243.65,-705.96"/>
-<polygon fill="#7b5cb8" stroke="#7b5cb8" stroke-width="2.3" points="246.8,-706.16 243.65,-697.16 240.5,-706.16 246.8,-706.16"/>
-<text xml:space="preserve" text-anchor="middle" x="304.4" y="-731.05" font-family="Noto Sans CJK SC" font-size="13.00" fill="#7b5cb8">OUT+(5V) → VSYS 脚</text>
+<!-- XL&#45;&gt;P4 -->
+<g id="edge6" class="edge">
+<title>XL&#45;&gt;P4</title>
+<path fill="none" stroke="#7b5cb8" stroke-width="2.3" d="M470.09,-717.96C470.09,-699.19 470.09,-674.84 470.09,-654.1"/>
+<polygon fill="#7b5cb8" stroke="#7b5cb8" stroke-width="2.3" points="473.24,-654.21 470.09,-645.21 466.94,-654.21 473.24,-654.21"/>
+<text xml:space="preserve" text-anchor="middle" x="530.84" y="-677.05" font-family="Noto Sans CJK SC" font-size="13.00" fill="#7b5cb8">OUT+(5V) → VSYS 脚</text>
 </g>
 <!-- INA -->
-<g id="node6" class="node">
+<g id="node7" class="node">
 <title>INA</title>
-<path fill="#eef7f1" stroke="#2e8b57" d="M476.42,-349.84C476.42,-349.84 422.88,-349.84 422.88,-349.84 416.88,-349.84 410.88,-343.84 410.88,-337.84 410.88,-337.84 410.88,-299.56 410.88,-299.56 410.88,-293.56 416.88,-287.56 422.88,-287.56 422.88,-287.56 476.42,-287.56 476.42,-287.56 482.42,-287.56 488.42,-293.56 488.42,-299.56 488.42,-299.56 488.42,-337.84 488.42,-337.84 488.42,-343.84 482.42,-349.84 476.42,-349.84"/>
-<text xml:space="preserve" text-anchor="middle" x="449.65" y="-326.95" font-family="Noto Sans CJK SC" font-size="15.00">INA219</text>
-<text xml:space="preserve" text-anchor="middle" x="449.65" y="-304.45" font-family="Noto Sans CJK SC" font-size="15.00">电流计</text>
+<path fill="#eef7f1" stroke="#2e8b57" d="M377.49,-332.84C377.49,-332.84 288.69,-332.84 288.69,-332.84 282.69,-332.84 276.69,-326.84 276.69,-320.84 276.69,-320.84 276.69,-291.56 276.69,-291.56 276.69,-285.56 282.69,-279.56 288.69,-279.56 288.69,-279.56 377.49,-279.56 377.49,-279.56 383.49,-279.56 389.49,-285.56 389.49,-291.56 389.49,-291.56 389.49,-320.84 389.49,-320.84 389.49,-326.84 383.49,-332.84 377.49,-332.84"/>
+<text xml:space="preserve" text-anchor="middle" x="333.09" y="-312.8" font-family="Noto Sans CJK SC" font-size="12.00">INA219 电流计</text>
+<text xml:space="preserve" text-anchor="middle" x="333.09" y="-294.8" font-family="Noto Sans CJK SC" font-size="12.00">绿端子串电机轨</text>
 </g>
-<!-- MT2&#45;&gt;INA -->
-<g id="edge6" class="edge">
-<title>MT2&#45;&gt;INA</title>
-<path fill="none" stroke="#c0392b" stroke-width="2.3" d="M708.11,-774.08C758.63,-698.32 873.69,-498.98 775.65,-380.84 741.36,-339.52 584.05,-325.96 501.14,-321.64"/>
-<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2.3" points="501.36,-318.49 492.22,-321.2 501.05,-324.79 501.36,-318.49"/>
-<text xml:space="preserve" text-anchor="middle" x="862.97" y="-580.52" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">OUT+(5.5V) → Vin+</text>
+<!-- MT&#45;&gt;INA -->
+<g id="edge7" class="edge">
+<title>MT&#45;&gt;INA</title>
+<path fill="none" stroke="#c0392b" stroke-width="2.3" d="M110.27,-718.07C56.62,-678.24 -21.62,-604.72 6.09,-530.12 40.46,-437.57 68.27,-415.58 151.09,-361.84 185.15,-339.74 228.53,-326.26 264.4,-318.22"/>
+<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2.3" points="264.69,-321.37 272.84,-316.42 263.38,-315.21 264.69,-321.37"/>
+<text xml:space="preserve" text-anchor="middle" x="87.09" y="-537.27" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">OUT+(5.5V) → Vin+(绿端子)</text>
 </g>
 <!-- TB1 -->
-<g id="node9" class="node">
+<g id="node10" class="node">
 <title>TB1</title>
-<path fill="#eef2f7" stroke="#9aa3ad" d="M540.67,-206.06C540.67,-206.06 464.62,-206.06 464.62,-206.06 458.62,-206.06 452.62,-200.06 452.62,-194.06 452.62,-194.06 452.62,-155.78 452.62,-155.78 452.62,-149.78 458.62,-143.78 464.62,-143.78 464.62,-143.78 540.67,-143.78 540.67,-143.78 546.67,-143.78 552.67,-149.78 552.67,-155.78 552.67,-155.78 552.67,-194.06 552.67,-194.06 552.67,-200.06 546.67,-206.06 540.67,-206.06"/>
-<text xml:space="preserve" text-anchor="middle" x="502.65" y="-183.17" font-family="Noto Sans CJK SC" font-size="15.00">TB6612 #1</text>
-<text xml:space="preserve" text-anchor="middle" x="502.65" y="-160.67" font-family="Noto Sans CJK SC" font-size="15.00">驱 M0 / M1</text>
+<path fill="#eef2f7" stroke="#9aa3ad" d="M503.11,-202.06C503.11,-202.06 427.06,-202.06 427.06,-202.06 421.06,-202.06 415.06,-196.06 415.06,-190.06 415.06,-190.06 415.06,-151.78 415.06,-151.78 415.06,-145.78 421.06,-139.78 427.06,-139.78 427.06,-139.78 503.11,-139.78 503.11,-139.78 509.11,-139.78 515.11,-145.78 515.11,-151.78 515.11,-151.78 515.11,-190.06 515.11,-190.06 515.11,-196.06 509.11,-202.06 503.11,-202.06"/>
+<text xml:space="preserve" text-anchor="middle" x="465.09" y="-179.17" font-family="Noto Sans CJK SC" font-size="15.00">TB6612 #1</text>
+<text xml:space="preserve" text-anchor="middle" x="465.09" y="-156.67" font-family="Noto Sans CJK SC" font-size="15.00">驱 M0 / M1</text>
 </g>
 <!-- INA&#45;&gt;TB1 -->
-<g id="edge7" class="edge">
+<g id="edge8" class="edge">
 <title>INA&#45;&gt;TB1</title>
-<path fill="none" stroke="#c0392b" stroke-width="2" d="M449.02,-287.34C449.61,-271.84 451.79,-252.96 457.9,-237.06 460.69,-229.8 464.58,-222.63 468.91,-215.9"/>
-<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2" points="471.24,-218.07 473.77,-208.88 466.06,-214.49 471.24,-218.07"/>
-<text xml:space="preserve" text-anchor="middle" x="489.77" y="-244.21" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">Vin− → VM</text>
+<path fill="none" stroke="#c0392b" stroke-width="2" d="M345.36,-279.32C353.37,-264.16 364.83,-245.27 378.34,-231.06 386.34,-222.64 395.74,-214.74 405.34,-207.64"/>
+<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2" points="406.99,-210.33 412.5,-202.55 403.34,-205.2 406.99,-210.33"/>
+<text xml:space="preserve" text-anchor="middle" x="410.21" y="-238.21" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">Vin− → VM</text>
 </g>
 <!-- TB2 -->
-<g id="node10" class="node">
+<g id="node11" class="node">
 <title>TB2</title>
-<path fill="#eef2f7" stroke="#9aa3ad" d="M142.68,-206.06C142.68,-206.06 66.62,-206.06 66.62,-206.06 60.62,-206.06 54.63,-200.06 54.63,-194.06 54.63,-194.06 54.63,-155.78 54.63,-155.78 54.63,-149.78 60.63,-143.78 66.62,-143.78 66.62,-143.78 142.68,-143.78 142.68,-143.78 148.68,-143.78 154.68,-149.78 154.68,-155.78 154.68,-155.78 154.68,-194.06 154.68,-194.06 154.68,-200.06 148.68,-206.06 142.68,-206.06"/>
-<text xml:space="preserve" text-anchor="middle" x="104.65" y="-183.17" font-family="Noto Sans CJK SC" font-size="15.00">TB6612 #2</text>
-<text xml:space="preserve" text-anchor="middle" x="104.65" y="-160.67" font-family="Noto Sans CJK SC" font-size="15.00">驱 M2</text>
+<path fill="#eef2f7" stroke="#9aa3ad" d="M253.11,-202.06C253.11,-202.06 177.06,-202.06 177.06,-202.06 171.06,-202.06 165.06,-196.06 165.06,-190.06 165.06,-190.06 165.06,-151.78 165.06,-151.78 165.06,-145.78 171.06,-139.78 177.06,-139.78 177.06,-139.78 253.11,-139.78 253.11,-139.78 259.11,-139.78 265.11,-145.78 265.11,-151.78 265.11,-151.78 265.11,-190.06 265.11,-190.06 265.11,-196.06 259.11,-202.06 253.11,-202.06"/>
+<text xml:space="preserve" text-anchor="middle" x="215.09" y="-179.17" font-family="Noto Sans CJK SC" font-size="15.00">TB6612 #2</text>
+<text xml:space="preserve" text-anchor="middle" x="215.09" y="-156.67" font-family="Noto Sans CJK SC" font-size="15.00">驱 M2</text>
 </g>
 <!-- INA&#45;&gt;TB2 -->
-<g id="edge8" class="edge">
+<g id="edge9" class="edge">
 <title>INA&#45;&gt;TB2</title>
-<path fill="none" stroke="#c0392b" stroke-width="2" d="M410.56,-298.82C402.37,-295 393.76,-291.08 385.65,-287.56 310.81,-255.11 223.29,-220.92 166.06,-199.06"/>
-<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2" points="167.39,-196.2 157.86,-195.93 165.15,-202.08 167.39,-196.2"/>
-<text xml:space="preserve" text-anchor="middle" x="340.96" y="-244.21" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">Vin− → VM</text>
+<path fill="none" stroke="#c0392b" stroke-width="2" d="M294.76,-279.1C283.91,-270.71 272.55,-260.89 263.34,-250.56 253.16,-239.15 243.86,-225.31 236.2,-212.44"/>
+<polygon fill="#c0392b" stroke="#c0392b" stroke-width="2" points="239.15,-211.25 231.93,-205.02 233.69,-214.39 239.15,-211.25"/>
+<text xml:space="preserve" text-anchor="middle" x="295.21" y="-238.21" font-family="Noto Sans CJK SC" font-size="13.00" fill="#c0392b">Vin− → VM</text>
 </g>
 <!-- BUS -->
-<g id="node8" class="node">
+<g id="node9" class="node">
 <title>BUS</title>
-<polygon fill="#eaf7ef" stroke="#2e8b57" points="236.8,-525.12 104.5,-525.12 104.5,-477.84 236.8,-477.84 236.8,-525.12"/>
-<text xml:space="preserve" text-anchor="middle" x="170.65" y="-506.98" font-family="Noto Sans CJK SC" font-size="10.00">I²C1 总线</text>
-<text xml:space="preserve" text-anchor="middle" x="170.65" y="-491.98" font-family="Noto Sans CJK SC" font-size="10.00">IO20=SDA · IO21=SCL</text>
+<polygon fill="#eaf7ef" stroke="#2e8b57" points="807.86,-501.12 664.31,-501.12 664.31,-449.34 807.86,-449.34 807.86,-501.12"/>
+<text xml:space="preserve" text-anchor="middle" x="736.09" y="-482.03" font-family="Noto Sans CJK SC" font-size="11.00">I²C1 总线</text>
+<text xml:space="preserve" text-anchor="middle" x="736.09" y="-464.78" font-family="Noto Sans CJK SC" font-size="11.00">IO20=SDA · IO21=SCL</text>
 </g>
 <!-- P4&#45;&gt;BUS -->
 <g id="edge15" class="edge">
 <title>P4&#45;&gt;BUS</title>
-<path fill="none" stroke="#2e8b57" stroke-width="2.2" d="M205.32,-632.82C196.4,-624.07 187.91,-613.8 182.4,-602.62 172.56,-582.65 169.6,-557.82 169.11,-537.88"/>
-<polygon fill="#2e8b57" stroke="#2e8b57" stroke-width="2.2" points="172.26,-537.9 169.1,-528.91 165.96,-537.91 172.26,-537.9"/>
-<text xml:space="preserve" text-anchor="middle" x="216.53" y="-580.52" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">IO20 / IO21</text>
+<path fill="none" stroke="#2e8b57" stroke-width="2.2" d="M528.13,-577.73C556.02,-563.01 590.01,-545.36 620.84,-530.12 636.6,-522.33 653.71,-514.17 669.8,-506.62"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" stroke-width="2.2" points="670.91,-509.58 677.73,-502.92 668.24,-503.87 670.91,-509.58"/>
+<text xml:space="preserve" text-anchor="middle" x="654.96" y="-537.27" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">IO20 / IO21</text>
 </g>
 <!-- P4&#45;&gt;TB1 -->
-<g id="edge9" class="edge">
+<g id="edge10" class="edge">
 <title>P4&#45;&gt;TB1</title>
-<path fill="none" stroke="#777777" stroke-width="1.5" d="M309.23,-657.78C384.13,-651.14 499.8,-635.72 526.65,-602.62 618.23,-489.73 555.58,-299.73 521.13,-216.75"/>
-<polygon fill="#777777" stroke="#777777" stroke-width="1.5" points="524.07,-215.62 517.66,-208.56 518.27,-218.08 524.07,-215.62"/>
-<text xml:space="preserve" text-anchor="start" x="574.06" y="-426.99" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO2→PWMA &#160;IO3→AIN1 &#160;IO4→AIN2</text>
-<text xml:space="preserve" text-anchor="start" x="574.06" y="-407.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO5→PWMB &#160;IO24→BIN1 &#160;IO25→BIN2</text>
-<text xml:space="preserve" text-anchor="start" x="574.06" y="-387.99" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO52→STBY</text>
+<path fill="none" stroke="#777777" stroke-width="1.5" d="M468.37,-577.77C466.39,-540.44 463.26,-475.82 462.09,-420.34 460.54,-347.68 462.33,-263.05 463.73,-213.69"/>
+<polygon fill="#777777" stroke="#777777" stroke-width="1.5" points="466.88,-213.88 464,-204.79 460.58,-213.69 466.88,-213.88"/>
+<text xml:space="preserve" text-anchor="start" x="462.09" y="-407.99" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO2→PWMA &#160;IO3→AIN1 &#160;IO4→AIN2</text>
+<text xml:space="preserve" text-anchor="start" x="462.09" y="-388.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO5→PWMB &#160;IO24→BIN1 &#160;IO25→BIN2</text>
+<text xml:space="preserve" text-anchor="start" x="462.09" y="-368.99" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO52→STBY</text>
 </g>
 <!-- P4&#45;&gt;TB2 -->
-<g id="edge10" class="edge">
+<g id="edge11" class="edge">
 <title>P4&#45;&gt;TB2</title>
-<path fill="none" stroke="#777777" stroke-width="1.5" d="M194.48,-632.85C138.86,-595.98 52.69,-526.87 27.15,-439.34 4.01,-360.02 47.73,-267.35 78.38,-215.77"/>
-<polygon fill="#777777" stroke="#777777" stroke-width="1.5" points="80.96,-217.6 82.95,-208.27 75.58,-214.32 80.96,-217.6"/>
-<text xml:space="preserve" text-anchor="start" x="27.15" y="-417.24" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO26→PWMA &#160;IO27→AIN1 &#160;IO32→AIN2</text>
-<text xml:space="preserve" text-anchor="start" x="27.15" y="-397.74" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO52→STBY</text>
-</g>
-<!-- IMU -->
-<g id="node14" class="node">
-<title>IMU</title>
-<path fill="#eef2f7" stroke="#2160c0" d="M376.92,-532.62C376.92,-532.62 284.38,-532.62 284.38,-532.62 278.38,-532.62 272.38,-526.62 272.38,-520.62 272.38,-520.62 272.38,-482.34 272.38,-482.34 272.38,-476.34 278.38,-470.34 284.38,-470.34 284.38,-470.34 376.92,-470.34 376.92,-470.34 382.92,-470.34 388.92,-476.34 388.92,-482.34 388.92,-482.34 388.92,-520.62 388.92,-520.62 388.92,-526.62 382.92,-532.62 376.92,-532.62"/>
-<text xml:space="preserve" text-anchor="middle" x="330.65" y="-509.73" font-family="Noto Sans CJK SC" font-size="15.00">IMU</text>
-<text xml:space="preserve" text-anchor="middle" x="330.65" y="-487.23" font-family="Noto Sans CJK SC" font-size="15.00">ICM&#45;42688&#45;P</text>
-</g>
-<!-- P4&#45;&gt;IMU -->
-<g id="edge14" class="edge">
-<title>P4&#45;&gt;IMU</title>
-<path fill="none" stroke="#2160c0" stroke-width="2" d="M257.08,-632.93C266.41,-613.09 279.4,-586.44 292.15,-563.62 295.97,-556.78 300.22,-549.63 304.46,-542.74"/>
-<polygon fill="#2160c0" stroke="#2160c0" stroke-width="2" points="306.92,-544.76 309.02,-535.46 301.58,-541.42 306.92,-544.76"/>
-<text xml:space="preserve" text-anchor="start" x="292.15" y="-590.27" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2160c0">IO51→SCLK &#160;IO50→MOSI &#160;IO49→MISO</text>
-<text xml:space="preserve" text-anchor="start" x="292.15" y="-570.77" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2160c0">IO22→CS &#160;IO23→INT</text>
+<path fill="none" stroke="#777777" stroke-width="1.5" d="M399.15,-577.66C339.26,-547.14 257.38,-494.38 219.59,-420.34 185.85,-354.26 195.42,-264.84 205.32,-213.27"/>
+<polygon fill="#777777" stroke="#777777" stroke-width="1.5" points="208.41,-213.92 207.11,-204.47 202.23,-212.66 208.41,-213.92"/>
+<text xml:space="preserve" text-anchor="start" x="219.59" y="-398.24" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO26→PWMA &#160;IO27→AIN1 &#160;IO32→AIN2</text>
+<text xml:space="preserve" text-anchor="start" x="219.59" y="-378.74" font-family="Noto Sans CJK SC" font-size="13.00" fill="#3a3a3a">IO52→STBY</text>
 </g>
 <!-- BUS&#45;&gt;MAX -->
-<g id="edge18" class="edge">
+<g id="edge19" class="edge">
 <title>BUS&#45;&gt;MAX</title>
-<path fill="none" stroke="#2e8b57" d="M143.38,-525.37C117.03,-549.33 78.58,-589.53 60.9,-633.62 44.03,-675.7 43.26,-728.28 45.4,-763.92"/>
-<polygon fill="#2e8b57" stroke="#2e8b57" points="42.23,-763.69 46,-772.45 48.51,-763.25 42.23,-763.69"/>
-<text xml:space="preserve" text-anchor="middle" x="110.78" y="-660.66" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x36)</text>
+<path fill="none" stroke="#2e8b57" d="M730.8,-501.47C720.66,-549.93 698.42,-656.18 686.68,-712.24"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" points="683.62,-711.49 684.86,-720.95 689.79,-712.78 683.62,-711.49"/>
+<text xml:space="preserve" text-anchor="middle" x="764.06" y="-607.16" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x36)</text>
 </g>
 <!-- BUS&#45;&gt;INA -->
-<g id="edge17" class="edge">
+<g id="edge18" class="edge">
 <title>BUS&#45;&gt;INA</title>
-<path fill="none" stroke="#2e8b57" d="M233.33,-477.45C240.49,-474.98 247.71,-472.56 254.65,-470.34 303.03,-454.86 323.35,-468.91 364.65,-439.34 390.31,-420.97 386.63,-406.58 404.9,-380.84 410.04,-373.59 415.59,-365.91 420.97,-358.53"/>
-<polygon fill="#2e8b57" stroke="#2e8b57" points="423.51,-360.4 426.27,-351.27 418.42,-356.68 423.51,-360.4"/>
-<text xml:space="preserve" text-anchor="middle" x="454.77" y="-407.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x40)</text>
+<path fill="none" stroke="#2e8b57" d="M730.31,-449.01C723.01,-419.46 709.75,-373.1 696.09,-361.84 652.1,-325.6 492.39,-313.33 400.13,-309.22"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" points="400.41,-306.08 391.28,-308.85 400.14,-312.38 400.41,-306.08"/>
+<text xml:space="preserve" text-anchor="middle" x="771.8" y="-388.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x40)</text>
+</g>
+<!-- IMU -->
+<g id="node15" class="node">
+<title>IMU</title>
+<path fill="#eef2f7" stroke="#2160c0" d="M1113.24,-332.84C1113.24,-332.84 980.94,-332.84 980.94,-332.84 974.94,-332.84 968.94,-326.84 968.94,-320.84 968.94,-320.84 968.94,-291.56 968.94,-291.56 968.94,-285.56 974.94,-279.56 980.94,-279.56 980.94,-279.56 1113.24,-279.56 1113.24,-279.56 1119.24,-279.56 1125.24,-285.56 1125.24,-291.56 1125.24,-291.56 1125.24,-320.84 1125.24,-320.84 1125.24,-326.84 1119.24,-332.84 1113.24,-332.84"/>
+<text xml:space="preserve" text-anchor="middle" x="1047.09" y="-312.8" font-family="Noto Sans CJK SC" font-size="12.00">QMI8658 (IMU)</text>
+<text xml:space="preserve" text-anchor="middle" x="1047.09" y="-294.8" font-family="Noto Sans CJK SC" font-size="12.00">ADO→GND/VCC 定地址</text>
+</g>
+<!-- BUS&#45;&gt;IMU -->
+<g id="edge16" class="edge">
+<title>BUS&#45;&gt;IMU</title>
+<path fill="none" stroke="#2160c0" stroke-width="1.8" d="M808.29,-472.21C858.99,-467.59 926.2,-454.72 975.09,-420.34 1001.96,-401.44 1021.09,-369 1032.84,-343.69"/>
+<polygon fill="#2160c0" stroke="#2160c0" stroke-width="1.8" points="1035.71,-344.98 1036.47,-335.48 1029.95,-342.43 1035.71,-344.98"/>
+<text xml:space="preserve" text-anchor="middle" x="1089.94" y="-388.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2160c0">SDA/SCL · INT→IO23</text>
 </g>
 <!-- BH -->
-<g id="node15" class="node">
+<g id="node16" class="node">
 <title>BH</title>
-<path fill="#eef7f1" stroke="#2e8b57" d="M356.05,-349.84C356.05,-349.84 261.25,-349.84 261.25,-349.84 255.25,-349.84 249.25,-343.84 249.25,-337.84 249.25,-337.84 249.25,-299.56 249.25,-299.56 249.25,-293.56 255.25,-287.56 261.25,-287.56 261.25,-287.56 356.05,-287.56 356.05,-287.56 362.05,-287.56 368.05,-293.56 368.05,-299.56 368.05,-299.56 368.05,-337.84 368.05,-337.84 368.05,-343.84 362.05,-349.84 356.05,-349.84"/>
-<text xml:space="preserve" text-anchor="middle" x="308.65" y="-326.95" font-family="Noto Sans CJK SC" font-size="15.00">BH1750</text>
-<text xml:space="preserve" text-anchor="middle" x="308.65" y="-304.45" font-family="Noto Sans CJK SC" font-size="15.00">环境光·贴壳</text>
+<path fill="#eef7f1" stroke="#2e8b57" d="M921.11,-332.84C921.11,-332.84 833.06,-332.84 833.06,-332.84 827.06,-332.84 821.06,-326.84 821.06,-320.84 821.06,-320.84 821.06,-291.56 821.06,-291.56 821.06,-285.56 827.06,-279.56 833.06,-279.56 833.06,-279.56 921.11,-279.56 921.11,-279.56 927.11,-279.56 933.11,-285.56 933.11,-291.56 933.11,-291.56 933.11,-320.84 933.11,-320.84 933.11,-326.84 927.11,-332.84 921.11,-332.84"/>
+<text xml:space="preserve" text-anchor="middle" x="877.09" y="-312.8" font-family="Noto Sans CJK SC" font-size="12.00">BH1750 环境光</text>
+<text xml:space="preserve" text-anchor="middle" x="877.09" y="-294.8" font-family="Noto Sans CJK SC" font-size="12.00">贴壳·40cm</text>
 </g>
 <!-- BUS&#45;&gt;BH -->
-<g id="edge16" class="edge">
+<g id="edge17" class="edge">
 <title>BUS&#45;&gt;BH</title>
-<path fill="none" stroke="#2e8b57" stroke-width="1.6" d="M221.89,-477.43C238.74,-467.73 256.29,-455.01 268.65,-439.34 286.47,-416.75 296.53,-385.83 302.11,-361.09"/>
-<polygon fill="#2e8b57" stroke="#2e8b57" stroke-width="1.6" points="305.13,-362.03 303.88,-352.58 298.96,-360.75 305.13,-362.03"/>
-<text xml:space="preserve" text-anchor="middle" x="326.05" y="-407.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL</text>
+<path fill="none" stroke="#2e8b57" stroke-width="1.6" d="M800.8,-448.9C814.17,-441.32 827.17,-431.87 837.09,-420.34 855.53,-398.89 865.66,-368.37 871.11,-344.43"/>
+<polygon fill="#2e8b57" stroke="#2e8b57" stroke-width="1.6" points="874.19,-345.1 872.93,-335.64 868.02,-343.82 874.19,-345.1"/>
+<text xml:space="preserve" text-anchor="middle" x="916.06" y="-388.49" font-family="Noto Sans CJK SC" font-size="13.00" fill="#2e8b57">SDA / SCL (0x23)</text>
 </g>
 <!-- M0 -->
-<g id="node11" class="node">
+<g id="node12" class="node">
 <title>M0</title>
-<path fill="#ffffff" stroke="#9aa3ad" d="M755.17,-62.28C755.17,-62.28 580.12,-62.28 580.12,-62.28 574.12,-62.28 568.12,-56.28 568.12,-50.28 568.12,-50.28 568.12,-12 568.12,-12 568.12,-6 574.12,0 580.12,0 580.12,0 755.17,0 755.17,0 761.17,0 767.17,-6 767.17,-12 767.17,-12 767.17,-50.28 767.17,-50.28 767.17,-56.28 761.17,-62.28 755.17,-62.28"/>
-<text xml:space="preserve" text-anchor="middle" x="667.65" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M0</text>
-<text xml:space="preserve" text-anchor="middle" x="667.65" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO30 / IO31</text>
+<path fill="#ffffff" stroke="#9aa3ad" d="M782.61,-62.28C782.61,-62.28 607.56,-62.28 607.56,-62.28 601.56,-62.28 595.56,-56.28 595.56,-50.28 595.56,-50.28 595.56,-12 595.56,-12 595.56,-6 601.56,0 607.56,0 607.56,0 782.61,0 782.61,0 788.61,0 794.61,-6 794.61,-12 794.61,-12 794.61,-50.28 794.61,-50.28 794.61,-56.28 788.61,-62.28 782.61,-62.28"/>
+<text xml:space="preserve" text-anchor="middle" x="695.09" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M0</text>
+<text xml:space="preserve" text-anchor="middle" x="695.09" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO30 / IO31</text>
 </g>
 <!-- TB1&#45;&gt;M0 -->
-<g id="edge11" class="edge">
+<g id="edge12" class="edge">
 <title>TB1&#45;&gt;M0</title>
-<path fill="none" stroke="#c0397b" d="M543.43,-143.54C555.89,-133.94 569.51,-123.13 581.65,-112.78 597.57,-99.21 614.48,-83.63 629.06,-69.8"/>
-<polygon fill="#c0397b" stroke="#c0397b" points="631.02,-72.28 635.35,-63.79 626.67,-67.72 631.02,-72.28"/>
-<text xml:space="preserve" text-anchor="middle" x="652.61" y="-100.43" font-family="Noto Sans CJK SC" font-size="13.00">AO1/AO2 → 电机</text>
+<path fill="none" stroke="#c0397b" d="M515.54,-142.9C533.53,-133.03 553.85,-121.64 572.09,-110.78 594.57,-97.4 618.93,-82.02 639.99,-68.43"/>
+<polygon fill="#c0397b" stroke="#c0397b" points="641.68,-71.08 647.53,-63.55 638.26,-65.79 641.68,-71.08"/>
+<text xml:space="preserve" text-anchor="middle" x="651.98" y="-98.43" font-family="Noto Sans CJK SC" font-size="13.00">AO1/AO2 → 电机</text>
 </g>
 <!-- M1 -->
-<g id="node12" class="node">
+<g id="node13" class="node">
 <title>M1</title>
-<path fill="#ffffff" stroke="#9aa3ad" d="M520.17,-62.28C520.17,-62.28 345.12,-62.28 345.12,-62.28 339.12,-62.28 333.12,-56.28 333.12,-50.28 333.12,-50.28 333.12,-12 333.12,-12 333.12,-6 339.12,0 345.12,0 345.12,0 520.17,0 520.17,0 526.17,0 532.17,-6 532.17,-12 532.17,-12 532.17,-50.28 532.17,-50.28 532.17,-56.28 526.17,-62.28 520.17,-62.28"/>
-<text xml:space="preserve" text-anchor="middle" x="432.65" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M1</text>
-<text xml:space="preserve" text-anchor="middle" x="432.65" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO28 / IO29</text>
+<path fill="#ffffff" stroke="#9aa3ad" d="M547.61,-62.28C547.61,-62.28 372.56,-62.28 372.56,-62.28 366.56,-62.28 360.56,-56.28 360.56,-50.28 360.56,-50.28 360.56,-12 360.56,-12 360.56,-6 366.56,0 372.56,0 372.56,0 547.61,0 547.61,0 553.61,0 559.61,-6 559.61,-12 559.61,-12 559.61,-50.28 559.61,-50.28 559.61,-56.28 553.61,-62.28 547.61,-62.28"/>
+<text xml:space="preserve" text-anchor="middle" x="460.09" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M1</text>
+<text xml:space="preserve" text-anchor="middle" x="460.09" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO28 / IO29</text>
 </g>
 <!-- TB1&#45;&gt;M1 -->
-<g id="edge12" class="edge">
+<g id="edge13" class="edge">
 <title>TB1&#45;&gt;M1</title>
-<path fill="none" stroke="#c0397b" d="M487.63,-143.5C477.3,-122.57 463.47,-94.56 452.26,-71.87"/>
-<polygon fill="#c0397b" stroke="#c0397b" points="455.12,-70.54 448.31,-63.86 449.47,-73.33 455.12,-70.54"/>
-<text xml:space="preserve" text-anchor="middle" x="522.09" y="-100.43" font-family="Noto Sans CJK SC" font-size="13.00">BO1/BO2 → 电机</text>
+<path fill="none" stroke="#c0397b" d="M463.98,-139.34C463.27,-119.81 462.34,-94.25 461.57,-72.99"/>
+<polygon fill="#c0397b" stroke="#c0397b" points="464.72,-73.02 461.25,-64.14 458.43,-73.25 464.72,-73.02"/>
+<text xml:space="preserve" text-anchor="middle" x="513.14" y="-98.43" font-family="Noto Sans CJK SC" font-size="13.00">BO1/BO2 → 电机</text>
 </g>
 <!-- M2 -->
-<g id="node13" class="node">
+<g id="node14" class="node">
 <title>M2</title>
-<path fill="#ffffff" stroke="#9aa3ad" d="M192.18,-62.28C192.18,-62.28 17.12,-62.28 17.12,-62.28 11.12,-62.28 5.12,-56.28 5.12,-50.28 5.12,-50.28 5.12,-12 5.12,-12 5.12,-6 11.12,0 17.12,0 17.12,0 192.18,0 192.18,0 198.18,0 204.18,-6 204.18,-12 204.18,-12 204.18,-50.28 204.18,-50.28 204.18,-56.28 198.18,-62.28 192.18,-62.28"/>
-<text xml:space="preserve" text-anchor="middle" x="104.65" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M2</text>
-<text xml:space="preserve" text-anchor="middle" x="104.65" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO46 / IO47</text>
+<path fill="#ffffff" stroke="#9aa3ad" d="M302.61,-62.28C302.61,-62.28 127.56,-62.28 127.56,-62.28 121.56,-62.28 115.56,-56.28 115.56,-50.28 115.56,-50.28 115.56,-12 115.56,-12 115.56,-6 121.56,0 127.56,0 127.56,0 302.61,0 302.61,0 308.61,0 314.61,-6 314.61,-12 314.61,-12 314.61,-50.28 314.61,-50.28 314.61,-56.28 308.61,-62.28 302.61,-62.28"/>
+<text xml:space="preserve" text-anchor="middle" x="215.09" y="-39.39" font-family="Noto Sans CJK SC" font-size="15.00">N20 M2</text>
+<text xml:space="preserve" text-anchor="middle" x="215.09" y="-16.89" font-family="Noto Sans CJK SC" font-size="15.00">编码器 A/B → IO46 / IO47</text>
 </g>
 <!-- TB2&#45;&gt;M2 -->
-<g id="edge13" class="edge">
+<g id="edge14" class="edge">
 <title>TB2&#45;&gt;M2</title>
-<path fill="none" stroke="#c0397b" d="M104.65,-143.5C104.65,-122.85 104.65,-95.31 104.65,-72.78"/>
-<polygon fill="#c0397b" stroke="#c0397b" points="107.8,-73.02 104.65,-64.02 101.5,-73.02 107.8,-73.02"/>
-<text xml:space="preserve" text-anchor="middle" x="153.78" y="-100.43" font-family="Noto Sans CJK SC" font-size="13.00">AO1/AO2 → 电机</text>
+<path fill="none" stroke="#c0397b" d="M215.09,-139.34C215.09,-119.81 215.09,-94.25 215.09,-72.99"/>
+<polygon fill="#c0397b" stroke="#c0397b" points="218.24,-73.15 215.09,-64.15 211.94,-73.15 218.24,-73.15"/>
+<text xml:space="preserve" text-anchor="middle" x="264.21" y="-98.43" font-family="Noto Sans CJK SC" font-size="13.00">AO1/AO2 → 电机</text>
 </g>
 </g>
 </svg>
