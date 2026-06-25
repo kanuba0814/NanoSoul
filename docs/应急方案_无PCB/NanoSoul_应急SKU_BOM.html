@@ -385,6 +385,40 @@
 </svg>
 </div>
 <div class="pagebreak"></div>
+<h2>怎么装才不烧件（安全装机 / 上电流程）</h2>
+<div class="box danger"><b>★ 防烧 7 条铁律</b><ol style="margin:3px 0 3px 16px;padding:0">
+<li><b>XL6009 必须【空载先调到 5.5V】再接电机驱动</b> —— 升压模块出厂常是直通/高压，不调直接接可能输出十几伏，<b>一秒烧穿 TB6612 和电机</b>。这是最致命的一条。</li>
+<li><b>所有接线、插拔都在断电下做</b>，绝不带电热插拔（拔插模块的瞬间易打火/接错脚）。</li>
+<li><b>TB6612 的 VM(5.5V) 和 VCC(3V3) 是两个脚，别接反</b> —— 5.5V 灌进 VCC 烧逻辑。</li>
+<li><b>MAX17048 的 VLogic 接 3V3、不接电池</b> —— 接电池会让 I²C 顶到 4.2V，<b>烧开发板的 I²C 脚</b>。</li>
+<li><b>所有传感器(QMI8658 / BH1750 / INA219 / MAX17048)的 VCC 接 3V3，不接 5V/电池</b> —— 它们都是 3.3V 件。</li>
+<li><b>上电前用万用表查短路</b>：电池+对GND、3V3对GND、5.5V对GND 都<b>不能接近 0Ω</b>（蜂鸣档不响）。</li>
+<li><b>第一次上电手放在总开关上</b>，一闻到糊味/看到冒烟/摸到烫，立刻断电。</li>
+</ol></div>
+
+<h3>① 上电前（断电、用万用表）</h3>
+<p class="small">• 目检每个模块丝印：<b>VCC/GND 没接反</b>；电池<b>红+黑−</b>；<b>TB6612 VM≠VCC</b>；MAX17048 <b>VLogic≠Bat</b>。<br>
+• 通断查短路（蜂鸣档）：<b>电池+↔GND、3V3↔GND、5.5V↔GND 都不响</b>（不短路）。<br>
+• 确认<b>共地点已接好</b>（开发板 GND ↔ 电池/电机 GND 接成一点）。</p>
+
+<h3>② 分阶段上电（一步一验，别一次全接通电）</h3>
+<table>
+<thead><tr><th style="width:6%">步</th><th style="width:34%">做什么</th><th style="width:60%">验证 / 注意</th></tr></thead>
+<tbody>
+<tr><td><b>1 调压</b></td><td>XL6009 输入接电池(经总开关)，<b>输出空载</b>，拧电位器</td><td>万用表量输出<b>拧到 5.5V</b> → <b>断电</b>。（此时千万别接 TB6612/电机）</td></tr>
+<tr><td><b>2 开发板</b></td><td>只插<b>电脑 USB</b>，不接任何外设</td><td>开发板正常开机；量 <b>3V3 脚 = 3.3V</b></td></tr>
+<tr><td><b>3 共地</b></td><td>接<b>开发板 GND ↔ 电池 GND</b></td><td>这步漏了后面 I²C/电机全不工作</td></tr>
+<tr><td><b>4 传感器</b><br>(低风险先)</td><td>逐个接 BH1750→QMI8658→INA219→MAX17048，<b>VCC 都接 3V3</b></td><td>每加一个跑 <b>I²C 扫描</b>确认地址(0x23 / 0x6A·0x6B / 0x40 / 0x36)。<b>全在 3V3，烧不了大件</b>，先把弱电链跑通</td></tr>
+<tr><td><b>5 电机驱动</b><br>(大电流,最后)</td><td><b>断电</b>接 TB6612：VM→<b>已调好的 5.5V</b>、VCC→3V3、GND共地、控制脚→开发板</td><td><b>先让电机/轮子悬空</b>，给小占空比 PWM → 量 VM 稳、TB6612 不发烫 → 再正常跑、随时摸温度</td></tr>
+</tbody></table>
+
+<h3>③ 每个件最容易烧的原因 → 怎么防</h3>
+<table>
+<thead><tr><th style="width:20%">件</th><th style="width:44%">烧的原因</th><th style="width:36%">怎么防</th></tr></thead>
+<tbody>
+<tr><td>TB6612</td><td>VM/VCC 接反；XL6009 没调压直接高压进 VM；电机长时间堵转过流过热</td><td>VM≠VCC；先调 5.5V 再接；固件「高电流+编码器不动」拉低 STBY 急停</td></tr><tr><td>开发板 I²C 脚</td><td>MAX17048 的 VLogic 接了电池 → 4.2V 灌进 I²C</td><td>VLogic 只接 3V3</td></tr><tr><td>QMI8658 / BH1750</td><td>VCC 接了 5V 或电池</td><td>VCC 只接 3V3</td></tr><tr><td>电池</td><td>输出短路 → 瞬间大电流（可能起火）</td><td>上电前查短路；TP4056 的 3A 保护兜底，但别赌；接头别裸露</td></tr><tr><td>XL6009</td><td>输出短路；输入 3.7V 属超下限、长时间大电流发热</td><td>查短路；摸温度；电机别长时间堵转；散热不良就降负载</td></tr><tr><td>电机</td><td>没调压被高压冲；长时间堵转过热</td><td>先调 5.5V；堵转急停；MP 级低堵转电机</td></tr></tbody></table>
+<p class="small"><b>有条件最稳</b>：第一次给电机轨上电，用<b>带限流的实验电源</b>把限流设到 ~0.5A 先试（有短路会限流不烧件）；没有就<b>电池正极串一个 2~3A 保险丝</b>当一次性兜底。</p>
+<div class="pagebreak"></div>
 <h2>电气验证（系统级）</h2>
 <div class="box warn"><b>※ 架构已变更（2026-06）</b>：现在<b>开发板由电脑 USB 供电</b>、<b>电池只带电机</b>。所以下面"功率/电流预算"里关于「开发板升压不够 / 电池总电流 ~3.5A / TP4056 会跳闸」的分析是<b>旧的全电池方案最坏情况，现已不适用</b>——新方案电池侧只剩电机 ~0.75A(常态)，TP4056 和电池压力大减。电压兼容/I²C 地址/GPIO/ngspice I²C 仿真这几节仍然有效。</div>
 <p class="small">模块是黑盒、跑不了器件级 SPICE，下面做的是<b>系统级电气验证</b>（电压兼容 / 功率电流预算 / 续航 / I²C 地址 / GPIO 预算）+ 一处真仿真（I²C 长线上升时间，ngspice）。</p>
