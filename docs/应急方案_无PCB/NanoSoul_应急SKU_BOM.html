@@ -385,6 +385,52 @@
 </svg>
 </div>
 <div class="pagebreak"></div>
+<h2>电机 + 编码器（你买的实物）+ 控制参数</h2>
+
+<h3>① 电机实物参数（N20，6V，减速比 118:1，短轴 D3×8）</h3>
+<table><thead><tr><th style="width:30%">参数</th><th style="width:24%">值</th><th style="width:46%">说明</th></tr></thead><tbody>
+<tr><td>额定电压</td><td>6V</td><td>本方案 XL6009 调 <b>5.5~6.0V</b> 驱动（5.5V≈92%转速，6V 满速；无 PCB 版无 PTC 约束，调 6V 也行）</td></tr>
+<tr><td>减速比</td><td>118:1</td><td>定编码器每圈脉冲数（见③）</td></tr>
+<tr><td>空载转速</td><td>136 rpm</td><td>@6V；@5.5V 约 125 rpm</td></tr>
+<tr><td>空载电流</td><td>40 mA/个</td><td>3 个 ~0.12A</td></tr>
+<tr><td>负载电流</td><td>90 mA/个</td><td>常态行驶 3 个 ~0.27A</td></tr>
+<tr><td><b>堵转电流</b></td><td><b>400 mA/个</b></td><td><b>3 个全堵才 1.2A</b> —— 电流预算很宽松，XL6009 + TB6612 + 电池都轻松扛</td></tr>
+<tr><td>堵转力矩 / 额定力矩</td><td>472 / 400 gf·cm</td><td>起动电压 1.5V，功率 1W</td></tr>
+</tbody></table>
+
+<h3>② 编码器 6 线接法（AB 双相霍尔，方波，100kHz）</h3>
+<table><thead><tr><th style="width:14%">线色</th><th style="width:30%">含义</th><th style="width:56%">接到</th></tr></thead><tbody>
+<tr><td><span style="display:inline-block;width:22px;height:9px;background:#c0392b;border:1px solid #999;border-radius:2px;vertical-align:middle;margin-right:3px"></span>红</td><td>电机电源 +</td><td>TB6612 <b>AO1 / BO1</b>（红白对调 = 电机反转）</td></tr>
+<tr><td><span style="display:inline-block;width:22px;height:9px;background:#ffffff;border:1px solid #999;border-radius:2px;vertical-align:middle;margin-right:3px"></span>白</td><td>电机电源 −</td><td>TB6612 <b>AO2 / BO2</b></td></tr>
+<tr><td><span style="display:inline-block;width:22px;height:9px;background:#111111;border:1px solid #999;border-radius:2px;vertical-align:middle;margin-right:3px"></span>黑</td><td>编码器电源 + (3.3–5V)</td><td><b>开发板 3V3</b>（⚠️别接 5V/电机轨；正负不可接反）</td></tr>
+<tr><td><span style="display:inline-block;width:22px;height:9px;background:#2160c0;border:1px solid #999;border-radius:2px;vertical-align:middle;margin-right:3px"></span>蓝</td><td>编码器电源 −</td><td>共地 <b>GND</b>（⚠️正负不可接反）</td></tr>
+<tr><td><span style="display:inline-block;width:22px;height:9px;background:#e8c000;border:1px solid #999;border-radius:2px;vertical-align:middle;margin-right:3px"></span>黄</td><td>A 相信号（转一圈 7×118 个）</td><td>开发板 GPIO（<b>启用上拉</b>，见下）</td></tr>
+<tr><td><span style="display:inline-block;width:22px;height:9px;background:#2e8b57;border:1px solid #999;border-radius:2px;vertical-align:middle;margin-right:3px"></span>绿</td><td>B 相信号</td><td>开发板 GPIO（<b>启用上拉</b>）</td></tr>
+</tbody></table>
+<p class="small">引脚沿用设计：M0 黄/绿→IO30/IO31，M1→IO28/IO29，M2→IO46/IO47（无 PCB 版用杜邦，换别的空闲 GPIO 也行，改固件即可）。</p>
+
+<div class="box danger"><b>⚠️ 厂商两条硬要求（不照做编码器读不准/读不到）</b><ol style="margin:3px 0 3px 16px;padding:0">
+<li><b>集电极开漏输出 → A/B 信号必须加上拉</b>：用 ESP32 GPIO <b>内部上拉</b>（固件 <span class="kw">gpio_pullup_en</span> / PCNT 通道配 pull-up），或外接 <b>10k 电阻到 3V3</b>（<b>不是 5V</b>，否则灌高压伤脚）。不加上拉只有低电平、读不到信号。</li>
+<li><b>电机电源 ≠ 编码器电源（厂商明确）</b>：电机(红/白)走 TB6612(5.5V 轨)、编码器(黑/蓝)走 <b>开发板 3V3</b>。本方案天然分开 ✓，但<b>别图省事把编码器黑线接到电机轨</b>——电机开关噪声会把编码器信号搅乱。两套电源<b>共地</b>即可。</li>
+</ol></div>
+
+<h3>③ 编码器分辨率（固件用 PCNT 正交解码）</h3>
+<p class="small">• 基础 7 PPR × 减速比 118 = <b>826 脉冲/圈（单相，输出轴）</b>；正交 ×4（A/B 双边沿）= <b>3304 计数/圈</b>。<br>
+• 用 ESP32-P4 的 <b>PCNT(pulse_cnt) 正交解码</b>（确认 P4 的 PCNT 单元数 ≥3 路；不够则少的那路用 GPIO 中断兜底）。<br>
+• 转速 rpm = 计数增量 / 3304 × 60 / Δt(秒)；里程 = 计数 / 3304 × 轮周长。<br>
+• 100kHz 响应、5.5V/118:1 满速时单相脉冲率 ≈ 826×(125/60) ≈ <b>1.7kHz</b>，远在 100kHz 内，PCNT 毫无压力。</p>
+
+<h3>④ TB6612 电机控制（每路）</h3>
+<table><thead><tr><th>PWM</th><th>IN1</th><th>IN2</th><th>电机</th></tr></thead><tbody>
+<tr><td>PWM</td><td>H</td><td>L</td><td>正转（占空比调速）</td></tr>
+<tr><td>PWM</td><td>L</td><td>H</td><td>反转</td></tr>
+<tr><td>H</td><td>L</td><td>L</td><td>滑行 coast</td></tr>
+<tr><td>H</td><td>H</td><td>H</td><td>刹车 brake</td></tr>
+<tr><td>L</td><td>×</td><td>×</td><td>停</td></tr>
+<tr><td colspan="3"><b>STBY = L</b></td><td><b>全部待机（急停用这个，拉低 IO52）</b></td></tr>
+</tbody></table>
+<p class="small"><b>PWM 频率建议 ~20kHz</b>（超人耳、电机不啸叫；TB6612 支持到 100kHz）。用 ESP-IDF 的 <b>LEDC 或 MCPWM</b> 产生：3 路 PWM + 6 路方向 GPIO + 1 路 STBY。堵转保护：固件读 INA219 电流 + 编码器不动 → 拉低 STBY 急停。</p>
+<div class="pagebreak"></div>
 <h2>怎么装才不烧件（安全装机 / 上电流程）</h2>
 <div class="box danger"><b>★ 防烧 7 条铁律</b><ol style="margin:3px 0 3px 16px;padding:0">
 <li><b>XL6009 必须【空载先调到 5.5V】再接电机驱动</b> —— 升压模块出厂常是直通/高压，不调直接接可能输出十几伏，<b>一秒烧穿 TB6612 和电机</b>。这是最致命的一条。</li>
@@ -464,7 +510,7 @@
 <thead><tr><th style="width:16%">轨</th><th style="width:18%">源能力</th><th style="width:30%">负载估算</th><th style="width:36%">结论</th></tr></thead>
 <tbody>
 <tr><td>3V3 逻辑</td><td>开发板 LDO 余量（需查，常 ≥100mA）</td><td>编码器 3×~8mA + 传感器 ~3mA + TB6612逻辑 ~5mA ≈ <b>32mA</b></td><td>✅ 大概率够；下单后实测开发板 3V3 余量，不足则 VSYS 旁挂 AMS1117 单独供 3V3</td></tr>
-<tr><td>5.5V 电机轨</td><td>MT3608#2 输出 ≈1.2A<span class="small">(2A 是开关限流；5.5V 输出≈Isw·3.7/5.5·η)</span></td><td>常态行进 3×~0.2A≈0.6A；全堵转 3×~1A&gt;3A</td><td>✅ 常态够(约 2× 余量)；⚠️ 多电机同堵转远超能力会拉垮轨（MT3608 限流=粗保护），靠固件堵转急停+编码器兜底</td></tr>
+<tr><td>5.5V 电机轨</td><td>MT3608#2 输出 ≈1.2A<span class="small">(2A 是开关限流；5.5V 输出≈Isw·3.7/5.5·η)</span></td><td>常态行进 3×90mA≈0.27A；全堵转 3×400mA=1.2A(实测电机)</td><td>✅ 常态够(约 2× 余量)；⚠️ 多电机同堵转远超能力会拉垮轨（MT3608 限流=粗保护），靠固件堵转急停+编码器兜底</td></tr>
 <tr><td>5V VSYS</td><td>MT3608#1 输出 ≈1.3A<span class="small">(2A 开关限流，5V 输出实约 1.3A)</span></td><td>P4-WIFI6 峰值(WiFi6发射+算力) ~1.3–1.5A@5V</td><td>⚠️<b>偏弱/不够！</b> 原 IP5306 是 2.1A 升压。MT3608 5V 实际只出 ~1.3A &lt; P4 峰值 → <b>VSYS 这路必须换 XL6009/SX1308(4A，5V 可出 ~2.6A) 或 2A+ 专用升压</b></td></tr>
 <tr><td>VBAT/续航</td><td>3000mAh@3.7V=11.1Wh；TP4056 充 1A≈3.3h</td><td>待机 ~1.2W；运动峰值 ~4W</td><td>✅ 待机 ~9h、连续运动 ~2.5–3h（与 docs 一致）</td></tr>
 </tbody>
