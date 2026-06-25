@@ -419,6 +419,27 @@
 <tr><td>TB6612</td><td>VM/VCC 接反；XL6009 没调压直接高压进 VM；电机长时间堵转过流过热</td><td>VM≠VCC；先调 5.5V 再接；固件「高电流+编码器不动」拉低 STBY 急停</td></tr><tr><td>开发板 I²C 脚</td><td>MAX17048 的 VLogic 接了电池 → 4.2V 灌进 I²C</td><td>VLogic 只接 3V3</td></tr><tr><td>QMI8658 / BH1750</td><td>VCC 接了 5V 或电池</td><td>VCC 只接 3V3</td></tr><tr><td>电池</td><td>输出短路 → 瞬间大电流（可能起火）</td><td>上电前查短路；TP4056 的 3A 保护兜底，但别赌；接头别裸露</td></tr><tr><td>XL6009</td><td>输出短路；输入 3.7V 属超下限、长时间大电流发热</td><td>查短路；摸温度；电机别长时间堵转；散热不良就降负载</td></tr><tr><td>电机</td><td>没调压被高压冲；长时间堵转过热</td><td>先调 5.5V；堵转急停；MP 级低堵转电机</td></tr></tbody></table>
 <p class="small"><b>有条件最稳</b>：第一次给电机轨上电，用<b>带限流的实验电源</b>把限流设到 ~0.5A 先试（有短路会限流不烧件）；没有就<b>电池正极串一个 2~3A 保险丝</b>当一次性兜底。</p>
 <div class="pagebreak"></div>
+<h2>备用套装（保险包，跟主单一起下）</h2>
+<p class="small">就一个发货周期，按「<b>最容易烧 / 最容易搞错 / 消耗快</b>」把备件一起买了，省得烧一个等一周。每件都对到前面分析的具体风险。</p>
+
+<h3>① 易烧的主力件 —— 直接备（都便宜）</h3>
+<table><thead><tr><th style="width:26%">备件</th><th style="width:8%">数量</th><th style="width:10%">≈价</th><th style="width:56%">防哪个风险 / 为什么备</th></tr></thead><tbody>
+<tr><td><b>TB6612FNG 模块</b></td><td>2</td><td>¥10</td><td><b>最容易烧</b>：VM/VCC 接反、XL6009 没调压高压进 VM、电机堵转——而且是驱动主力，烧了整车停</td></tr><tr><td>QMI8658 模块</td><td>1</td><td>¥15</td><td>接错 5V/静电易坏；万一 DOA 有得换（IMU 是关键件）</td></tr><tr><td>GY-302 BH1750</td><td>1</td><td>¥5</td><td>便宜，接错/坏了直接换</td></tr><tr><td>INA219 模块</td><td>1</td><td>¥8</td><td>同上；还在电机轨高边，受冲击大</td></tr><tr><td><b>N20 编码电机(MP级)</b></td><td>1</td><td>¥25</td><td>运动件最易坏：堵转过热、没调压被高压冲；三个同款留一个备</td></tr><tr><td>XL6009 升压模块</td><td>1</td><td>¥4</td><td>输出短路/3.7V 超下限发热易坏；电机轨命脉</td></tr><tr><td>总开关 / TP4056</td><td>各1</td><td>¥5</td><td>开关触点、TP4056 的 Type-C 口/焊点都易坏，便宜备</td></tr></tbody></table>
+
+<h3>② 主动保护小件 —— 加这些更难烧（强烈建议）</h3>
+<table><thead><tr><th style="width:26%">件</th><th style="width:8%">数量</th><th style="width:10%">≈价</th><th style="width:56%">防哪个风险</th></tr></thead><tbody>
+<tr><td><b>I²C 电平转换模块</b><br>(TXS0108E / 4路)</td><td>1</td><td>¥5</td><td><b>防 I²C 过压烧开发板脚</b>：MAX17048 VLogic 接错、或不小心混入 5V I²C 模块时，转换模块挡在中间救开发板</td></tr><tr><td><b>自恢复保险丝/玻璃管 2~3A + 座</b></td><td>几个</td><td>¥5</td><td><b>电池短路一次性兜底</b>：串电池正极，短路时先断保险丝而不是烧电池/线</td></tr><tr><td>电解电容 470µF/1000µF 16V</td><td>各5</td><td>¥5</td><td>升压输出 / 电机轨 bulk，防电机启停、WiFi6 尖峰把轨拉跌→重启</td></tr><tr><td>电阻包(2.2k/4.7k/10k/220Ω)</td><td>1包</td><td>¥5</td><td>I²C 上拉不够时补、LED 限流、各种临时</td></tr><tr><td>肖特基二极管(SS34/1N5819)</td><td>几个</td><td>¥3</td><td>防反接/续流应急</td></tr></tbody></table>
+
+<h3>③ 替代方案件 —— 主件不行时顶上（每样 1 个）</h3>
+<table><thead><tr><th style="width:26%">备用件</th><th style="width:8%">数量</th><th style="width:10%">≈价</th><th style="width:56%">什么时候用它</th></tr></thead><tbody>
+<tr><td>DRV8833 模块</td><td>1</td><td>¥4</td><td>TB6612 不够/想要自带过流过温保护时换（脚位接近，固件方向逻辑略改）</td></tr><tr><td>LSM6DSO 模块</td><td>1</td><td>¥12</td><td>QMI8658 驱动难搞/质量不行时换（ESP-IDF 驱动更成熟）</td></tr><tr><td>SX1308 / MT3608 升压</td><td>1</td><td>¥2</td><td>XL6009 在 3.7V 吃力时换；或决定电机直接吃电池不升压时就都不用</td></tr><tr><td>杜邦线(母-母为主)</td><td>2套</td><td>¥20</td><td><b>消耗品</b>，反复插拔损耗快，多备</td></tr><tr><td>JST 端子线 PH2.0 + XH2.54(公母)</td><td>各几条</td><td>¥10</td><td><b>防接头搞错</b>(PH2.0≠XH2.54)，两种都备好转接</td></tr><tr><td>热缩管 + 绝缘胶带</td><td>1</td><td>¥10</td><td>消耗品</td></tr></tbody></table>
+
+<div class="box warn"><b>两条提醒</b>：
+① <b>开发板不可备</b>（就一块、最贵 ESP32-P4-WIFI6）——所以它最该小心：用电脑 USB 供电已经把它保护得很好，剩下唯一真风险是 <b>I²C 被灌高压</b>，上面 ②的电平转换模块就是专门救它的，强烈建议装。
+② <b>MAX17048(¥30)不必备</b>：贵，且不在易烧链上；真坏了用「2 个电阻分压 → 开发板 ADC 读电池电压」临时顶（粗略电量，~¥0）。<br>
+<b>保险包合计约 ¥150~180</b>，相对"烧一个等一周"很值。
+</div>
+<div class="pagebreak"></div>
 <h2>电气验证（系统级）</h2>
 <div class="box warn"><b>※ 架构已变更（2026-06）</b>：现在<b>开发板由电脑 USB 供电</b>、<b>电池只带电机</b>。所以下面"功率/电流预算"里关于「开发板升压不够 / 电池总电流 ~3.5A / TP4056 会跳闸」的分析是<b>旧的全电池方案最坏情况，现已不适用</b>——新方案电池侧只剩电机 ~0.75A(常态)，TP4056 和电池压力大减。电压兼容/I²C 地址/GPIO/ngspice I²C 仿真这几节仍然有效。</div>
 <p class="small">模块是黑盒、跑不了器件级 SPICE，下面做的是<b>系统级电气验证</b>（电压兼容 / 功率电流预算 / 续航 / I²C 地址 / GPIO 预算）+ 一处真仿真（I²C 长线上升时间，ngspice）。</p>
