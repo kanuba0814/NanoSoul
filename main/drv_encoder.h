@@ -4,9 +4,10 @@
 
 #include "esp_err.h"
 
-// docs 推算：7PPR × 118 减速 = 826/相，正交 ×4 = 3304 计数/圈（输出轴）。
-// 上板后可用本测试反校准：手转一整圈看 encoder_count() 增量。
-#define ENC_COUNTS_PER_REV 3304
+// 商家：电机轴每转 7 个脉冲(7 PPR)。正交 ×4 → 28 计数/电机轴圈。
+// 故 encoder_rpm() 得到的是【电机轴 RPM】；输出轴 RPM = 电机轴RPM ÷ 减速比。
+// 要输出轴每圈计数：手转输出轴整一圈读 ΔENC 反校准，填到这里最准。
+#define ENC_COUNTS_PER_REV 28
 
 esp_err_t encoder_init(void);
 
@@ -15,3 +16,6 @@ int encoder_count(void);
 
 // 自上次调用以来的转速（带符号，+ 为计数增加方向）。固定节奏调用。
 float encoder_rpm(void);
+
+// 瞬时读 A/B 两路电平（诊断用：慢转电机看两路是否都在 0/1 跳；某路恒定=那路没接好）。
+void encoder_raw_levels(int *a, int *b);
