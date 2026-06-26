@@ -1,10 +1,7 @@
-## 托管组件依赖。初版**不拉重型组件**（保板外快编、无真机依赖）。
-## 后续按「能用现成不写」逐步加（见 docs/03 §5 可复用速查）：
-##   espressif/esp_lvgl_port      # MIPI-DSI 屏 + LVGL
-##   espressif/esp_video          # OV5647 摄像头
-##   espressif/esp-sr             # 语音唤醒/命令词/AFE
-##   espressif/bh1750             # 环境光（现成组件）
-##   espressif/esp_hosted         # ESP32-C6 联网
+## test 分支：单电机桥 + 编码器测试固件依赖。
+## 屏栈与 NanoSoul-Alpha 同版（IDF 5.5.2 实测可用）。
 dependencies:
   idf:
     version: ">=5.5.0"
+  espressif/esp_lcd_st7701: "^2.0.0"   # ST7701S MIPI-DSI 面板驱动
+  lvgl/lvgl: "9.2.2"                    # 状态文字渲染
