@@ -1,0 +1,17 @@
+idf_component_register(
+    SRCS
+        "src/st7701.c"
+        "src/lvgl_port.c"
+    INCLUDE_DIRS
+        "include"
+    PRIV_INCLUDE_DIRS
+        "src"
+    REQUIRES
+        esp_lcd
+        esp_lcd_st7701
+        esp_driver_gpio
+        esp_timer
+        lvgl
+    PRIV_REQUIRES
+        esp_hw_support
+)
