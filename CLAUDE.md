@@ -52,6 +52,7 @@ idf.py build      # 板外必过；commit 前跑
 circuit-synth（代码优先）→ KiCad 10（flatpak）。详见 [`pcb/README.md`](pcb/README.md)。
 KiCad 是 flatpak，命令行经 `pcb/bin/kicad-cli`（已包好 `flatpak run`）。
 器件符号/封装**不许用占位符**：非库存件用 `easyeda2kicad` 按 LCSC 号下载到 `pcb/libs/`。
+载板引脚/接口真值 = [`docs/BOARD_MAPPING.md`](docs/BOARD_MAPPING.md)（IMU 走 SPI、STBY 共用单脚(IO33)、电流走 shunt→ADC(IO52)）——与上「固件」节的**无 PCB 接线是两套硬件、本就不同**，别互相纠正。载板已与外壳解耦：板框尽量缩小、只留 ≥4 个 M3 孔供后续支架。
 
 ## 几条硬规矩
 
