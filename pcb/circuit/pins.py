@@ -3,7 +3,7 @@
 真值源 = docs/BOARD_MAPPING.md。改引脚先改那里再改这里。
 
 器件符号/封装（来自 pcb/libs/nanosoul.*，easyeda2kicad 按 LCSC 号下载）：
-  QMI8658C        symbol nanosoul:QMI8658C             fp nanosoul:LGA-14_L3.0-W2.5-P0.50-BR  (C2842151，4线SPI，顶替ICM-42688-P)
+  QMI8658A        symbol nanosoul:QMI8658C             fp nanosoul:LGA-14_L3.0-W2.5-P0.50-BR  (下单 C3021082；C 版 C2842151 在 JLC SMT 停产/邮寄→换同族 A 版，脚位/驱动一致，见 docs/06)
   TYPE-C-31-M-12  symbol nanosoul:TYPE-C-31-M-12       fp nanosoul:USB-C_SMD-TYPE-C-31-M-12_1 (C165948，板上充电口)
   IP5306-I2C      symbol nanosoul:IP5306-I2C           fp nanosoul:ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP2.0
   TB6612FNG       symbol "nanosoul:TB6612FNG,C,8,EL"   fp nanosoul:SSOP-24_L8.3-W5.6-P0.65-LS7.6-BL
@@ -15,7 +15,7 @@
 """
 
 # ---- 器件符号 ----
-SYM_IMU = "nanosoul:QMI8658C"          # 实到货件，4 线 SPI 顶替 ICM-42688-P（引脚不变，见 sensors.py）
+SYM_IMU = "nanosoul:QMI8658C"          # 脚位同 QMI8658A(实下单件，C 版 JLC 停产)；4 线 SPI，见 sensors.py / docs/06
 SYM_USBC = "nanosoul:TYPE-C-31-M-12"   # 板上充电口（C165948）；footprint 已修(NPTH 机械孔 + 收窄合并盘描边)
 SYM_IP5306 = "nanosoul:IP5306-I2C"
 SYM_TB6612 = "nanosoul:TB6612FNG,C,8,EL"
@@ -39,6 +39,7 @@ FP_SS34 = "nanosoul:SMA_L4.3-W2.7-LS5.1-RD"
 # ---- 库存封装 ----
 FP_R0603 = "Resistor_SMD:R_0603_1608Metric"
 FP_R0805 = "Resistor_SMD:R_0805_2012Metric"
+FP_R1206 = "Resistor_SMD:R_1206_3216Metric"        # R9 电流采样 shunt：0805 50mΩ 在 JLC 无现货 → 1206(C375525 有货 15k/250mW)
 FP_C0603 = "Capacitor_SMD:C_0603_1608Metric"
 FP_C0805 = "Capacitor_SMD:C_0805_2012Metric"
 FP_CE_D8 = "Capacitor_SMD:CP_Elec_8x10.5"          # 电解 bulk

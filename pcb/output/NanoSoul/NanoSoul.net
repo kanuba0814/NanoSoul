@@ -412,10 +412,10 @@
       (tstamps "576d6f00-5146-4198-bc35-4a182978766a"))
     (comp (ref "R9")
       (value "0.05")
-      (footprint "Resistor_SMD:R_0805_2012Metric")
+      (footprint "Resistor_SMD:R_1206_3216Metric")
       (description "Resistor")
       (fields
-        (field (name "Footprint") "Resistor_SMD:R_0805_2012Metric")
+        (field (name "Footprint") "Resistor_SMD:R_1206_3216Metric")
         (field (name "Datasheet") "")
         (field (name "Description") "Resistor"))
       (libsource (lib "Device") (part "R") (description "Resistor"))

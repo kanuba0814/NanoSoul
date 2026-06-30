@@ -99,7 +99,8 @@ def power(n):
     c_bulk[1] += n["VMOT_F"]; c_bulk[2] += GND
 
     # ---------- 低边电流采样（堵转检测）----------
-    r_sense = _R("0.05", fp=P.FP_R0805)
+    # R9=50mΩ shunt：0805 50mΩ 在 JLC 无现货(邮寄)→改 1206(C375525 现货 15k、250mW、AEC-Q200)；阻值不变、固件阈值照常标定
+    r_sense = _R("0.05", fp=P.FP_R1206)
     r_filt = _R("1k"); c_filt = _C("100nF")
     r_sense[1] += n["MOT_RTN"]; r_sense[2] += GND
     r_filt[1] += n["MOT_RTN"]; r_filt[2] += n["MOT_ISENSE"]
