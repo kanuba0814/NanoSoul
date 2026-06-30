@@ -2,23 +2,29 @@
 """给夹死的 2 条跨挖孔网(MOT_RTN/GND)做带净空校验的迷宫布线（双层 + 过孔）。
 只用可靠的 pcbnew 读轨/读盘 + 加轨/加孔；不碰 pour/GetDrawings(flatpak 偶发坏)。
 按净空把「他网铜 + 挖孔 + 3mm 白边外」栅格化为障碍，BFS 找通路。"""
+import os
+import sys
+
 import pcbnew
 import math
 import heapq
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import geom as G  # noqa: E402
 
 P = "/home/gxxl/NanoSoul/pcb/output/NanoSoul/NanoSoul.kicad_pcb"
 FM = pcbnew.FromMM
 TOMM = pcbnew.ToMM
 V = pcbnew.VECTOR2I
 
-CX, CY, R = 150.0, 100.0, 54.0
-RIM = 3.0
-XMIN, XMAX, YMIN, YMAX = 106.0, 194.0, 57.0, 143.0          # 3mm 内缩矩形
-CUT = (142.25, 70.5, 157.75, 129.5)
+CX, CY, R, RIM = G.CX, G.CY, G.R, G.RIM
+# 栅格区 = 内缩 RIM 的矩形（白边内）；圆边界用 R-RIM
+GX0, GY0 = G.XMIN + RIM, G.YMIN + RIM
+GXMAX, GYMAX = G.XMAX - RIM, G.YMAX - RIM
+CUT = (G.CUT_X0, G.CUT_Y0, G.CUT_X1, G.CUT_Y1)
 GRID = 0.25
-GX0, GY0 = 106.0, 57.0
-NX = int((194.0 - 106.0) / GRID) + 1
-NY = int((143.0 - 57.0) / GRID) + 1
+NX = int((GXMAX - GX0) / GRID) + 1
+NY = int((GYMAX - GY0) / GRID) + 1
 LAYERS = [pcbnew.F_Cu, pcbnew.B_Cu]
 LI = {pcbnew.F_Cu: 0, pcbnew.B_Cu: 1}
 
@@ -32,7 +38,7 @@ def gc(ix, iy):
 
 
 def in_board(x, y, mh):
-    if not (XMIN + mh <= x <= XMAX - mh and YMIN + mh <= y <= YMAX - mh):
+    if not (GX0 + mh <= x <= GXMAX - mh and GY0 + mh <= y <= GYMAX - mh):
         return False
     if (x - CX) ** 2 + (y - CY) ** 2 > (R - RIM - mh) ** 2:
         return False
@@ -107,13 +113,13 @@ def build_block(b, mynet, mh):
     return blk
 
 
-def route(b, mynet, A, B, width):
+def route(b, mynet, A, B, width, la=0, lb=0):
     blk = build_block(b, mynet, width / 2)
     sa = (gi(*A) + (0,))
     gb = (gi(*B) + (0,))
-    # 允许起终格(本网铜)即使被夹也可用
-    start = (sa[0], sa[1], 0)
-    goal = (gb[0], gb[1], 0)
+    # 允许起终格(本网铜)即使被夹也可用；起/终层按端点实际层(缺口可能在 B.Cu)
+    start = (sa[0], sa[1], la)
+    goal = (gb[0], gb[1], lb)
     import collections
     dist = {start: 0}
     prev = {}
@@ -193,13 +199,13 @@ def route(b, mynet, A, B, width):
 
 
 def own_cells(b, mynet, mh):
-    """本网现有铜栅格化为可起/可达格，按 x 分左(<141)/右(>157) 两子网。"""
+    """本网现有铜栅格化为可起/可达格，按挖孔左/右沿分两子网。"""
     left, right = set(), set()
 
     def mark(cx, cy):
         ix, iy = gi(cx, cy)
         if 0 <= ix < NX and 0 <= iy < NY:
-            (left if cx < 141 else (right if cx > 157 else left)).add((ix, iy))
+            (left if cx < G.CUT_X0 else (right if cx > G.CUT_X1 else left)).add((ix, iy))
     for t in b.GetTracks():
         if t.GetNetname() != mynet or t.Type() == pcbnew.PCB_VIA_T:
             continue
@@ -304,9 +310,86 @@ def route_ms(b, mynet, width):
     return True
 
 
+def own_islands(b, net):
+    """本网铜栅格化(双层 + 过孔跨层) → flood-fill 成若干岛；返回 [ [(ix,iy,li),...], ... ]。"""
+    cells = set()
+    for t in b.GetTracks():
+        if t.GetNetname() != net:
+            continue
+        if t.Type() == pcbnew.PCB_VIA_T:
+            ix, iy = gi(TOMM(t.GetPosition().x), TOMM(t.GetPosition().y))
+            cells.add((ix, iy, 0)); cells.add((ix, iy, 1))
+        else:
+            li = LI.get(t.GetLayer())
+            if li is None:
+                continue
+            s, e = t.GetStart(), t.GetEnd()
+            ax, ay, bx, by = TOMM(s.x), TOMM(s.y), TOMM(e.x), TOMM(e.y)
+            nseg = int(math.hypot(bx - ax, by - ay) / GRID) + 1
+            for k in range(nseg + 1):
+                ix, iy = gi(ax + (bx - ax) * k / nseg, ay + (by - ay) * k / nseg)
+                cells.add((ix, iy, li))
+    for f in b.GetFootprints():
+        for p in f.Pads():
+            if p.GetNetname() != net:
+                continue
+            ix, iy = gi(TOMM(p.GetPosition().x), TOMM(p.GetPosition().y))
+            if p.GetAttribute() in (pcbnew.PAD_ATTRIB_PTH, pcbnew.PAD_ATTRIB_NPTH):
+                cells.add((ix, iy, 0)); cells.add((ix, iy, 1))
+            else:
+                cells.add((ix, iy, LI.get(p.GetLayer(), 0)))
+    parent = {c: c for c in cells}
+
+    def find(c):
+        while parent[c] != c:
+            parent[c] = parent[parent[c]]; c = parent[c]
+        return c
+
+    def union(a, bb):
+        parent[find(a)] = find(bb)
+    for (ix, iy, li) in cells:
+        for nx, ny in ((ix + 1, iy), (ix - 1, iy), (ix, iy + 1), (ix, iy - 1)):
+            if (nx, ny, li) in cells:
+                union((ix, iy, li), (nx, ny, li))
+        if (ix, iy, 1 - li) in cells:
+            union((ix, iy, li), (ix, iy, 1 - li))
+    isl = {}
+    for c in cells:
+        isl.setdefault(find(c), []).append(c)
+    return list(isl.values())
+
+
+def connect_islands(b, net, width):
+    """把本网的多个铜岛逐个用最近点对 route() 连起来（避免按 DRC 任意端点拉长程怪线）。"""
+    for _ in range(10):
+        isl = own_islands(b, net)
+        if len(isl) <= 1:
+            return True
+        isl.sort(key=len, reverse=True)
+        A = isl[0]
+        best = None
+        for B in isl[1:]:
+            for (ax, ay, _al) in A:
+                for (bx, by, _bl) in B:
+                    d = (ax - bx) ** 2 + (ay - by) ** 2
+                    if best is None or d < best[0]:
+                        best = (d, (ax, ay), (bx, by))
+        if not best:
+            return False
+        if not route(b, net, gc(*best[1]), gc(*best[2]), width):
+            return False
+    return len(own_islands(b, net)) <= 1
+
+
 if __name__ == "__main__":
+    # 端点取自 DRC 报的 unconnected_items（Track/Pad @(x,y)）。改板后重取。
+    # 本版 reset 后 Freerouting 留 4 网：VMOT_F(跨挖孔轨,两段轨头) + IMU_CS/INT(U6↔J4 跨挖孔信号) + USB_CC2(连接器逃逸)。
+    # MOT_RTN 已被 Freerouting 布通，勿再 route_ms（会重复连）。
     b = pcbnew.LoadBoard(P)
-    ok1 = route(b, "GND", (137.63, 114.31), (160.29, 119.17), 0.5)
-    ok2 = route_ms(b, "MOT_RTN", 0.5)
+    r = {}
+    r["MOT_RTN"] = route_ms(b, "MOT_RTN", 0.4)                                     # 跨挖孔电机回流
+    r["VMOT_F"] = route_ms(b, "VMOT_F", 0.4)                                       # 跨挖孔电机轨
+    r["MOTOR_STBY"] = route_ms(b, "MOTOR_STBY", 0.25)                              # 跨挖孔 STBY(U4左↔J4.16/U5/R11 右)
+    r["USB_CC2"] = route(b, "USB_CC2", (119.73, 69.02), (120.405, 65.82), 0.2)     # J2 B5 → R6
     pcbnew.SaveBoard(P, b)
-    print(f"DONE gnd={ok1} mot={ok2}")
+    print("DONE", r)

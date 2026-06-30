@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""重新布线 步骤A：铲走线 → 外框折线内缩 RIM（铜留白边）、挖孔外扩 CUT → 导出 DSN。
-freerouting 贴着内缩边界布线；步骤B 再把外框还原成真实大小，铜就离最外围 ≥RIM。
-几何取自 geom.py（唯一真值源）。"""
+"""reroute_a 的「保留指定网」版：只铲非 KEEP 网走线，保留预布的 USB_CC2(裸板上布的干净短线) →
+DSN 把它作为已布线，Freerouting 只补其余网并绕开它(于是 CHG_IN 不会再霸占 B5 的逃逸通道)。
+外框内缩 RIM / 挖孔外扩 CUT 与 reroute_a 一致。"""
 import os
 import sys
 
@@ -12,12 +12,17 @@ import geom as G  # noqa: E402
 
 P = "/home/gxxl/NanoSoul/pcb/output/NanoSoul/NanoSoul.kicad_pcb"
 DSN = "/home/gxxl/NanoSoul/pcb/output/NanoSoul/NanoSoul.dsn"
+KEEP = {"USB_CC2"}   # 裸板上预布的难网(USB-C 逃逸/IMU LGA)，保留让 Freerouting 绕开。
+# 注：保留段数多(如再加 VSYS 的 23 段)会让 Freerouting 挂死 → VSYS 留到布线后用 route2 补。
 b = pcbnew.LoadBoard(P)
 
+kept = 0
 for t in list(b.GetTracks()):
-    b.Remove(t)
+    if t.GetNetname() in KEEP:
+        kept += 1
+    else:
+        b.Remove(t)
 
-# 一遍过 GetDrawings()（避免 b.Add 后再次迭代）：删外框旧段 + 挖孔 RECT 外扩 CUT
 for d in list(b.GetDrawings()):
     if d.GetLayer() != pcbnew.Edge_Cuts or d.GetClass() != "PCB_SHAPE":
         continue
@@ -40,4 +45,4 @@ for i in range(len(pts)):
 
 pcbnew.SaveBoard(P, b)
 ok = pcbnew.ExportSpecctraDSN(b, DSN)
-print(f"铲线 + 外框内缩 {G.RIM}mm + 挖孔外扩 {G.CUT}mm；DSN 导出={ok}")
+print(f"保留 {kept} 段 USB_CC2 + 外框内缩 {G.RIM}mm；DSN={ok}")

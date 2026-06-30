@@ -41,7 +41,7 @@
         "pads": {
           "drill": 0.8,
           "height": 1.27,
-          "width": 2.54
+          "width": 1.27
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -77,65 +77,65 @@
       "rule_severities": {
         "annular_width": "error",
         "clearance": "error",
-        "connection_width": "warning",
+        "connection_width": "error",
         "copper_edge_clearance": "error",
-        "copper_sliver": "warning",
+        "copper_sliver": "error",
         "courtyards_overlap": "error",
         "creepage": "error",
         "diff_pair_gap_out_of_range": "error",
         "diff_pair_uncoupled_length_too_long": "error",
         "drill_out_of_range": "error",
-        "duplicate_footprints": "warning",
-        "extra_footprint": "warning",
+        "duplicate_footprints": "error",
+        "extra_footprint": "error",
         "footprint": "error",
-        "footprint_filters_mismatch": "ignore",
-        "footprint_symbol_field_mismatch": "warning",
-        "footprint_symbol_mismatch": "warning",
-        "footprint_type_mismatch": "ignore",
+        "footprint_filters_mismatch": "error",
+        "footprint_symbol_field_mismatch": "error",
+        "footprint_symbol_mismatch": "error",
+        "footprint_type_mismatch": "error",
         "hole_clearance": "error",
-        "hole_to_hole": "warning",
-        "holes_co_located": "warning",
+        "hole_to_hole": "error",
+        "holes_co_located": "error",
         "invalid_outline": "error",
-        "isolated_copper": "warning",
+        "isolated_copper": "error",
         "item_on_disabled_layer": "error",
         "items_not_allowed": "error",
         "length_out_of_range": "error",
-        "lib_footprint_issues": "warning",
-        "lib_footprint_mismatch": "warning",
+        "lib_footprint_issues": "error",
+        "lib_footprint_mismatch": "error",
         "malformed_courtyard": "error",
         "microvia_drill_out_of_range": "error",
-        "mirrored_text_on_front_layer": "warning",
-        "missing_courtyard": "ignore",
-        "missing_footprint": "warning",
-        "missing_tuning_profile": "warning",
-        "net_conflict": "warning",
-        "nonmirrored_text_on_back_layer": "warning",
+        "mirrored_text_on_front_layer": "error",
+        "missing_courtyard": "error",
+        "missing_footprint": "error",
+        "missing_tuning_profile": "error",
+        "net_conflict": "error",
+        "nonmirrored_text_on_back_layer": "error",
         "npth_inside_courtyard": "error",
-        "padstack": "warning",
+        "padstack": "error",
         "pth_inside_courtyard": "error",
         "shorting_items": "error",
-        "silk_edge_clearance": "warning",
-        "silk_over_copper": "warning",
-        "silk_overlap": "warning",
+        "silk_edge_clearance": "error",
+        "silk_over_copper": "error",
+        "silk_overlap": "error",
         "skew_out_of_range": "error",
         "solder_mask_bridge": "error",
         "starved_thermal": "error",
-        "text_height": "warning",
+        "text_height": "error",
         "text_on_edge_cuts": "error",
-        "text_thickness": "warning",
+        "text_thickness": "error",
         "through_hole_pad_without_hole": "error",
         "too_many_vias": "error",
         "track_angle": "error",
-        "track_dangling": "warning",
-        "track_not_centered_on_via": "ignore",
+        "track_dangling": "error",
+        "track_not_centered_on_via": "error",
         "track_on_post_machined_layer": "error",
         "track_segment_length": "error",
         "track_width": "error",
         "tracks_crossing": "error",
-        "tuning_profile_track_geometries": "ignore",
+        "tuning_profile_track_geometries": "error",
         "unconnected_items": "error",
         "unresolved_variable": "error",
-        "via_dangling": "warning",
+        "via_dangling": "error",
         "zones_intersect": "error"
       },
       "rules": {
@@ -512,6 +512,24 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.2,
+        "diff_pair_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.2,
+        "name": "Power",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": -1,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.35,
+        "tuning_profile": "",
+        "via_diameter": 0.7,
+        "via_drill": 0.35,
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -519,7 +537,44 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "Power",
+        "pattern": "VBAT"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "CELL_MINUS"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "DRAIN_COM"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "V5"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VSYS"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VMOT"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VMOT_F"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "MOT_RTN"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "CHG_IN"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
@@ -666,23 +721,23 @@
   },
   "sheets": [
     [
-      "cc6d016d-315a-4023-b551-816edf85e992",
+      "d7c6fcf2-f77c-4139-a92e-1e725da500d2",
       ""
     ],
     [
-      "a77bf63e-85d2-4c47-9dfd-8d8a749147a3",
+      "90754c46-5ad4-428b-a600-7d9a33ee21c2",
       "Power"
     ],
     [
-      "faa358a9-3528-4860-8a7e-c200a2a18735",
+      "7d2936d5-b42d-4e45-a896-85e8f3758c1f",
       "Compute_Iface"
     ],
     [
-      "f503473b-0f14-4d0d-aacf-b88b0a4b8211",
+      "99df5f1b-38a0-488b-8768-5faed4a8d399",
       "Motors"
     ],
     [
-      "c996e3d5-44a6-422a-991c-9624daad5e1e",
+      "627d566f-bed8-4a88-8d33-d0d4ddbed24c",
       "Sensors"
     ]
   ],

@@ -19,6 +19,7 @@ import pcbnew
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from blocks import build_blocks  # noqa: E402
 import pins as PINS  # noqa: E402
+import geom as G  # noqa: E402
 
 NANOSOUL_PRETTY = "/home/gxxl/NanoSoul/pcb/libs/nanosoul.pretty"
 NANOSOUL_SYM = "/home/gxxl/NanoSoul/pcb/libs/nanosoul.kicad_sym"
@@ -26,16 +27,12 @@ STOCK = "/app/extensions/Library/footprints"
 STOCK_SYM = "/app/extensions/Library/symbols"
 SYM_LIBS = ["Device", "Connector_Generic", "Switch", "power"]
 
-CX, CY = 150.0, 100.0
-R = 54.0                                  # 圆 Ø108（仍 ≤ 球壳上限，不动）
-CUTOUT_W, CUTOUT_L = 15.5, 59.0           # 中部挖孔（让开发板底面件穿过）
-# 四边切平后的板框矩形（圆 ∩ 该矩形）。切边收小到 7/8mm（原 10/11）→ 把直边外移 ~3mm，
-# 让「器件/铜 到最外围」自然腾出 ~3mm 白边（工厂铣外形要的余量），器件与走线不动。
-#   左 96→XMIN, 右 204→XMAX, 上 46→YMIN, 下 154→YMAX
-XMIN, XMAX, YMIN, YMAX = 103.0, 197.0, 54.0, 146.0   # 左右各切7mm、上下各切8mm；板框 94×92mm
-
-# 开发板母排（母座，竖排 1×20，pin1 在上）
-HDR_LX, HDR_RX, HDR_TOP_Y = 141.1, 158.9, 74.6
+# 板框几何 = geom.py 唯一真值源（本版缩到 ~80×78，Ø92 四边切平；改尺寸改 geom.py）
+CX, CY = G.CX, G.CY
+R = G.R
+CUTOUT_W, CUTOUT_L = G.CUTOUT_W, G.CUTOUT_L
+XMIN, XMAX, YMIN, YMAX = G.XMIN, G.XMAX, G.YMIN, G.YMAX
+HDR_LX, HDR_RX, HDR_TOP_Y = G.HDR_LX, G.HDR_RX, G.HDR_TOP_Y
 
 
 def libdir(lib):
@@ -73,14 +70,12 @@ def classify(nets):
 
 
 MM = pcbnew.ToMM
-# 左右两月牙打包区（避开挖孔/母排/四角孔），(x0,x1,y0,y1)
-# 月牙区（原始可布通版几何）。右月牙 x0=159 < J4 右沿 160.7 → J2/J7 会与 J4 本体擦 ~0.77mm，
-# 但属 courtyard 级（焊盘铜距 ~1.6mm，电气安全）；隐藏 Fab 文本后视觉已分开。强行加大间距会改布局→劣化布线。
-# 左月牙顶界下移到 69：把顶排连接器 J5/J6 抬离左上圆弧（下方有 ~14mm 富余，整列下移不溢出），
-# 让 J5 焊盘进到「内缩 3mm 边界」内 → 既满足白边、其 M0_OUT 网也才布得进。
-LOBE_L = (107.5, 141.0, 69.0, 137.0)
-LOBE_R = (159.0, 192.5, 63.0, 137.0)
-GAP = 1.2
+# 左右两月牙打包区 (x0,x1,y0,y1)。沿用「已布通版」的 y 高度（68/74mm，能容下右侧 C8 大电解块），
+# x 内沿停在母座 J3/J4 外侧（母座在挖孔与月牙之间，否则压排母焊盘→开发板插不进）。
+# 缩板靠收外框矩形 + 白边 3→1，月牙仍落在新框内；外侧角略探出 R54 圆弧由「焊盘越板」体检兜底。
+LOBE_L = (XMIN + G.RIM + 0.5, HDR_LX - 1.6, 67.0, 141.0)
+LOBE_R = (HDR_RX + 1.6, XMAX - G.RIM - 0.5, 61.0, 141.0)
+GAP = 1.3   # 加大间距开过线通道；90×90 容得下（1.4 会把 J8 挤出板）
 
 
 def _pad_box(fp):
@@ -248,7 +243,8 @@ def main():
         a = p[3] * p[4]
         pref = p[0]
         if pref is None:
-            side = "L" if aL <= aR else "R"
+            # 纯电源块偏左（电池 J1 在左、电源链就近 + 给右月牙腾点过线空间）；轻偏，避免压垮左月牙。
+            side = "L" if aL <= aR + 250 else "R"
         else:
             cur = aL if pref == "L" else aR
             side = pref if cur < 1500 else ("R" if pref == "L" else "L")
@@ -293,23 +289,153 @@ def main():
         return a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]
 
     movable = [f for f in board.GetFootprints() if f.GetReference() in fps]
-    # 注：不做「竖直推件让位圆弧」整形——它会把顶/底排连接器推进相邻驱动里造成焊盘短路
-    # （J5→U4、J7→U5）。连接器贴圆弧仅 courtyard 角轻微外探、焊盘都在板内，按原始布局接受。
 
-    # 2a) 右月牙整体右移 1.6mm，让 J2/J7 稍离 J4（板放大后右侧有富余；刚体平移→不产生新叠放、布局仍可布通）。
-    for f in movable:
-        bx = cur_box(f)
-        if (bx[0] + bx[2]) / 2 > 159.0:        # 右月牙件（J4 在 158.9，不在 movable 内）
-            pos = f.GetPosition()
-            f.SetPosition(pcbnew.VECTOR2I(pos.x + pcbnew.FromMM(1.6), pos.y))
-    # J8（光照口，最右上）贴右圆弧：左移 5mm 退进 3mm 边界内（左侧到 L1 有 ~8mm 富余）。
-    for f in movable:
-        if f.GetReference() == "J8":
-            pos = f.GetPosition()
-            f.SetPosition(pcbnew.VECTOR2I(pos.x - pcbnew.FromMM(5.0), pos.y))
+    # 2b) 把连接器旁路小件贴到连接器旁（块打包会把它们甩开 ~30mm，导致那几条网穿过拥塞难布）。
+    #     在目标点附近螺旋找「板内 + 不压其它件」的空位落下。当前对 USB-C 的两颗 CC 下拉(R5/R6)。
+    def snap_near(ref, tx, ty):
+        f = next((ff for ff in board.GetFootprints() if ff.GetReference() == ref), None)
+        if not f:
+            return
+        w, h = fps[ref][1], fps[ref][2]
+        for rad in [k * 0.5 for k in range(1, 28)]:
+            for ang in range(0, 360, 20):
+                cx, cy = tx + rad * math.cos(math.radians(ang)), ty + rad * math.sin(math.radians(ang))
+                box = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2]
+                if not all(G.in_board(qx, qy, G.RIM) for qx, qy in
+                           ((box[0], box[1]), (box[2], box[1]), (box[0], box[3]), (box[2], box[3]))):
+                    continue
+                if any(ov(box, cur_box(g)) for g in movable if g.GetReference() != ref):
+                    continue
+                if any(gbb(h) and ov(box, gbb(h)) for h in ("J2", "J3", "J4")):
+                    continue
+                f.SetPosition(pcbnew.VECTOR2I(pcbnew.FromMM(round(cx, 2)), pcbnew.FromMM(round(cy, 2))))
+                return
+    # ---- USB-C 充电口 J2 必须在板【顶边】、开口朝板外才能插线 ----
+    # 原 auto-pack 把 J2 甩进板内部 → 开口朝板内、插不进(机械错)。这里强制：J2 rot180 → 开口(footprint
+    # local +Y, y=+5.09) 朝 board -Y(出顶边)；焊盘/THT 脚在板内、开口悬出顶边约 1mm 供插线。
+    # CC 下拉 R5/R6 贴 J2 的 CC 焊盘【板内侧(下方)】→ USB_CC1/2 短直连(免去原来绕 J2 本体下穿的 hack)。
+    # 电源键 SW1 挨 J2 右侧(用户从顶面同时够到充电口 + 开机键)。
+    def _move(ref, x, y, rot=None):
+        # 把已放置件平移到「焊盘中心落 (x,y)」。bbox_center 返回的是【绝对】焊盘中心(读 pad.GetPosition)，
+        # 故按 当前焊盘中心↔目标 的差量平移当前 origin（不能像 place() 那样直接 x-ox：那只对原点在(0,0)的新载入件成立）。
+        f = next((ff for ff in board.GetFootprints() if ff.GetReference() == ref), None)
+        if not f:
+            return None
+        if rot is not None:
+            f.SetOrientationDegrees(rot)
+        cx, cy = bbox_center(f)                 # 旋转后的绝对焊盘中心
+        o = f.GetPosition()
+        f.SetPosition(pcbnew.VECTOR2I(o.x + pcbnew.FromMM(x - cx), o.y + pcbnew.FromMM(y - cy)))
+        return f
+    # x 须落在顶边【平直段】(|x-CX|<√(R²-(CY-YMIN)²))，否则 THT 脚探出顶部圆弧 → 越板。CX-24 在平直段内、左于母座。
+    _move("J2", CX - 24.0, YMIN + 4.5, rot=180)
+    for ccnet in ("USB_CC1", "USB_CC2"):
+        jp, jf = None, next((ff for ff in board.GetFootprints() if ff.GetReference() == "J2"), None)
+        if jf:
+            for p in jf.Pads():
+                if p.GetNetname() == ccnet:
+                    jp = (MM(p.GetPosition().x), MM(p.GetPosition().y))
+        rref = next((r for r in fps if r.startswith("R") and ccnet in comp_nets.get(r, ())), None)
+        if jp and rref:
+            _move(rref, jp[0], jp[1] + 2.6)        # CC 焊盘板内侧(下方) → CC stub 短直
+    _move("SW1", CX - 13.0, YMIN + 7.5)            # 电源键挨 J2 右侧(平直段内、左于母座)
+    # MT3608 反馈分压 R7/R8 必须贴 U3(否则 MT_FB 跨 16mm 穿 MT_SW 开关节点→短路/噪声)。挪到 U3 右下方。
+    _u3 = next((ff for ff in board.GetFootprints() if ff.GetReference() == "U3"), None)
+    if _u3:
+        u3x, u3y = MM(_u3.GetPosition().x), MM(_u3.GetPosition().y)
+        _move("R8", u3x + 3.0, u3y + 2.0)          # 贴 U3.3(MT_FB)：R8=MT_FB↔GND（此位 freeroute 到 FR=1，DRC 净）
+        _move("R7", u3x + 3.0, u3y + 4.0)          # R7=VMOT↔MT_FB
+    _edge_fixed = {"J2", "R5", "R6", "SW1"}        # 边缘连接器：豁免下面的「朝心拉回」(它们本就该在边)
 
-    # 体检：压母座 / 件件重叠（右移后 J2/J7 应离开 J4；件件应仍为 0）
+    # 用真实 bbox 在指定区域内找最近(目标)的「真空位」放某件（密区 snap_near 的 cur_box 近似不准）。
+    def place_clear(ref, x0, x1, y0, y1, tx, ty):
+        f = next((ff for ff in board.GetFootprints() if ff.GetReference() == ref), None)
+        if not f:
+            return
+        bb = f.GetBoundingBox(False, False)
+        hw, hh = MM(bb.GetWidth()) / 2 + 0.4, MM(bb.GetHeight()) / 2 + 0.4
+        others = []
+        for g in board.GetFootprints():
+            if g.GetReference() == ref:
+                continue
+            gb = g.GetBoundingBox(False, False)
+            others.append([MM(gb.GetLeft()), MM(gb.GetTop()), MM(gb.GetRight()), MM(gb.GetBottom())])
+        best, cx2 = None, x0
+        while cx2 <= x1:
+            cy2 = y0
+            while cy2 <= y1:
+                bx = [cx2 - hw, cy2 - hh, cx2 + hw, cy2 + hh]
+                if all(G.in_board(qx, qy, G.RIM) for qx, qy in
+                       ((bx[0], bx[1]), (bx[2], bx[1]), (bx[0], bx[3]), (bx[2], bx[3]))) \
+                   and not any(o[0] < bx[2] and o[2] > bx[0] and o[1] < bx[3] and o[3] > bx[1] for o in others):
+                    d = (cx2 - tx) ** 2 + (cy2 - ty) ** 2
+                    if best is None or d < best[0]:
+                        best = (d, cx2, cy2)
+                cy2 += 0.5
+            cx2 += 0.5
+        if best:
+            cur = f.GetBoundingBox(False, False)
+            ccx = (MM(cur.GetLeft()) + MM(cur.GetRight())) / 2
+            ccy = (MM(cur.GetTop()) + MM(cur.GetBottom())) / 2
+            p = f.GetPosition()
+            f.SetPosition(pcbnew.VECTOR2I(p.x + pcbnew.FromMM(best[1] - ccx), p.y + pcbnew.FromMM(best[2] - ccy)))
+
+    # C8(470µF 大电解, VMOT_F+GND 电机 bulk)挪到左月牙、贴 U4(TB6612#1 的 VM 源) → 腾空右月牙给 J8，
+    # 且 VMOT_F 成短程本地连接(否则甩到角上 → VMOT_F 跨半板布不通/route_ms 悬空过孔)。
+    _u4 = next((ff for ff in board.GetFootprints() if ff.GetReference() == "U4"), None)
+    _u4x = MM(_u4.GetPosition().x) if _u4 else XMIN + 12
+    _u4y = MM(_u4.GetPosition().y) if _u4 else CY
+    place_clear("C8", XMIN + G.RIM + 1, HDR_LX - 5, YMIN + G.RIM + 1, YMAX - G.RIM - 1, _u4x, _u4y)
+    # J8(光照贴壳)贴 J4 近处空区落下：右月牙腾空后这里有真空位、I²C1 短、不堵过线带、本体不撞 J7。
+    place_clear("J8", HDR_RX + 2, XMAX - G.RIM - 5, 78, 122, HDR_RX + 6, CY)
+    # U6(IMU)：SPI 跨两排(SCLK/MOSI/MISO→J3 左、CS/INT→J4 右)无法全同侧；贴挖孔左缘(紧靠 J3)放 →
+    # CS/INT 跨挖孔的「进/出线段」最短，FR 才挤得进过线带（甩到左月牙深处时 IMU_CS 进线被盒死布不通）。
+    place_clear("U6", HDR_LX - 16, HDR_LX - 2.5, 78, 122, HDR_LX - 5, CY)
+    # R11(MOTOR_STBY 下拉)：STBY 网现在 J4 pin16 + U5(右 TB6612) 都在右月牙 → R11 贴 U5 附近本地化，
+    # 别让块打包把它甩去压 J8（否则 STBY 多一节点还跨半板）。
+    _u5 = next((ff for ff in board.GetFootprints() if ff.GetReference() == "U5"), None)
+    _u5x = MM(_u5.GetPosition().x) if _u5 else HDR_RX + 10
+    _u5y = MM(_u5.GetPosition().y) if _u5 else CY
+    place_clear("R11", HDR_RX + 2, XMAX - G.RIM - 2, 61, 141, _u5x, _u5y)
+
+    # 2c) 把焊盘越板/越白边的件整体朝板心挪进来（圆角板边易切到贴边连接器，如 J8 的安装爪 MP 脚）。
+    def pad_oob(f):
+        for p in f.Pads():
+            pp, sz = p.GetPosition(), p.GetSize()
+            px, py, hw, hh = MM(pp.x), MM(pp.y), MM(sz.x) / 2, MM(sz.y) / 2
+            if any(not G.in_board(qx, qy, G.RIM) for qx, qy in
+                   ((px - hw, py - hh), (px + hw, py - hh), (px - hw, py + hh), (px + hw, py + hh))):
+                return True
+        return False
+    for f in movable:
+        if f.GetReference() in _edge_fixed:        # 边缘连接器(USB-C 等)本就该贴边/开口悬出，别朝心拉回
+            continue
+        if pad_oob(f):
+            pos = f.GetPosition()
+            cx2, cy2 = MM(pos.x), MM(pos.y)
+            dx, dy = CX - cx2, CY - cy2
+            d = math.hypot(dx, dy) or 1.0
+            # 朝板心 4mm 设目标，用螺旋搜最近的「板内 + 不压件」空位落下（比单纯朝心挪+撞回稳）
+            snap_near(f.GetReference(), cx2 + 4.0 * dx / d, cy2 + 4.0 * dy / d)
+
+    # 体检：① 焊盘四角在板内(圆∩内缩矩形，留 RIM 白边)  ② 压母座  ③ 件件重叠
     j3b, j4b = gbb("J3"), gbb("J4")
+    oob = []
+    for f in movable:
+        bad = False
+        for pad in f.Pads():
+            p, sz = pad.GetPosition(), pad.GetSize()
+            px, py, hw, hh = MM(p.x), MM(p.y), MM(sz.x) / 2, MM(sz.y) / 2
+            for qx, qy in ((px - hw, py - hh), (px + hw, py - hh), (px - hw, py + hh), (px + hw, py + hh)):
+                if not G.in_board(qx, qy, G.RIM):
+                    bad = True
+                    break
+            if bad:
+                break
+        if bad:
+            oob.append(f.GetReference())
+    if oob:
+        print("⚠️ 焊盘越板/越白边:", sorted(set(oob)))
     for i, f in enumerate(movable):
         bx = cur_box(f)
         if (j4b and ov(bx, j4b)) or (j3b and ov(bx, j3b)):
@@ -318,14 +444,8 @@ def main():
             if ov(bx, cur_box(g)):
                 print(f"⚠️ 件件重叠: {f.GetReference()}~{g.GetReference()}")
 
-    # 3) 板框：圆 Ø108 四边切平（采样圆并 clamp 到矩形，连成闭合 Edge.Cuts 折线）
-    pts = []
-    for k in range(360):
-        a = math.radians(k)
-        x = min(max(CX + R * math.cos(a), XMIN), XMAX)
-        y = min(max(CY + R * math.sin(a), YMIN), YMAX)
-        pts.append((round(x, 3), round(y, 3)))
-    pts = [p for i, p in enumerate(pts) if p != pts[i - 1]]   # 去重相邻
+    # 3) 板框：圆 Ø(2R) 四边切平（geom 唯一真值源，采样圆 clamp 到矩形）
+    pts = G.board_outline_pts(0.0)
     for i in range(len(pts)):
         p1, p2 = pts[i], pts[(i + 1) % len(pts)]
         s = pcbnew.PCB_SHAPE(board)
@@ -370,9 +490,8 @@ def main():
         box = [hx - KO, hy - KO, hx + KO, hy + KO]
         return not any(ov(box, o) for o in obst)
 
-    m2 = [(130.0, 60.5), (170.0, 139.5)]
-    for hx, hy in m2:
-        obst.append([hx - 2, hy - 2, hx + 2, hy + 2])
+    # M2 定位孔取消（外壳解耦后无防呆需求；旧 (130,60.5) 还撞顶边 USB-C/SW1）。只留 4×M3 给支架。
+    m2 = []
     m3 = []
     for sx, sy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):     # TL TR BL BR
         best = None
@@ -404,7 +523,7 @@ def main():
     board.BuildListOfNets()
     pcbnew.SaveBoard(out_path, board)
     write_lib_tables(os.path.dirname(os.path.abspath(out_path)), comps)
-    print(f"✅ PCB: {loaded}/{len(comps)} 封装 + 6 孔；板框=圆Ø108四边切平({XMIN},{XMAX},{YMIN},{YMAX})；挖孔{CUTOUT_W}×{CUTOUT_L} → {out_path}")
+    print(f"✅ PCB: {loaded}/{len(comps)} 封装 + {len(holes)} M3孔；板框=圆∩矩形({XMIN},{XMAX},{YMIN},{YMAX})；挖孔{CUTOUT_W}×{CUTOUT_L} → {out_path}")
     if missing:
         print("⚠️ 缺封装:", missing)
 

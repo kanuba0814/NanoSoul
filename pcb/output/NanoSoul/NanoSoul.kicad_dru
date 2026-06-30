@@ -1,0 +1,15 @@
+(version 1)
+
+# J2 = 板载 USB-C 母座(TYPE-C-31-M-12)。下面两条【只作用于 J2 连接器内部】(A、B 两个对象都属 J2)，
+# 不放宽 J2 对板上任何走线/其他器件的间距(那些仍走全局 0.2mm)。
+# 依据(KiCad 几何引擎实测 + 可造性):
+#   · 连接器相邻引脚(GND↔VBUS↔CC)铜-铜最小间距 = 0.100mm —— 正是 JLCPCB 标准最小间距下限,可造、非短路。
+#   · 连接器自带 NPTH 屏蔽/安装孔到 VBUS/GND 焊盘 = 0.185mm —— 厂商定义的安装孔几何。
+#   这是【真实元件本身的内部几何】,非布线产物;任何如实的 USB-C 封装都低于 KiCad 0.2/0.25 保守默认
+#   (连 KiCad 官方 USB_C_Receptacle_HRO 封装内部孔距也只有 0.15mm)。故用元件实测值作 J2 局部规则。
+(rule "J2_usbc_internal_clearance"
+  (condition "A.Reference == 'J2' && B.Reference == 'J2'")
+  (constraint clearance (min 0.09mm)))
+(rule "J2_usbc_internal_hole"
+  (condition "A.Reference == 'J2' && B.Reference == 'J2'")
+  (constraint hole_clearance (min 0.18mm)))

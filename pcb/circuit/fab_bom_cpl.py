@@ -16,12 +16,12 @@ NET, POS, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
 IC = {
     "U1": ("DW01A", "C351410"), "U2": ("IP5306 (I2C版)", "C488349"),
     "U3": ("MT3608", "C84817"), "U4": ("TB6612FNG", "C141517"),
-    "U5": ("TB6612FNG", "C141517"), "U6": ("ICM-42688-P", "C1850418"),
-    "U7": ("BH1750FVI", "C78960"), "Q1": ("FS8205A", "C908265"),
+    "U5": ("TB6612FNG", "C141517"), "U6": ("QMI8658C", "C2842151"),
+    "Q1": ("FS8205A", "C908265"),
     "D4": ("SS34", "C908680"), "D5": ("SS34", "C908680"),
 }
-# 极性/需核对旋转的件（JLC 库朝向常与 KiCad 不同）
-POLAR = set(IC) | {"D1", "D2", "D3", "C8"}
+# 极性/需核对旋转的件（JLC 库朝向常与 KiCad 不同）；J2=USB-C 也要核朝向
+POLAR = set(IC) | {"D1", "D2", "D3", "C8", "J2"}
 
 # 已查实的 LCSC（无源/连接器/LED/开关；保留各自网表值为 Comment，只补料号）
 LCSC_BY_REF = {
@@ -29,10 +29,19 @@ LCSC_BY_REF = {
     "L1": "C2047296",   # LQH66SN2R2M03L 2.2µH 6.3×6.3 Irms3.3A（库存薄,下单前查）
     "L2": "C703091",    # LQH66SN4R7M03L 4.7µH 6.3×6.3 Irms2.2A
     "J1": "C131337",    # B2B-PH-K-S JST-PH 2P 直插
+    "J2": "C165948",    # TYPE-C-31-M-12 USB-C 充电口
     "J8": "C495539",    # BM04B-SRSS-TBT JST-SH 4P 贴片(TBT 吸嘴带版)
     "D1": "C84256", "D2": "C84256", "D3": "C84256",  # 红 0805 LED(JLC 基础库)
     "F1": "C207025",    # 0805L150SLYR PTC Ihold1.5A/Itrip3A/Vmax6V
     "SW1": "C720477",   # TS-1088 轻触开关 2P 贴片(替代原 C&K,JLC 常备)
+    # R9 = 0.05Ω 0805 电流采样 shunt：JLC 基础库无，下单选低阻功率件(LR/CSR 系列有货件)→ 见 LCSC_BY_VALUE 留空 + README 标注
+}
+# 无源件按「值」补 JLC 基础库料号（源自 JLCPCB Basic Parts 清单，已核）。ref 优先于 value。
+LCSC_BY_VALUE = {
+    "300": "C23025", "1k": "C21190", "2k": "C22975", "4.7k": "C23162",
+    "5.1k": "C23186", "10k": "C25804", "82k": "C23254",
+    "0.1uF": "C14663", "100nF": "C14663", "10uF": "C15850", "22uF": "C45783",
+    "0.05": "",       # shunt：见上，留空待下单选有货功率件
 }
 # 网表无值的件给个 Comment
 COMMENT_OVERRIDE = {
@@ -94,7 +103,7 @@ for r in rows:
         comment, lcsc = IC[ref]
     else:
         comment = COMMENT_OVERRIDE.get(ref, val.get(ref, ""))   # 无值件给 Comment，否则用网表值
-        lcsc = LCSC_BY_REF.get(ref, "")                         # 已查实的补料号；其余留空→JLC 按值+封装匹配
+        lcsc = LCSC_BY_REF.get(ref) or LCSC_BY_VALUE.get(val.get(ref, ""), "")  # ref 优先，其次按值补基础库料号
     bom[(comment, p, lcsc)].append(ref)
     cpl.append([ref, f'{float(r["PosX"]):.4f}', f'{float(r["PosY"]):.4f}',
                 "Top" if r["Side"].lower().startswith("t") else "Bottom", f'{float(r["Rot"]):.0f}'])

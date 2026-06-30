@@ -38,6 +38,12 @@ def _motor_conn(n, out_a, out_b, enc_a, enc_b):
 
 @circuit(name="Motors")
 def motors(n):
+    # MOTOR_STBY 下拉（上电保电机关断）：两片 TB6612 共用此 STBY，且方向脚 M1_IN1/IN2=IO24/IO25
+    # 是 ESP32-P4 USB-Serial-JTAG 默认脚、复位时浮空 → 固件接管前必须确保 STBY=低(急停)。
+    # STBY 非 strapping 脚，故靠外部 10k 下拉钉住低电平（datasheet 复核结论）。
+    r_stby = Component(symbol="Device:R", ref="R", value="10k", footprint=P.FP_R0603)
+    r_stby[1] += n["MOTOR_STBY"]; r_stby[2] += n["GND"]
+
     # TB6612 #1：A=M0, B=M1
     u1 = _tb6612(n, "1")
     u1[23] += n["M0_PWM"]; u1[21] += n["M0_IN1"]; u1[22] += n["M0_IN2"]

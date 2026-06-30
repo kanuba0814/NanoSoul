@@ -64,8 +64,16 @@ def power(n):
         d[2] += n["LED_A%d" % i]; d[1] += n[ledn]            # LED 2=A,1=K；K 接 IC LED 脚（IC 下拉点亮）
     sw = Component(symbol="Switch:SW_Push", ref="SW", footprint=P.FP_SW_PUSH)
     sw[1] += n["KEY_BTN"]; sw[2] += GND
-    j_chg = Component(symbol="Connector_Generic:Conn_01x02", ref="J", footprint=P.FP_HDR_1x02)
-    j_chg[1] += n["CHG_IN"]; j_chg[2] += GND                 # 首版 2Pin；可换 Micro-USB/Type-C
+    # ---------- USB-C 充电口（板上直插充电；VBUS→IP5306 VIN，CC 各 5.1k 下拉认 5V sink）----------
+    usbc = Component(symbol=P.SYM_USBC, ref="J", footprint=P.FP_USBC)
+    usbc["A4B9"] += n["CHG_IN"]; usbc["B4A9"] += n["CHG_IN"]     # VBUS ×2(合并盘)
+    usbc["A1B12"] += GND; usbc["B1A12"] += GND                   # GND ×2(合并盘)
+    rcc1 = _R("5.1k"); rcc2 = _R("5.1k")
+    usbc["A5"] += n["USB_CC1"]; rcc1[1] += n["USB_CC1"]; rcc1[2] += GND   # CC1 Rd 下拉
+    usbc["B5"] += n["USB_CC2"]; rcc2[1] += n["USB_CC2"]; rcc2[2] += GND   # CC2 Rd 下拉
+    for _sh in ("1", "2", "3", "4"):
+        usbc[_sh] += GND                                         # 屏蔽脚(钉)接地
+    # D+/D-/SBU(A6/A7/B6/B7/A8/B8) 充电不用 → 悬空
 
     # ---------- MT3608：电机轨升压 ~5.5V ----------
     # Vout = 0.6×(1+R_top/R_bot)。R_top=82k/R_bot=10k → 5.52V：6V N20 电机照转，

@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "circuit_synth")
 	(generator_version "0.8.36")
-	(uuid "a77bf63e-85d2-4c47-9dfd-8d8a749147a3")
+	(uuid "90754c46-5ad4-428b-a600-7d9a33ee21c2")
 	(paper "A3")
 	(title_block
 		(title "NanoSoul")
@@ -72,17 +72,6 @@
 				)
 			)
 			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -187,7 +176,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nanosoul:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
+			(property "Footprint" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
 				(id 2)
 				(at 0 -10.16 0)
 				(effects
@@ -395,7 +384,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nanosoul:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
+			(property "Footprint" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
 				(id 2)
 				(at 0 -10.16 0)
 				(effects
@@ -658,17 +647,6 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "R_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
 			(symbol "R_0_1"
 				(rectangle
 					(start -1.016 -2.54)
@@ -800,17 +778,6 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "C_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
 			(symbol "C_0_1"
 				(polyline
 					(pts
@@ -898,7 +865,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nanosoul:ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP2.0"
+			(property "Footprint" "ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP2.0"
 				(id 2)
 				(at 0 -12.7 0)
 				(effects
@@ -1216,17 +1183,6 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
 			(symbol "L_0_1"
 				(arc
 					(start 0 2.54)
@@ -1395,17 +1351,6 @@
 				)
 			)
 			(property "ki_keywords" "LED diode"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1682,6 +1627,383 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "nanosoul:TYPE-C-31-M-12"
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "USBC"
+				(id 0)
+				(at 0 19.05 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TYPE-C-31-M-12"
+				(id 1)
+				(at 0 -19.05 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "USB-C_SMD-TYPE-C-31-M-12_1"
+				(id 2)
+				(at 0 -21.59 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "Datasheet" "https://lcsc.com/product-detail/USB-Type-C_Korean-Hroparts-Elec-TYPE-C-31-M-12_C165948.html"
+				(id 3)
+				(at 0 -24.13 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "Manufacturer" "韩国韩荣"
+				(id 4)
+				(at 0 -26.67 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "MPN" "TYPE-C-31-M-12"
+				(id 5)
+				(at 0 -29.21 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "LCSC Part" "C165948"
+				(id 6)
+				(at 0 -31.75 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "ki_keywords" "USB Connectors"
+				(id 8)
+				(at 0 -34.29 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(symbol "TYPE-C-31-M-12_0_1"
+				(rectangle
+					(start -3.81 16.51)
+					(end 8.89 -16.51)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 13.97 0)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A1B12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 11.43 0)
+					(length 2.54)
+					(name "VBUS"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A4B9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 8.89 0)
+					(length 2.54)
+					(name "SBU2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 6.35 0)
+					(length 2.54)
+					(name "CC1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 3.81 0)
+					(length 2.54)
+					(name "DN2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 1.27 0)
+					(length 2.54)
+					(name "DP1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 -1.27 0)
+					(length 2.54)
+					(name "DN1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 -3.81 0)
+					(length 2.54)
+					(name "DP2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 -6.35 0)
+					(length 2.54)
+					(name "SBU1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 -8.89 0)
+					(length 2.54)
+					(name "CC2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 -11.43 0)
+					(length 2.54)
+					(name "VBUS"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B4A9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -6.35 -13.97 0)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B1A12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 11.43 -6.35 180)
+					(length 2.54)
+					(name "EH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 11.43 -8.89 180)
+					(length 2.54)
+					(name "EH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 11.43 -11.43 180)
+					(length 2.54)
+					(name "EH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 11.43 -13.97 180)
+					(length 2.54)
+					(name "EH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "nanosoul:MT3608"
 			(in_bom yes)
 			(on_board yes)
@@ -1703,7 +2025,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nanosoul:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
+			(property "Footprint" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
 				(id 2)
 				(at 0 -10.16 0)
 				(effects
@@ -1931,7 +2253,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nanosoul:SMA_L4.3-W2.7-LS5.1-RD"
+			(property "Footprint" "SMA_L4.3-W2.7-LS5.1-RD"
 				(id 2)
 				(at 0 -7.62 0)
 				(effects
@@ -2149,17 +2471,6 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "*polyfuse* *PTC*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
 			(symbol "Polyfuse_0_1"
 				(polyline
 					(pts
@@ -2240,16 +2551,16 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 154.94 147.32 0)
+		(at 254 154.94 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "5cbca8d9-9675-4276-a13e-0518b432c200")
+		(uuid "d9118cb1-1a51-4bfc-be9c-b3b7af4575ae")
 		(property "Reference" "J1"
-			(at 154.94 149.86 0.0000)
+			(at 254 157.48 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2257,8 +2568,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
-			(at 154.94 147.32 0.0000)
+		(property "Value" "JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
+			(at 254 154.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2266,26 +2577,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 157.48 152.3999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 157.48 152.3999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 157.48 152.3999 0)
+		(property "Footprint" "JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
+			(at 254 154.94 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2294,14 +2587,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "95d92b41-b23c-4a99-bea0-6a6a5a0522b1")
+			(uuid "0f999a79-645d-410e-9b46-d02a1cbd5ef9")
 		)
 		(pin "2"
-			(uuid "7a92b265-e842-4700-bb64-2b1dcdba3f4b")
+			(uuid "057ffb47-46bd-41be-b744-560af77d331e")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "J1")
 					(unit 1)
 				)
@@ -2310,16 +2603,16 @@
 	)
 	(symbol
 		(lib_id "nanosoul:DW01A_C351410")
-		(at 182.88 27.94 0)
+		(at 226.06 27.94 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "44f5df17-9612-40aa-85af-ac061959d2aa")
+		(uuid "038393c5-8d09-4377-a496-b6aefab3da6f")
 		(property "Reference" "U1"
-			(at 182.88 35.56 0.0000)
+			(at 226.06 35.56 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2327,8 +2620,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nanosoul:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
-			(at 182.88 17.78 0.0000)
+		(property "Value" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
+			(at 226.06 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2336,26 +2629,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 185.42 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 185.42 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 185.42 33.0199 0)
+		(property "Footprint" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
+			(at 226.06 17.78 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2364,26 +2639,26 @@
 			)
 		)
 		(pin "1"
-			(uuid "4f26736f-2131-4385-b782-cff6aca9acef")
+			(uuid "0503663e-8f42-44fd-a10e-fd69aa69b826")
 		)
 		(pin "2"
-			(uuid "472dc51f-e911-4279-a9a9-1c1c8d262fc9")
+			(uuid "3b405380-9ee5-47cf-93a7-c27686ac9dac")
 		)
 		(pin "3"
-			(uuid "9cc2ae17-c19c-4c72-a20f-b125e4c5b609")
+			(uuid "a243b5ea-258d-4a2d-bd00-1e45f9a73410")
 		)
 		(pin "4"
-			(uuid "7e9cc15b-adc6-4c31-843d-e947b150675e")
+			(uuid "356c723a-de71-4ebe-b801-143c8dea63d3")
 		)
 		(pin "5"
-			(uuid "628071b1-33dc-43fc-8cdf-33c3d5176929")
+			(uuid "ab2a5f61-4aa0-40a4-88a5-c44555d900da")
 		)
 		(pin "6"
-			(uuid "5db9ffa6-02dc-4d00-8f92-b61395bf05a3")
+			(uuid "c89b9f39-d8e5-4775-9014-49ee5cecbdf3")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "U1")
 					(unit 1)
 				)
@@ -2392,16 +2667,16 @@
 	)
 	(symbol
 		(lib_id "nanosoul:FS8205A_C908265")
-		(at 91.44 27.94 0)
+		(at 134.62 27.94 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "78e90f46-f984-479e-ac2a-1d5b8f69cca3")
+		(uuid "f2483ec7-c05a-49b7-8e4f-5f05b8596f0d")
 		(property "Reference" "Q1"
-			(at 91.44 35.56 0.0000)
+			(at 134.62 35.56 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2409,8 +2684,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nanosoul:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
-			(at 91.44 17.78 0.0000)
+		(property "Value" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
+			(at 134.62 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2418,26 +2693,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 93.98 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 93.98 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 93.98 33.0199 0)
+		(property "Footprint" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
+			(at 134.62 17.78 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2446,26 +2703,26 @@
 			)
 		)
 		(pin "1"
-			(uuid "37093014-e8b9-4558-9509-cc5518e17088")
+			(uuid "5a3fce7a-947b-41e4-8edc-4cbe345fa83d")
 		)
 		(pin "2"
-			(uuid "79b44930-75ce-413c-a938-802a059da887")
+			(uuid "7f92c1b8-6312-4105-885e-a8bec0e0449f")
 		)
 		(pin "3"
-			(uuid "1dcea96c-a352-4240-b19d-ff6e69c74f93")
+			(uuid "129bd2f6-dbfe-4b04-9df3-43cd70d9bdaf")
 		)
 		(pin "4"
-			(uuid "9828d545-b405-4efc-b56e-ed921cb84152")
+			(uuid "84f2e6ff-69b2-45a4-843d-d3442a0e1ef4")
 		)
 		(pin "5"
-			(uuid "4e95a295-7ee9-4236-9816-92ff7d7581eb")
+			(uuid "479ffc3c-e4e9-4495-be16-b8ad63dfb4fa")
 		)
 		(pin "6"
-			(uuid "e0c0eb31-4f4d-4529-ba35-6473d1fd61ed")
+			(uuid "e6e0b3ee-8436-4d9f-8bc6-7935cdec304a")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "Q1")
 					(unit 1)
 				)
@@ -2474,16 +2731,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 325.12 35.56 0)
+		(at 368.3 35.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "6daa3e94-4bbb-4c2b-bc7f-3463c49d3325")
+		(uuid "0632399d-0ef7-4087-903c-a80ab2282a6c")
 		(property "Reference" "R1"
-			(at 327.152 35.56 90)
+			(at 370.332 35.56 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2492,7 +2749,7 @@
 			)
 		)
 		(property "Value" "300"
-			(at 325.12 35.56 90)
+			(at 368.3 35.56 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2500,35 +2757,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 323.342 35.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 327.66 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 327.66 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 327.66 40.6399 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 366.522 35.56 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2537,14 +2767,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "39a9be86-aa65-4034-9067-d0c1a028c23d")
+			(uuid "2f230fdf-4be2-45b0-8de6-fa979ebc83f8")
 		)
 		(pin "2"
-			(uuid "871fee90-f89e-4a19-a32a-a55abc930cc1")
+			(uuid "3ffa18db-d337-4de8-a287-c25285a10b0b")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R1")
 					(unit 1)
 				)
@@ -2553,16 +2783,16 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 302.26 93.98 0)
+		(at 30.48 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "8297825b-6f44-4fd8-831f-3e9453b79f37")
+		(uuid "ca859975-77d8-47f6-a915-d6544410841f")
 		(property "Reference" "C1"
-			(at 302.895 96.52 0.0000)
+			(at 31.115 165.1 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2571,7 +2801,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 302.895 91.44 0.0000)
+			(at 31.115 160.02 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2579,35 +2809,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 303.2252 90.17 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 304.8 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 304.8 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 304.8 99.0599 0)
+		(property "Footprint" "C_0603_1608Metric"
+			(at 31.4452 158.75 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2616,14 +2819,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "02040352-d2fc-4cc5-bd2a-7e2e6dc37a89")
+			(uuid "7f7d116a-fece-4412-82c5-988ce00c22f0")
 		)
 		(pin "2"
-			(uuid "d5ccf359-2e72-4d8e-b88d-d47a228b2cf4")
+			(uuid "993a1c40-95c4-46c7-9108-0ce50f409237")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "C1")
 					(unit 1)
 				)
@@ -2632,16 +2835,16 @@
 	)
 	(symbol
 		(lib_id "nanosoul:IP5306-I2C")
-		(at 40.64 30.48 0)
+		(at 83.82 30.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "68270fdc-8823-4085-b3cc-4c35efdf0f44")
+		(uuid "46b23476-8f07-47c6-9386-b0a851108306")
 		(property "Reference" "U2"
-			(at 40.64 40.64 0.0000)
+			(at 83.82 40.64 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2649,8 +2852,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nanosoul:ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP2.0"
-			(at 40.64 17.78 0.0000)
+		(property "Value" "ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP2.0"
+			(at 83.82 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2658,26 +2861,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 43.18 35.5599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 43.18 35.5599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 43.18 35.5599 0)
+		(property "Footprint" "ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP2.0"
+			(at 83.82 17.78 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2686,35 +2871,35 @@
 			)
 		)
 		(pin "1"
-			(uuid "9658877f-5a48-41f8-a3b0-1b5168dc174f")
+			(uuid "b61b05a6-f82d-4716-896f-8318ad0144c1")
 		)
 		(pin "2"
-			(uuid "5e992e7d-412a-436c-98b3-df686fc54930")
+			(uuid "c18d1fdb-2db5-4e07-a5a5-fa23a0aec250")
 		)
 		(pin "3"
-			(uuid "638a7831-16d7-4299-9a62-0bd16a0d74f2")
+			(uuid "9dc1ce59-6ae8-42a7-bde8-d5bffdeb52b6")
 		)
 		(pin "4"
-			(uuid "53b1074f-ec80-442a-8cb6-2de8845c1c30")
+			(uuid "621c0234-c427-4ae9-b957-c7c9e2cef449")
 		)
 		(pin "5"
-			(uuid "c85a67b8-6c95-4017-a3ca-146d9059d9af")
+			(uuid "776ffacb-3915-4774-bc58-ccfdd557f996")
 		)
 		(pin "6"
-			(uuid "dba8d5c0-ed94-4b5d-87c4-e4d21074044c")
+			(uuid "704416be-cb61-4c7f-8a36-e97235b30716")
 		)
 		(pin "7"
-			(uuid "bcec97da-c451-467a-a55d-992e97fd1005")
+			(uuid "cc00a56a-ccaf-498d-b918-b8777e026112")
 		)
 		(pin "8"
-			(uuid "a8b2a7e9-8fe1-46e0-ad21-e042bb1cdbd3")
+			(uuid "62d3101e-ef3b-4a27-bf48-aba35fbf7eb8")
 		)
 		(pin "9"
-			(uuid "c419aabe-98eb-4b85-bf55-f978fccf9bba")
+			(uuid "f202cb4a-f654-4c80-848e-d4829d1fd21a")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "U2")
 					(unit 1)
 				)
@@ -2723,16 +2908,16 @@
 	)
 	(symbol
 		(lib_id "Device:L")
-		(at 350.52 35.56 0)
+		(at 393.7 35.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "75c3584c-57a3-4250-ade6-91668a334409")
+		(uuid "95922742-6c60-448c-b3e2-4de325db5a62")
 		(property "Reference" "L1"
-			(at 349.25 35.56 90)
+			(at 392.43 35.56 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2741,7 +2926,7 @@
 			)
 		)
 		(property "Value" "2.2uH"
-			(at 352.425 35.56 90)
+			(at 395.605 35.56 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2749,35 +2934,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_6.3x6.3_H3"
-			(at 350.52 35.56 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 353.06 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 353.06 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 353.06 40.6399 0)
+		(property "Footprint" "L_6.3x6.3_H3"
+			(at 393.7 35.56 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2786,14 +2944,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "21c8bc35-4db8-446e-8c23-e4c6868f9636")
+			(uuid "f2375133-d6a2-4908-bcde-4a5d04460a40")
 		)
 		(pin "2"
-			(uuid "3adadfc7-78e8-4cbd-b028-e38d5d0b6691")
+			(uuid "ec60f626-e830-4e21-a653-6b7022c2a1ba")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "L1")
 					(unit 1)
 				)
@@ -2802,16 +2960,16 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 327.66 93.98 0)
+		(at 55.88 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "948e5c65-c679-44ed-bad5-8882d2c5eaa9")
+		(uuid "8ca2be19-186f-4886-ad2f-87dd409f8476")
 		(property "Reference" "C2"
-			(at 328.295 96.52 0.0000)
+			(at 56.515 165.1 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2820,7 +2978,7 @@
 			)
 		)
 		(property "Value" "22uF"
-			(at 328.295 91.44 0.0000)
+			(at 56.515 160.02 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2828,35 +2986,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 328.6252 90.17 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 330.2 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 330.2 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 330.2 99.0599 0)
+		(property "Footprint" "C_0805_2012Metric"
+			(at 56.8452 158.75 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2865,14 +2996,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "ef2ee944-ac1b-419a-b298-3ef8e48d9efe")
+			(uuid "20bb0413-340d-4a34-8843-971cd37064b4")
 		)
 		(pin "2"
-			(uuid "fbc29e92-b5b8-4aa9-92cb-2d3fc53ab29b")
+			(uuid "4c5462a1-d406-4b74-8312-9734269540ad")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "C2")
 					(unit 1)
 				)
@@ -2881,16 +3012,16 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 353.06 93.98 0)
+		(at 78.74 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "e62654df-e7e5-4d2c-89fc-7f172d8104ab")
+		(uuid "2670814b-e851-424a-b568-76b15ea2fb2e")
 		(property "Reference" "C3"
-			(at 353.695 96.52 0.0000)
+			(at 79.375 165.1 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2899,7 +3030,7 @@
 			)
 		)
 		(property "Value" "22uF"
-			(at 353.695 91.44 0.0000)
+			(at 79.375 160.02 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2907,35 +3038,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 354.0252 90.17 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 355.6 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 355.6 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 355.6 99.0599 0)
+		(property "Footprint" "C_0805_2012Metric"
+			(at 79.7052 158.75 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2944,14 +3048,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "5ba8064f-5712-429b-b04f-2b7460e0f9af")
+			(uuid "a1d6318f-1402-4961-8741-1d7b4099e5c2")
 		)
 		(pin "2"
-			(uuid "931478b0-4bac-47da-867b-15899e66cd88")
+			(uuid "2c45d12d-d357-4c0c-bf3f-b57bdcf471b8")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "C3")
 					(unit 1)
 				)
@@ -2960,16 +3064,16 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 378.46 93.98 0)
+		(at 104.14 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "40ab1270-090d-41f9-9f6f-640ddf98c847")
+		(uuid "4575ecbf-faad-4836-81f0-f2140f8fcea4")
 		(property "Reference" "C4"
-			(at 379.095 96.52 0.0000)
+			(at 104.775 165.1 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2978,7 +3082,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 379.095 91.44 0.0000)
+			(at 104.775 160.02 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2986,35 +3090,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 379.4252 90.17 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 381 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 381 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 381 99.0599 0)
+		(property "Footprint" "C_0603_1608Metric"
+			(at 105.1052 158.75 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3023,14 +3100,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "357fb520-d271-491c-9aae-abbae145c003")
+			(uuid "00a7b1d6-da9e-4a56-a5a8-85b7bc215f82")
 		)
 		(pin "2"
-			(uuid "783501af-b719-4d18-be41-b0ffde3fe295")
+			(uuid "ad5d3fca-9e67-40b6-a7f4-3c4ea4ad2e62")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "C4")
 					(unit 1)
 				)
@@ -3039,16 +3116,16 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 30.48 154.94 0)
+		(at 129.54 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "525d9ddc-37a0-4b2a-81df-d76a396dfc04")
+		(uuid "c642673c-14e1-4290-928d-4489626787cb")
 		(property "Reference" "C5"
-			(at 31.115 157.48 0.0000)
+			(at 130.175 165.1 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3057,7 +3134,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 31.115 152.4 0.0000)
+			(at 130.175 160.02 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3065,35 +3142,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 31.4452 151.13 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 33.02 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 33.02 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 33.02 160.0199 0)
+		(property "Footprint" "C_0805_2012Metric"
+			(at 130.5052 158.75 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3102,14 +3152,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "c84e5889-120d-4f69-bbba-4dcffc03ec65")
+			(uuid "4262a2ef-cece-4319-ad8e-18b4e3b76d11")
 		)
 		(pin "2"
-			(uuid "e4a48ed6-3462-473e-a49c-b3eb0c6170a5")
+			(uuid "5cfa148c-3e40-4dfc-a69a-a2bd975836c0")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "C5")
 					(unit 1)
 				)
@@ -3118,16 +3168,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 375.92 35.56 0)
+		(at 30.48 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "9e43f23a-48ed-4786-88a0-45ea5fd46b2d")
+		(uuid "60a3df45-de12-4205-b9b4-802bec2c0c33")
 		(property "Reference" "R2"
-			(at 377.952 35.56 90)
+			(at 32.512 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3136,7 +3186,7 @@
 			)
 		)
 		(property "Value" "2k"
-			(at 375.92 35.56 90)
+			(at 30.48 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3144,35 +3194,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 374.142 35.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 378.46 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 378.46 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 378.46 40.6399 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 28.702 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3181,14 +3204,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "83bb2f05-2c66-4275-b8b8-122b2e63c7f3")
+			(uuid "d49d2815-ee8e-4ea7-bc88-461b960727d3")
 		)
 		(pin "2"
-			(uuid "5c9cec9b-d031-4066-810a-dfa21d8dcab9")
+			(uuid "b061a952-4fc8-439d-9e72-39b1f3967340")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R2")
 					(unit 1)
 				)
@@ -3197,16 +3220,16 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 208.28 86.36 0)
+		(at 307.34 93.98 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "2cf74928-69f7-4ffd-8e4f-4565edf5da16")
+		(uuid "f4c4d571-ef1a-46b1-8f7d-84208e810d77")
 		(property "Reference" "D1"
-			(at 208.28 88.9 0.0000)
+			(at 307.34 96.52 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3214,8 +3237,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
-			(at 208.28 86.36 0.0000)
+		(property "Value" "LED_0805_2012Metric"
+			(at 307.34 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3223,26 +3246,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 210.82 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 210.82 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 210.82 91.4399 0)
+		(property "Footprint" "LED_0805_2012Metric"
+			(at 307.34 93.98 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3251,14 +3256,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "278a32b4-7b95-42bf-81ea-652baafb9a60")
+			(uuid "ce332ea3-67f1-46e8-a9c4-fd101267c2a5")
 		)
 		(pin "2"
-			(uuid "9f9919fc-3ad9-4091-814e-983eedbf51db")
+			(uuid "3d4935e3-85f3-4b53-8474-987a83d0b3fc")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "D1")
 					(unit 1)
 				)
@@ -3267,16 +3272,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 401.32 35.56 0)
+		(at 55.88 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "008f7c2c-0d1e-44c0-b83f-a903b82b6641")
+		(uuid "c30f87ec-1ea2-45de-b43d-94811354b370")
 		(property "Reference" "R3"
-			(at 403.352 35.56 90)
+			(at 57.912 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3285,7 +3290,7 @@
 			)
 		)
 		(property "Value" "2k"
-			(at 401.32 35.56 90)
+			(at 55.88 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3293,35 +3298,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 399.542 35.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 403.86 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 403.86 40.6399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 403.86 40.6399 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 54.102 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3330,14 +3308,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "cdabf9be-717d-491a-91f6-1109e7238a15")
+			(uuid "b878010b-70c4-46bf-b2a9-a0630e627f1b")
 		)
 		(pin "2"
-			(uuid "855bf87c-1977-496f-8668-a2148b5fc29c")
+			(uuid "534d1b3b-eff2-4557-9bda-ee2ee319c309")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R3")
 					(unit 1)
 				)
@@ -3346,16 +3324,16 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 241.3 86.36 0)
+		(at 340.36 93.98 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "eb603654-9694-44ab-af7b-3ccf863c6b8a")
+		(uuid "bea7bc45-02f8-471c-8f1c-2ee45c5aba78")
 		(property "Reference" "D2"
-			(at 241.3 88.9 0.0000)
+			(at 340.36 96.52 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3363,8 +3341,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
-			(at 241.3 86.36 0.0000)
+		(property "Value" "LED_0805_2012Metric"
+			(at 340.36 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3372,26 +3350,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 243.84 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 243.84 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 243.84 91.4399 0)
+		(property "Footprint" "LED_0805_2012Metric"
+			(at 340.36 93.98 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3400,14 +3360,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "c4e27d48-db70-40ca-b97a-8f33a3ff6281")
+			(uuid "8458e0f9-0e3e-4981-ae43-26f458dcce9e")
 		)
 		(pin "2"
-			(uuid "70f8e13c-0c6d-475f-9ea2-62702dc60a1c")
+			(uuid "ecddcf40-cda6-4fdd-ac76-05b1ed79dd6a")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "D2")
 					(unit 1)
 				)
@@ -3416,16 +3376,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 30.48 96.52 0)
+		(at 78.74 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "66381760-c085-4fa8-9299-9eb848b3e25d")
+		(uuid "bfcbac84-b43d-442a-97df-c4179c4ec50b")
 		(property "Reference" "R4"
-			(at 32.512 96.52 90)
+			(at 80.772 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3434,7 +3394,7 @@
 			)
 		)
 		(property "Value" "2k"
-			(at 30.48 96.52 90)
+			(at 78.74 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3442,35 +3402,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 28.702 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 33.02 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 33.02 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 33.02 101.5999 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 76.962 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3479,14 +3412,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "4a436887-ab94-4778-ae60-c8f9060a57e0")
+			(uuid "5cac1db5-9362-44e7-a190-fd243d0f3819")
 		)
 		(pin "2"
-			(uuid "fdcb5b81-cc46-47cd-9128-cbda168154ba")
+			(uuid "34b1ccf5-32b1-4f64-a01f-eacf0375b101")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R4")
 					(unit 1)
 				)
@@ -3495,16 +3428,16 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 274.32 86.36 0)
+		(at 373.38 93.98 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "5240fa35-fab3-4c2d-afbb-6503eb4f3a8e")
+		(uuid "c200b840-98cb-46fc-9b53-338502973651")
 		(property "Reference" "D3"
-			(at 274.32 88.9 0.0000)
+			(at 373.38 96.52 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3512,8 +3445,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
-			(at 274.32 86.36 0.0000)
+		(property "Value" "LED_0805_2012Metric"
+			(at 373.38 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3521,26 +3454,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 276.86 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 276.86 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 276.86 91.4399 0)
+		(property "Footprint" "LED_0805_2012Metric"
+			(at 373.38 93.98 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3549,14 +3464,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "86126659-dfdd-4b66-b2de-c7107a5b7c64")
+			(uuid "0927f197-eb63-4e08-9f38-f5abf552ffb8")
 		)
 		(pin "2"
-			(uuid "eeec574e-ac2b-449a-9318-ded0b994be86")
+			(uuid "da1a558a-3219-44d6-a6c7-27538b004d2e")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "D3")
 					(unit 1)
 				)
@@ -3565,16 +3480,16 @@
 	)
 	(symbol
 		(lib_id "Switch:SW_Push")
-		(at 223.52 25.4 0)
+		(at 266.7 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "86ae8699-b97e-48c4-854c-ab9dbc913b8e")
+		(uuid "cf7a6abf-9ae7-4b23-97d2-c4e542f12311")
 		(property "Reference" "SW1"
-			(at 224.79 27.94 0.0000)
+			(at 267.97 27.94 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3582,8 +3497,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Button_Switch_SMD:SW_SPST_CK_RS282G05A3"
-			(at 223.52 30.48 0.0000)
+		(property "Value" "SW_SPST_CK_RS282G05A3"
+			(at 266.7 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3591,26 +3506,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 226.06 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 226.06 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 226.06 30.4799 0)
+		(property "Footprint" "SW_SPST_CK_RS282G05A3"
+			(at 266.7 30.48 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3619,14 +3516,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "e4f0cdf7-9f35-485f-85e7-01770e06a5eb")
+			(uuid "b563ae16-b328-430b-8ea5-185695404603")
 		)
 		(pin "2"
-			(uuid "d7b69f1f-14c2-43c2-957b-d003f1cbbf6d")
+			(uuid "a3b2f736-a63a-42ce-b49c-99aac21c7552")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "SW1")
 					(unit 1)
 				)
@@ -3634,17 +3531,17 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 180.34 147.32 0)
+		(lib_id "nanosoul:TYPE-C-31-M-12")
+		(at 38.1 40.64 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "40922c2a-18ac-4f45-8e64-3747404fe03e")
+		(uuid "1e3de6ae-5907-431d-ba70-b64cb6aa46cc")
 		(property "Reference" "J2"
-			(at 180.34 149.86 0.0000)
+			(at 38.1 59.69 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3652,8 +3549,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 180.34 147.32 0.0000)
+		(property "Value" "USB-C_SMD-TYPE-C-31-M-12_1"
+			(at 38.1 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3661,8 +3558,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 182.88 152.3999 0)
+		(property "Footprint" "USB-C_SMD-TYPE-C-31-M-12_1"
+			(at 38.1 19.05 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3670,33 +3567,57 @@
 				(hide yes)
 			)
 		)
-		(property "project_name" "NanoSoul"
-			(at 182.88 152.3999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
+		(pin "A1B12"
+			(uuid "c7766291-4bdb-4c7f-8eaa-3b7f0b810307")
 		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 182.88 152.3999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
+		(pin "A4B9"
+			(uuid "8ff4d489-e3c7-4d90-aa8a-89c40b7e793d")
 		)
-		(pin "1"
-			(uuid "c372febf-2b53-4f44-8771-674bdd44616e")
+		(pin "B8"
+			(uuid "857d6343-857a-4d7d-b542-11a8be0e1faf")
+		)
+		(pin "A5"
+			(uuid "9a14c1a4-941d-48a6-a1b7-d28d923455bf")
+		)
+		(pin "B7"
+			(uuid "73e8ae6b-b78d-4256-8244-7bc94361aaf3")
+		)
+		(pin "A6"
+			(uuid "6c6fd8fe-748d-4af6-9c26-3ab4a5c49472")
+		)
+		(pin "A7"
+			(uuid "354f7436-1d55-4b9f-b76d-238c4180d1a0")
+		)
+		(pin "B6"
+			(uuid "7d291983-d8c5-48fd-8e0e-8e8c4e6dcc1f")
+		)
+		(pin "A8"
+			(uuid "d44f98c1-2e24-4707-9062-3ceb1245d0cf")
+		)
+		(pin "B5"
+			(uuid "afb6ef05-87cf-454b-bae3-c3729b396a48")
+		)
+		(pin "B4A9"
+			(uuid "e74fd7d7-8311-408a-8686-e4f7046318db")
+		)
+		(pin "B1A12"
+			(uuid "a8c7a859-fb60-4435-b79c-ef8cb1ed53aa")
+		)
+		(pin "4"
+			(uuid "1b0c65ed-45e6-4bd9-83bb-9b4fd9ec2bbe")
+		)
+		(pin "3"
+			(uuid "c22d3807-847c-4436-9cf4-693e43e0602f")
 		)
 		(pin "2"
-			(uuid "ef41d1a1-6768-423b-83a4-c5e92741349a")
+			(uuid "2e35e8ae-19b1-4275-b50d-51d45134f522")
+		)
+		(pin "1"
+			(uuid "f285d8d6-db3f-4ed9-bdff-eb4a3b6434cd")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "J2")
 					(unit 1)
 				)
@@ -3704,248 +3625,17 @@
 		)
 	)
 	(symbol
-		(lib_id "nanosoul:MT3608")
-		(at 139.7 27.94 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced no)
-		(uuid "a2a3664d-75ba-4661-b654-5beadade780f")
-		(property "Reference" "U3"
-			(at 139.7 35.56 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "nanosoul:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
-			(at 139.7 17.78 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 142.24 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 142.24 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 142.24 33.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "757e656c-9bd4-48d1-a6cf-d68e286ee367")
-		)
-		(pin "2"
-			(uuid "c4476c2c-06bf-4abd-9cb5-fef242e9e9f4")
-		)
-		(pin "3"
-			(uuid "a5e3d1ca-bbd4-4876-949a-2c0da6e140f6")
-		)
-		(pin "4"
-			(uuid "5e93b24d-6485-4eaa-a75f-4fa46a48bae6")
-		)
-		(pin "5"
-			(uuid "231fad88-5b45-40ad-b190-bf2f05985ece")
-		)
-		(pin "6"
-			(uuid "b61561ee-588d-487b-93e8-e0357a1cd42f")
-		)
-		(instances
-			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "U3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:L")
-		(at 55.88 96.52 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced no)
-		(uuid "69981e6c-900d-4469-9ecd-eacfa057cb09")
-		(property "Reference" "L2"
-			(at 54.61 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "4.7uH"
-			(at 57.785 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Inductor_SMD:L_6.3x6.3_H3"
-			(at 55.88 96.52 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 58.42 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 58.42 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 58.42 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "797663a0-b62a-4585-b18c-20523c7c66af")
-		)
-		(pin "2"
-			(uuid "1fdf650e-f281-46c8-903c-72f263e98642")
-		)
-		(instances
-			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "L2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "nanosoul:SS34_C908680")
-		(at 259.08 25.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced no)
-		(uuid "30ea676c-533d-4338-99d5-f7e95613a02b")
-		(property "Reference" "D4"
-			(at 259.08 30.48 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "nanosoul:SMA_L4.3-W2.7-LS5.1-RD"
-			(at 259.08 17.78 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 261.62 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 261.62 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 261.62 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "c76d7f0c-e1b1-4880-a90d-431f5de1df96")
-		)
-		(pin "1"
-			(uuid "cdb15854-c1f7-4d22-85f7-295b4a9f1458")
-		)
-		(instances
-			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "D4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
-		(at 78.74 96.52 0)
+		(at 104.14 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "5fe16a93-7fd4-4975-863d-219bf7435d4d")
+		(uuid "7a014a72-7cd3-4066-959e-ff07ed89106d")
 		(property "Reference" "R5"
-			(at 80.772 96.52 90)
+			(at 106.172 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3953,8 +3643,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "91k"
-			(at 78.74 96.52 90)
+		(property "Value" "5.1k"
+			(at 104.14 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3962,35 +3652,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 76.962 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 81.28 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 81.28 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 81.28 101.5999 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 102.362 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3999,14 +3662,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "2e93f5da-8278-4517-a4e0-49af525474c7")
+			(uuid "2463c869-1010-4158-9dc0-ba73d59bf08f")
 		)
 		(pin "2"
-			(uuid "561c48cd-bb3f-42c1-a0c8-7841acbf4b34")
+			(uuid "922c0b6d-62c3-4823-8652-996c2311a929")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R5")
 					(unit 1)
 				)
@@ -4015,16 +3678,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 104.14 96.52 0)
+		(at 129.54 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "cfda7323-3689-4561-83ee-6aa206bc1f1c")
+		(uuid "de033d3d-84f4-4546-8cbe-217220670e76")
 		(property "Reference" "R6"
-			(at 106.172 96.52 90)
+			(at 131.572 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4032,8 +3695,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10k"
-			(at 104.14 96.52 90)
+		(property "Value" "5.1k"
+			(at 129.54 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4041,35 +3704,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 102.362 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 106.68 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 106.68 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 106.68 101.5999 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 127.762 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4078,14 +3714,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "0fff15a7-afc2-43ed-b63a-70ccd61a7d7d")
+			(uuid "e41a92fe-593b-4fd5-98fe-ebca452d8446")
 		)
 		(pin "2"
-			(uuid "f6666a41-d483-44a2-9738-2296e77c04f5")
+			(uuid "be53ca66-1bf9-4c57-ba99-c5df96f28fa4")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R6")
 					(unit 1)
 				)
@@ -4093,17 +3729,17 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 55.88 154.94 0)
+		(lib_id "nanosoul:MT3608")
+		(at 180.34 27.94 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "40cf0c1e-4478-4442-868d-7b0cf7fb1e63")
-		(property "Reference" "C6"
-			(at 56.515 157.48 0.0000)
+		(uuid "d96f407e-051c-4d46-b28b-af5a455f8382")
+		(property "Reference" "U3"
+			(at 180.34 35.56 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4111,17 +3747,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10uF"
-			(at 56.515 152.4 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 56.8452 151.13 0.0000)
+		(property "Value" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
+			(at 180.34 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4129,26 +3756,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 58.42 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 58.42 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 58.42 160.0199 0)
+		(property "Footprint" "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
+			(at 180.34 17.78 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4157,32 +3766,44 @@
 			)
 		)
 		(pin "1"
-			(uuid "a00cff97-56eb-49ab-8fdf-91332093d056")
+			(uuid "5a40fc7d-e17f-4d1f-b21d-104282ee6a1b")
 		)
 		(pin "2"
-			(uuid "a9df4edf-818b-495c-81ff-d99014ef86ef")
+			(uuid "7f20c007-b964-4be4-9119-368ea874e348")
+		)
+		(pin "3"
+			(uuid "6d4fef3c-7c0f-4343-a209-943359b2428a")
+		)
+		(pin "4"
+			(uuid "d49e1659-e5bb-4f8d-9996-588b2e77d4bf")
+		)
+		(pin "5"
+			(uuid "fa0a196f-6c23-40e8-9663-474ac7616280")
+		)
+		(pin "6"
+			(uuid "18618941-ab23-4fd5-b7c1-4263d16c385f")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "C6")
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "U3")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 78.74 154.94 0)
+		(lib_id "Device:L")
+		(at 154.94 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "ddeea156-69a0-4df0-9f71-c58f583935ec")
-		(property "Reference" "C7"
-			(at 79.375 157.48 0.0000)
+		(uuid "7e154d3c-c73c-479e-a5c9-94ebac7e7538")
+		(property "Reference" "L2"
+			(at 153.67 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4190,8 +3811,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22uF"
-			(at 79.375 152.4 0.0000)
+		(property "Value" "4.7uH"
+			(at 156.845 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4199,35 +3820,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 79.7052 151.13 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 81.28 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 81.28 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 81.28 160.0199 0)
+		(property "Footprint" "L_6.3x6.3_H3"
+			(at 154.94 104.14 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4236,32 +3830,32 @@
 			)
 		)
 		(pin "1"
-			(uuid "361eccd0-5714-4263-bf2b-5aaf92f9eaf0")
+			(uuid "79138f79-81ad-465d-b7ba-f36bad042537")
 		)
 		(pin "2"
-			(uuid "8d08edbf-173f-49cd-97d7-17134d9dd680")
+			(uuid "258360dc-7019-4ee1-8fa1-9625d42192ec")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "C7")
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "L2")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:Polyfuse")
-		(at 129.54 96.52 0)
+		(lib_id "nanosoul:SS34_C908680")
+		(at 302.26 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "4327d93e-027a-4b04-95f1-db53040681ff")
-		(property "Reference" "F1"
-			(at 127 96.52 90)
+		(uuid "eb7c4a44-22e0-4db5-9be0-5e438b1629f7")
+		(property "Reference" "D4"
+			(at 302.26 30.48 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4269,17 +3863,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1.5A"
-			(at 132.08 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Fuse:Fuse_0805_2012Metric"
-			(at 130.81 91.44 0.0000)
+		(property "Value" "SMA_L4.3-W2.7-LS5.1-RD"
+			(at 302.26 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4287,122 +3872,25 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 132.08 101.5999 0)
+		(property "Footprint" "SMA_L4.3-W2.7-LS5.1-RD"
+			(at 302.26 17.78 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
 			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 132.08 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 132.08 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "ec4e419f-bcc3-468d-adc6-2cb9aa379fa2")
 		)
 		(pin "2"
-			(uuid "33556cc3-22d7-44ea-9c68-b6a13caa4752")
+			(uuid "82bbdb21-891a-4b97-9978-364e993b8977")
+		)
+		(pin "1"
+			(uuid "55f21b11-f2e8-4d8a-a583-4adcb39b448a")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "F1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 104.14 154.94 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced no)
-		(uuid "47521a9a-21fb-4e70-a93b-7fc5198e7747")
-		(property "Reference" "C8"
-			(at 104.775 157.48 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "470uF"
-			(at 104.775 152.4 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_8x10.5"
-			(at 105.1052 151.13 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 106.68 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 106.68 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 106.68 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c2e52474-bec1-4d51-beb2-5445a223fb13")
-		)
-		(pin "2"
-			(uuid "3a402b1a-ceb3-4dcf-af5a-c27348047c32")
-		)
-		(instances
-			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-					(reference "C8")
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "D4")
 					(unit 1)
 				)
 			)
@@ -4410,16 +3898,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 154.94 96.52 0)
+		(at 180.34 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "cd4c6476-38c6-4717-abda-752c8ba73e53")
+		(uuid "be35c877-93d6-46dc-9f8b-5e02b104c938")
 		(property "Reference" "R7"
-			(at 156.972 96.52 90)
+			(at 182.372 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4427,8 +3915,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0.05"
-			(at 154.94 96.52 90)
+		(property "Value" "82k"
+			(at 180.34 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4436,35 +3924,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 153.162 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 157.48 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 157.48 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 157.48 101.5999 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 178.562 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4473,14 +3934,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "beff231a-c2c7-46e7-9015-0c177a91856a")
+			(uuid "2c600eb9-979f-4daa-aec4-e7a69650b54c")
 		)
 		(pin "2"
-			(uuid "2b712f34-740e-4f0b-a0b8-0f8c83d02759")
+			(uuid "e696777a-0d97-4170-a534-e39a274db3a0")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R7")
 					(unit 1)
 				)
@@ -4489,16 +3950,16 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 180.34 96.52 0)
+		(at 205.74 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "6896cc9c-5de5-4b26-bb9c-035ef8634811")
+		(uuid "155d8b9b-f34b-4fe3-b15e-45c2f3339c6d")
 		(property "Reference" "R8"
-			(at 182.372 96.52 90)
+			(at 207.772 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4506,8 +3967,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1k"
-			(at 180.34 96.52 90)
+		(property "Value" "10k"
+			(at 205.74 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4515,35 +3976,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 178.562 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 182.88 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 182.88 101.5999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 182.88 101.5999 0)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 203.962 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4552,14 +3986,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "583a50f0-d921-4d3c-a6d6-5450d831b2e5")
+			(uuid "c16c322d-0160-4689-a792-d8cebbebfebe")
 		)
 		(pin "2"
-			(uuid "f6e4ba2d-38c6-4a6d-a18d-5f337f97a44b")
+			(uuid "13546c3d-fd7c-4cc0-979e-9fd7b32df0aa")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "R8")
 					(unit 1)
 				)
@@ -4568,16 +4002,328 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 129.54 154.94 0)
+		(at 154.94 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "254a0879-5eae-4017-af1b-803ea25484e9")
+		(uuid "aa11700d-e786-4760-85ef-6c8f01a6b252")
+		(property "Reference" "C6"
+			(at 155.575 165.1 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10uF"
+			(at 155.575 160.02 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "C_0805_2012Metric"
+			(at 155.9052 158.75 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fdd48db9-0ed3-4c42-a763-da5085d7e78a")
+		)
+		(pin "2"
+			(uuid "52e7bbac-f70a-468a-81e6-57b389f8ea72")
+		)
+		(instances
+			(project ""
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "C6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 180.34 162.56 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "37ca6d10-b166-41a2-b56f-de9d85f9a7ed")
+		(property "Reference" "C7"
+			(at 180.975 165.1 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "22uF"
+			(at 180.975 160.02 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "C_0805_2012Metric"
+			(at 181.3052 158.75 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "938288ff-21fa-4a4c-bdcf-17cbe8618ddd")
+		)
+		(pin "2"
+			(uuid "8a6c65bf-1fad-4154-af5c-5d4fdf8b21fc")
+		)
+		(instances
+			(project ""
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "C7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Polyfuse")
+		(at 228.6 104.14 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "de2c81c5-dc38-4e0d-95e5-3043f33d9853")
+		(property "Reference" "F1"
+			(at 226.06 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1.5A"
+			(at 231.14 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Fuse_0805_2012Metric"
+			(at 229.87 99.06 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0a382ed0-b9e4-47ac-adc8-f076c869cc77")
+		)
+		(pin "2"
+			(uuid "890569e6-b54c-4897-87eb-f28f51e6213f")
+		)
+		(instances
+			(project ""
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "F1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 205.74 162.56 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "1cbda46d-710f-4efb-b5b2-d70635b58956")
+		(property "Reference" "C8"
+			(at 206.375 165.1 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "470uF"
+			(at 206.375 160.02 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "CP_Elec_8x10.5"
+			(at 206.7052 158.75 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "caa5569c-cbb3-4828-98ec-63349ace5c70")
+		)
+		(pin "2"
+			(uuid "6fe993e7-23f5-4fe0-82c5-c9975ae6a531")
+		)
+		(instances
+			(project ""
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "C8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 254 104.14 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "36dff11e-20d7-447f-8cf5-f863b961e8c8")
+		(property "Reference" "R9"
+			(at 256.032 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.05"
+			(at 254 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "R_0805_2012Metric"
+			(at 252.222 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9853d878-ce9d-40b1-b893-fb90932bff92")
+		)
+		(pin "2"
+			(uuid "93c2f64a-ef0e-4c60-be23-372a46bb918d")
+		)
+		(instances
+			(project ""
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "R9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 279.4 104.14 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "ad6d11f1-37bb-4278-a5a8-0fd5d494be63")
+		(property "Reference" "R10"
+			(at 281.432 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1k"
+			(at 279.4 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "R_0603_1608Metric"
+			(at 277.622 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "aed30584-a03b-4ce8-bb20-0c5d5d38940b")
+		)
+		(pin "2"
+			(uuid "639a3996-22dc-4a65-802a-e1317c54011b")
+		)
+		(instances
+			(project ""
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
+					(reference "R10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 228.6 162.56 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "bfbfdf92-1727-481a-8cf2-037dcf9f920b")
 		(property "Reference" "C9"
-			(at 130.175 157.48 0.0000)
+			(at 229.235 165.1 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4586,7 +4332,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 130.175 152.4 0.0000)
+			(at 229.235 160.02 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4594,35 +4340,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 130.5052 151.13 0.0000)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 132.08 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 132.08 160.0199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 132.08 160.0199 0)
+		(property "Footprint" "C_0603_1608Metric"
+			(at 229.5652 158.75 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4631,14 +4350,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "b74ae125-6914-4093-8939-718464a0d4f3")
+			(uuid "695cf544-353f-48ec-a226-74cba0e75442")
 		)
 		(pin "2"
-			(uuid "b8d84c9f-3216-4207-a22c-e173746adc35")
+			(uuid "d5ec2f2d-38fb-4aef-b0ff-3d067d45ea4f")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "C9")
 					(unit 1)
 				)
@@ -4647,16 +4366,16 @@
 	)
 	(symbol
 		(lib_id "nanosoul:SS34_C908680")
-		(at 294.64 25.4 0)
+		(at 337.82 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "be03e911-a956-4b32-a232-afe2fa53c213")
+		(uuid "6d581aaa-6476-4bd6-b1a2-1c253026a3c8")
 		(property "Reference" "D5"
-			(at 294.64 30.48 0.0000)
+			(at 337.82 30.48 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4664,8 +4383,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nanosoul:SMA_L4.3-W2.7-LS5.1-RD"
-			(at 294.64 17.78 0.0000)
+		(property "Value" "SMA_L4.3-W2.7-LS5.1-RD"
+			(at 337.82 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4673,26 +4392,8 @@
 				(hide yes)
 			)
 		)
-		(property "hierarchy_path" "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
-			(at 297.18 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "project_name" "NanoSoul"
-			(at 297.18 30.4799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "root_uuid" "cc6d016d-315a-4023-b551-816edf85e992"
-			(at 297.18 30.4799 0)
+		(property "Footprint" "SMA_L4.3-W2.7-LS5.1-RD"
+			(at 337.82 17.78 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4701,811 +4402,1042 @@
 			)
 		)
 		(pin "2"
-			(uuid "de792658-e6f3-4fba-8dd9-addc7dbe8b40")
+			(uuid "118e6fc9-ece9-4156-bb12-975ab411283a")
 		)
 		(pin "1"
-			(uuid "95e83013-9264-4eac-b991-6322a966d20c")
+			(uuid "8df3c7e7-28a0-40b6-8239-a545cd3232d7")
 		)
 		(instances
 			(project ""
-				(path "/cc6d016d-315a-4023-b551-816edf85e992/02c281f0-3e36-4ec8-b269-81530d6781a9"
+				(path "/d7c6fcf2-f77c-4139-a92e-1e725da500d2/8d4e3d74-f568-43f6-997d-ba3cd9d363e8"
 					(reference "D5")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(hierarchical_label "CELL_MINUS"
-		(shape input)
-		(at 149.86 149.86 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ab209f47-e07d-487d-adf4-6cb089cf3576")
-	)
-	(hierarchical_label "CELL_MINUS"
-		(shape input)
-		(at 193.04 25.4 0.0000)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 248.9200 154.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "75b941a3-04bd-47c8-a2a7-27f9faf918b2")
+		(uuid "49a285f6-bd4e-781e-c93b-0345eb52e27f")
 	)
-	(hierarchical_label "CELL_MINUS"
-		(shape input)
-		(at 78.74 25.4 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "fa7f3855-1f5e-4887-8822-4ef2134425eb")
-	)
-	(hierarchical_label "CELL_MINUS"
-		(shape input)
-		(at 302.26 90.17 90)
+	(global_label "CELL_MINUS"
+		(shape bidirectional)
+		(at 248.9200 157.4800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "701c15a5-a0d8-4a25-ade2-e7b043c106d5")
+		(uuid "5d576f7f-2d0d-8a77-c9bb-a599762be245")
 	)
-	(hierarchical_label "DW_OD"
-		(shape input)
-		(at 172.72 25.4 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "eaebea2a-5647-4830-8e0d-046478c2407d")
-	)
-	(hierarchical_label "DW_OD"
-		(shape input)
-		(at 104.14 25.4 0.0000)
+	(global_label "DW_OD"
+		(shape bidirectional)
+		(at 215.9000 25.4000 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "0f70fdb0-1607-4897-b6c6-cd687540010e")
+		(uuid "4447cddc-a4f0-aa75-2584-e55897962c7f")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 172.72 27.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "1879a7cc-e364-440f-bf21-a8195db92362")
-	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 78.74 30.48 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ef5af73c-4899-4d50-a3ff-c2f7041abecf")
-	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 52.07 25.4 0.0000)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 215.9000 27.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "a685ea2a-1a3f-45a0-a12f-08ce830979b0")
+		(uuid "a29a2a82-ed83-e27a-fbeb-badbf5098db7")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 327.66 90.17 90)
+	(global_label "DW_OC"
+		(shape bidirectional)
+		(at 215.9000 30.4800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "681ed168-f5e6-4062-afe6-c93e43232955")
+		(uuid "89bf8f79-cacb-876e-07e4-7764294a1e53")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 353.06 90.17 90)
+	(global_label "DW_VCC"
+		(shape bidirectional)
+		(at 236.2200 27.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "94c43c7f-f024-451f-8d14-7731b2a687e4")
+		(uuid "237bd46d-fd5a-db00-5f25-23eb9078ee2e")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 378.46 90.17 90)
+	(global_label "CELL_MINUS"
+		(shape bidirectional)
+		(at 236.2200 25.4000 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "2a2a0e8f-2ea2-4872-a29b-180df0244008")
+		(uuid "67f3b47a-9921-c52c-1276-f94ca70da3ed")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 30.48 151.13 90)
+	(global_label "CELL_MINUS"
+		(shape bidirectional)
+		(at 121.9200 25.4000 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "cdef8d31-ed56-4bcc-9498-6a3e18b49fe4")
+		(uuid "71c5d4ef-b046-4800-7021-70edf68734bb")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 228.6 25.4 0.0000)
+	(global_label "DRAIN_COM"
+		(shape bidirectional)
+		(at 121.9200 27.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "fdf2ed42-913f-4e17-b702-3558edf5158e")
+		(uuid "77c754bc-1850-cbe2-4c69-c70e51057c45")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 175.26 149.86 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6f9dcdac-9e53-4757-bbb3-9dd75c7180a6")
-	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 129.54 27.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "5d723e9d-f3e0-42a0-b704-3e0e6463d799")
-	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 104.14 92.71 90)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 121.9200 30.4800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "631a9221-b44f-421f-a9e8-9a30f633dac6")
+		(uuid "1e58c2c1-07f3-c072-d23b-2d1e42a5ef19")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 55.88 151.13 90)
+	(global_label "DW_OC"
+		(shape bidirectional)
+		(at 147.3200 30.4800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "faf303de-2370-445c-bccb-b40eca1bdf3f")
+		(uuid "568a1d4f-7c76-de97-1074-cd8313513ad4")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 78.74 151.13 90)
+	(global_label "DRAIN_COM"
+		(shape bidirectional)
+		(at 147.3200 27.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "efe6a099-9f6d-40ad-bd0c-8de7332d33ba")
+		(uuid "51f3dce5-2649-57a2-69be-71f911396317")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 104.14 151.13 90)
+	(global_label "DW_OD"
+		(shape bidirectional)
+		(at 147.3200 25.4000 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "8407f71c-7a89-4dbe-8b84-45df6a889e60")
+		(uuid "3fe4cad6-1751-c914-3e57-c1901b4c982e")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 154.94 92.71 90)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 368.3000 31.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "37e02bd5-9939-4a8f-9006-8ca7c1acc960")
+		(uuid "b271a5e2-bc6b-9bd3-2b16-782384e0d6df")
 	)
-	(hierarchical_label "GND"
-		(shape input)
-		(at 129.54 151.13 90)
+	(global_label "DW_VCC"
+		(shape bidirectional)
+		(at 368.3000 39.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "dafc04b6-6860-4245-9143-43f1d6d4d4ed")
+		(uuid "032dd4cb-43be-40a1-00ae-3a1dcc2f2e13")
 	)
-	(hierarchical_label "DW_OC"
-		(shape input)
-		(at 172.72 30.48 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "07e25aed-689d-438a-8534-040fc0c68edd")
-	)
-	(hierarchical_label "DW_OC"
-		(shape input)
-		(at 104.14 30.48 0.0000)
+	(global_label "DW_VCC"
+		(shape bidirectional)
+		(at 30.4800 158.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "308a3686-ad3e-4122-ac08-5fce07bcd6a4")
+		(uuid "247c2663-a0f3-e745-e5da-f740e2812316")
 	)
-	(hierarchical_label "DW_VCC"
-		(shape input)
-		(at 193.04 27.94 0.0000)
+	(global_label "CELL_MINUS"
+		(shape bidirectional)
+		(at 30.4800 166.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "7551d8c1-5061-4890-b675-d9a4e273fc25")
+		(uuid "f9c9bd29-8be1-3164-00b3-c3abbb1e135e")
 	)
-	(hierarchical_label "DW_VCC"
-		(shape input)
-		(at 325.12 31.75 90)
+	(global_label "CHG_IN"
+		(shape bidirectional)
+		(at 72.3900 27.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "938471a8-4fce-4cda-b1da-4aba359ea4fc")
+		(uuid "075854eb-f3f8-1ea3-d333-6a18f875c9e9")
 	)
-	(hierarchical_label "DW_VCC"
-		(shape input)
-		(at 302.26 90.17 90)
+	(global_label "IP_LED1"
+		(shape bidirectional)
+		(at 72.3900 30.4800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "6ed659f7-ac31-4ec1-9fd2-e549b8032e65")
+		(uuid "bf5ddcfb-84f6-bef9-33ae-b8acc5b41aa1")
 	)
-	(hierarchical_label "DRAIN_COM"
-		(shape input)
-		(at 78.74 27.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "e6bed6eb-1884-4026-aa3c-dc8a8f1c0034")
-	)
-	(hierarchical_label "DRAIN_COM"
-		(shape input)
-		(at 78.74 27.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "e4c1a11e-8da7-4655-b823-4beab8ff25ee")
-	)
-	(hierarchical_label "CHG_IN"
-		(shape input)
-		(at 29.21 27.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "cf63d990-c4bc-47bd-9042-91ffa857a21f")
-	)
-	(hierarchical_label "CHG_IN"
-		(shape input)
-		(at 30.48 151.13 90)
+	(global_label "IP_LED2"
+		(shape bidirectional)
+		(at 72.3900 33.0200 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "65d52d34-c27c-454e-b08c-74d55eb7f095")
+		(uuid "69a0f172-6400-6730-154b-41284b19fa11")
 	)
-	(hierarchical_label "CHG_IN"
-		(shape input)
-		(at 175.26 147.32 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "8b97b3b1-b8bb-4278-8327-d7480c954f3c")
-	)
-	(hierarchical_label "IP_LED1"
-		(shape input)
-		(at 29.21 30.48 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "bd65108a-7df1-4d09-9d8f-b1385ef5e40b")
-	)
-	(hierarchical_label "IP_LED1"
-		(shape input)
-		(at 204.47 86.36 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "2f220011-0ab2-4bb0-94bc-91f594fb67a6")
-	)
-	(hierarchical_label "IP_LED2"
-		(shape input)
-		(at 29.21 33.02 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ba3b0e20-8088-407e-a170-8b182da42df1")
-	)
-	(hierarchical_label "IP_LED2"
-		(shape input)
-		(at 237.49 86.36 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ef9d720d-98fd-4518-9e1c-8f0d35074872")
-	)
-	(hierarchical_label "IP_LED3"
-		(shape input)
-		(at 29.21 35.56 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "f6529b12-bfe6-4911-8019-b625091e139e")
-	)
-	(hierarchical_label "IP_LED3"
-		(shape input)
-		(at 270.51 86.36 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "76557d31-a2ab-4cf3-a149-ae5f9745d9e4")
-	)
-	(hierarchical_label "KEY_BTN"
-		(shape input)
-		(at 52.07 35.56 0.0000)
+	(global_label "IP_LED3"
+		(shape bidirectional)
+		(at 72.3900 35.5600 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "9ed8ea7d-00f5-4992-94da-3a0f97890aaf")
+		(uuid "7ab44df9-ca0a-3d28-a99e-f03e4fcdef7f")
 	)
-	(hierarchical_label "KEY_BTN"
-		(shape input)
-		(at 218.44 25.4 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6c07bba3-33ba-4bf3-8144-928402a41a24")
-	)
-	(hierarchical_label "IP5306_SW"
-		(shape input)
-		(at 52.07 30.48 0.0000)
+	(global_label "KEY_BTN"
+		(shape bidirectional)
+		(at 95.2500 35.5600 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "14a26b53-ee2b-457f-9254-f3907d76eb44")
+		(uuid "d985fcac-a14d-bc10-365f-32657da8f5cc")
 	)
-	(hierarchical_label "IP5306_SW"
-		(shape input)
-		(at 350.52 39.37 270)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "b94fb820-5b56-442f-b8a6-891fcc2702b1")
-	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 52.07 27.94 0.0000)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 95.2500 33.0200 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "e0f9b6ff-2c9e-4820-a72b-89f1af9f466d")
+		(uuid "06c725da-0719-e08c-d88f-ae3dbc752ff0")
 	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 353.06 90.17 90)
+	(global_label "IP5306_SW"
+		(shape bidirectional)
+		(at 95.2500 30.4800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "c36fff8a-ed67-4d33-b8cd-e8fd25dbb02e")
+		(uuid "c473a6c4-793c-fc23-9657-25102f46bc2e")
 	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 378.46 90.17 90)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 95.2500 27.9400 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "af78fe13-42da-43f3-902e-4edd75921615")
+		(uuid "113c8051-859c-aaf1-1306-b1487d3d5f78")
 	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 375.92 31.75 90)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 95.2500 25.4000 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "7cecf47b-7f9d-4f7e-90a0-91314b94475f")
+		(uuid "192df297-aa4f-ec7b-36ec-98eb07d1dff5")
 	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 401.32 31.75 90)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 393.7000 31.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "f66fbb19-22e5-40a5-94c0-234a413b65a8")
+		(uuid "b02317c6-de85-5a0d-f1ab-08e7bb94fa5c")
 	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 30.48 92.71 90)
+	(global_label "IP5306_SW"
+		(shape bidirectional)
+		(at 393.7000 39.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "9ac79c61-a450-4c71-8cdf-a94666d27e80")
+		(uuid "486cf472-15fc-d9fc-f568-786bf7ce1d7c")
 	)
-	(hierarchical_label "V5"
-		(shape input)
-		(at 299.72 25.4 0.0000)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 55.8800 158.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "4e87dfe9-a5f8-41ec-92a4-bbd9e6a784c0")
+		(uuid "1322c8be-9836-42e9-dc27-6ded12acb494")
 	)
-	(hierarchical_label "LED_A1"
-		(shape input)
-		(at 375.92 31.75 90)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 55.8800 166.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "4419d9ea-27ec-4e20-b73a-db76fc6a84c0")
+		(uuid "54f772ed-fef2-cda1-a7b1-03bb648361f1")
 	)
-	(hierarchical_label "LED_A1"
-		(shape input)
-		(at 212.09 86.36 0.0000)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 78.7400 158.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "3507f9f7-8eb7-486a-b03a-39e0876d3cac")
+		(uuid "d012eb91-5afc-e63f-ac98-bbbc3bb07672")
 	)
-	(hierarchical_label "LED_A2"
-		(shape input)
-		(at 401.32 31.75 90)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 78.7400 166.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "c9d000b2-43c1-4583-9469-2734bcf32426")
+		(uuid "3c9244ac-5cbd-3fdc-b1b3-cb7d4a5f5c1d")
 	)
-	(hierarchical_label "LED_A2"
-		(shape input)
-		(at 245.11 86.36 0.0000)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 104.1400 158.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "4afff216-1778-44ae-a52b-1850a3a058f9")
+		(uuid "e0a1697e-6fda-1e00-398f-eab6b57d6d1b")
 	)
-	(hierarchical_label "LED_A3"
-		(shape input)
-		(at 30.48 92.71 90)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 104.1400 166.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "06a26894-049c-41a9-8efa-dad39c02e335")
+		(uuid "7c211990-6d0f-ff44-2ad2-27bd6f2d96d3")
 	)
-	(hierarchical_label "LED_A3"
-		(shape input)
-		(at 278.13 86.36 0.0000)
+	(global_label "CHG_IN"
+		(shape bidirectional)
+		(at 129.5400 158.7500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "f461dde0-4663-432c-ab51-644c8b4da722")
+		(uuid "5b745cd8-08f8-b5e7-c7d8-72a532ceceda")
 	)
-	(hierarchical_label "MT_SW"
-		(shape input)
-		(at 129.54 25.4 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "d1e37375-e8ae-41d3-a000-3a4f8d8930dc")
-	)
-	(hierarchical_label "MT_SW"
-		(shape input)
-		(at 55.88 100.33 270)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "8236823c-8937-4bf2-b29a-01824ce8e784")
-	)
-	(hierarchical_label "MT_SW"
-		(shape input)
-		(at 264.16 25.4 0.0000)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 129.5400 166.3700 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "cd889f26-a511-4a1a-9cb3-754b127e82d9")
+		(uuid "d39dbf2a-5133-cbb8-5b38-1b33073ee116")
 	)
-	(hierarchical_label "MT_FB"
-		(shape input)
-		(at 129.54 30.48 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "aad8f5c7-73da-45c1-8176-c2e87dc7fb6e")
-	)
-	(hierarchical_label "MT_FB"
-		(shape input)
-		(at 78.74 92.71 90)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 30.4800 100.3300 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "b03bc966-18cb-42c3-a9f7-dde2b07e7582")
+		(uuid "bfaf3175-3e13-2207-e1fd-2038a6110c30")
 	)
-	(hierarchical_label "MT_FB"
-		(shape input)
-		(at 104.14 92.71 90)
+	(global_label "LED_A1"
+		(shape bidirectional)
+		(at 30.4800 107.9500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "74aa86d4-956d-4b80-8035-3ad9837821a0")
+		(uuid "a7a8e7cf-32d6-136d-5b39-8043d574ee14")
 	)
-	(hierarchical_label "VMOT"
-		(shape input)
-		(at 254 25.4 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "85facd16-3036-474b-96ba-3184f3d6c32d")
-	)
-	(hierarchical_label "VMOT"
-		(shape input)
-		(at 78.74 92.71 90)
+	(global_label "IP_LED1"
+		(shape bidirectional)
+		(at 303.5300 93.9800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "93b4c4f6-75f9-4a48-9ff5-ece25a57210c")
+		(uuid "a14ebb72-b7ac-7be6-3fc4-ddd6b32d3604")
 	)
-	(hierarchical_label "VMOT"
-		(shape input)
-		(at 78.74 151.13 90)
+	(global_label "LED_A1"
+		(shape bidirectional)
+		(at 311.1500 93.9800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "a0cd634a-7c47-485b-9223-a06debbd2075")
+		(uuid "04b19aba-998e-4018-67bf-be7ffec638f4")
 	)
-	(hierarchical_label "VMOT"
-		(shape input)
-		(at 129.54 92.71 90)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 55.8800 100.3300 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "d5274d5c-e5e0-4922-a880-1a8da2fcd6ab")
+		(uuid "c855a1f0-cda7-e2f5-4a84-0f613aa1ba17")
 	)
-	(hierarchical_label "VMOT_F"
-		(shape input)
-		(at 129.54 92.71 90)
+	(global_label "LED_A2"
+		(shape bidirectional)
+		(at 55.8800 107.9500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "77264ce7-f02c-408e-a2be-6c92bce06cd4")
+		(uuid "11e8c1c6-cc34-ba7b-0d75-1f8f436f6640")
 	)
-	(hierarchical_label "VMOT_F"
-		(shape input)
-		(at 104.14 151.13 90)
+	(global_label "IP_LED2"
+		(shape bidirectional)
+		(at 336.5500 93.9800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "7a941d01-a920-441e-8483-c7736e745720")
+		(uuid "97e916bb-a6da-fab2-831f-d6b342900db6")
 	)
-	(hierarchical_label "MOT_RTN"
-		(shape input)
-		(at 154.94 92.71 90)
+	(global_label "LED_A2"
+		(shape bidirectional)
+		(at 344.1700 93.9800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "f75fa957-c5e9-46d3-9638-8a306b6dd37a")
+		(uuid "9c057cd4-e4e3-6326-94b9-bc81ee6051f6")
 	)
-	(hierarchical_label "MOT_RTN"
-		(shape input)
-		(at 180.34 92.71 90)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 78.7400 100.3300 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "7856d56e-3590-44e4-a23c-02c149563620")
+		(uuid "3c2ee519-7e6a-e9cd-ee8f-8488c3885784")
 	)
-	(hierarchical_label "MOT_ISENSE"
-		(shape input)
-		(at 180.34 92.71 90)
+	(global_label "LED_A3"
+		(shape bidirectional)
+		(at 78.7400 107.9500 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "edc7c38e-a12d-441d-b0f1-a5948976d2c7")
+		(uuid "18a0ed45-a6e9-2e7b-03ad-07a36ff9f061")
 	)
-	(hierarchical_label "MOT_ISENSE"
-		(shape input)
-		(at 129.54 151.13 90)
+	(global_label "IP_LED3"
+		(shape bidirectional)
+		(at 369.5700 93.9800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "628f2243-39db-42cf-9a9a-f591b40cd0e5")
+		(uuid "9a82cc53-b1b8-c66c-e46e-425d8553caa1")
 	)
-	(hierarchical_label "VSYS"
-		(shape input)
-		(at 289.56 25.4 180)
+	(global_label "LED_A3"
+		(shape bidirectional)
+		(at 377.1900 93.9800 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
-		(uuid "0c52d575-6449-4063-8f29-b8ffad4397d1")
+		(uuid "a1d69fa3-1ee2-4d6d-b268-f532f5ecdd16")
+	)
+	(global_label "KEY_BTN"
+		(shape bidirectional)
+		(at 261.6200 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ac375480-3775-e7e2-2f81-293667960119")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 271.7800 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ee189837-ef89-e484-fc22-0d91b6d71edf")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 31.7500 26.6700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2c909ff1-c84e-6460-12c0-9771aceb25f6")
+	)
+	(global_label "CHG_IN"
+		(shape bidirectional)
+		(at 31.7500 29.2100 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "acc7a66e-6457-2bfa-5d35-bdbe40f6ec6d")
+	)
+	(global_label "USB_CC1"
+		(shape bidirectional)
+		(at 31.7500 34.2900 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fed08442-2d20-c249-0421-649f4d3831ff")
+	)
+	(global_label "USB_CC2"
+		(shape bidirectional)
+		(at 31.7500 49.5300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d6660c3d-5592-388b-bb65-39c807df8cbc")
+	)
+	(global_label "CHG_IN"
+		(shape bidirectional)
+		(at 31.7500 52.0700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4e3b89e1-758d-41cf-96e0-572246728d19")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 31.7500 54.6100 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a94d4370-4faa-c264-9bcf-0986987df677")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 49.5300 46.9900 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1c9acf26-b269-2086-01ea-61ec3ec83864")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 49.5300 49.5300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0150b8aa-f9da-07a3-55fc-0e304022f717")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 49.5300 52.0700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "83e9b03e-50ab-460b-6252-f5d81b3546d9")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 49.5300 54.6100 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "39b4f27c-bf35-a483-953a-dbe214111243")
+	)
+	(global_label "USB_CC1"
+		(shape bidirectional)
+		(at 104.1400 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "724034ba-ea29-50d5-195e-0363b4b67f40")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 104.1400 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "971171fa-cd1d-98e8-83d3-fb395bdbc98a")
+	)
+	(global_label "USB_CC2"
+		(shape bidirectional)
+		(at 129.5400 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c4a6f997-82b9-e501-0d41-47a6a9db690c")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 129.5400 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d8c72dfa-da7e-8938-3cd0-de6ba81eb84f")
+	)
+	(global_label "MT_SW"
+		(shape bidirectional)
+		(at 170.1800 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "54cb1c6b-89d2-a562-5847-89f8f00eb544")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 170.1800 27.9400 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b9adf03b-138f-e8ae-e283-3e43639035a6")
+	)
+	(global_label "MT_FB"
+		(shape bidirectional)
+		(at 170.1800 30.4800 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b318e26f-5131-5df1-818b-e341ac1d24dd")
+	)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 190.5000 30.4800 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ba62aa10-0b4a-5bae-a00a-c5f6dca0be2a")
+	)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 190.5000 27.9400 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "713b35a3-1dc1-f5a9-e9b2-62b2e45803e3")
+	)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 154.9400 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "af28e740-5421-eca2-207f-68591700aa98")
+	)
+	(global_label "MT_SW"
+		(shape bidirectional)
+		(at 154.9400 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0ed8f308-b9e9-8141-c919-b684cc170ddb")
+	)
+	(global_label "MT_SW"
+		(shape bidirectional)
+		(at 307.3400 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ad033ef3-52ae-82c1-7e70-9a95134ea2ee")
+	)
+	(global_label "VMOT"
+		(shape bidirectional)
+		(at 297.1800 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "95504885-fdda-8c6f-b56e-29ca5cd1b5dc")
+	)
+	(global_label "VMOT"
+		(shape bidirectional)
+		(at 180.3400 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d734cd0b-5ceb-80f7-d23f-a1d85e59713d")
+	)
+	(global_label "MT_FB"
+		(shape bidirectional)
+		(at 180.3400 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5ff04a2e-a36e-a238-609f-df7616fa1336")
+	)
+	(global_label "MT_FB"
+		(shape bidirectional)
+		(at 205.7400 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a59b4719-9e95-e5d5-244e-3abf2ff9dd5a")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 205.7400 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c628f413-1a06-06db-356d-271fd489511f")
+	)
+	(global_label "VBAT"
+		(shape bidirectional)
+		(at 154.9400 158.7500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8d17e05e-4b46-157a-8ccc-149fcfe20b3b")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 154.9400 166.3700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7f9d69a7-465c-7fc8-9488-25e0ee25b529")
+	)
+	(global_label "VMOT"
+		(shape bidirectional)
+		(at 180.3400 158.7500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f8bf20f5-bde7-e6d7-5c4e-930c3ad12874")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 180.3400 166.3700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "bb0bd756-8b09-8ae3-2ebb-18a434e3ce7a")
+	)
+	(global_label "VMOT"
+		(shape bidirectional)
+		(at 228.6000 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e5ce5741-07c5-bb54-d20e-a93541e4f56b")
+	)
+	(global_label "VMOT_F"
+		(shape bidirectional)
+		(at 228.6000 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f958ffa8-0f6a-eb38-6bee-fa6a5862a26f")
+	)
+	(global_label "VMOT_F"
+		(shape bidirectional)
+		(at 205.7400 158.7500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fd35950a-c712-cdf2-54cb-4f2da0651d4b")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 205.7400 166.3700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b6a1a2ef-f518-8b8b-2cc0-82e0f7039289")
+	)
+	(global_label "MOT_RTN"
+		(shape bidirectional)
+		(at 254.0000 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c1794857-6fcb-4051-91c4-85d251e26155")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 254.0000 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fed8ccb2-056b-fb57-de5d-e260740a6661")
+	)
+	(global_label "MOT_RTN"
+		(shape bidirectional)
+		(at 279.4000 100.3300 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a888b3bc-113d-5913-23bb-74fff58d25fb")
+	)
+	(global_label "MOT_ISENSE"
+		(shape bidirectional)
+		(at 279.4000 107.9500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9747424b-e3ed-d288-227a-8f9145558b95")
+	)
+	(global_label "MOT_ISENSE"
+		(shape bidirectional)
+		(at 228.6000 158.7500 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2a55b1fb-be2f-fb5d-23c3-1a70453eb46e")
+	)
+	(global_label "GND"
+		(shape bidirectional)
+		(at 228.6000 166.3700 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4ae0db62-f611-c508-92cc-fa7b1f284cfd")
+	)
+	(global_label "V5"
+		(shape bidirectional)
+		(at 342.9000 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "015487ca-063b-5263-3adb-3d7aec423c76")
+	)
+	(global_label "VSYS"
+		(shape bidirectional)
+		(at 332.7400 25.4000 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5356b410-8cc8-956c-d259-a74bc0284e2e")
 	)
 	(sheet_instances
 		(path "/"

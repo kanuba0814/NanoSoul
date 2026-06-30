@@ -1,7 +1,7 @@
 {
   "name": "NanoSoul",
   "description": "",
-  "tstamps": "/nanosoul-140109246727088/",
+  "tstamps": "/nanosoul-139766999215008/",
   "source_file": "NanoSoul.kicad_sch",
   "components": {},
   "nets": {},
@@ -9,7 +9,7 @@
     {
       "name": "Power",
       "description": "",
-      "tstamps": "/power-140109250651312/",
+      "tstamps": "/power-139766998813248/",
       "source_file": "Power.kicad_sch",
       "components": {
         "J1": {
@@ -795,38 +795,246 @@
           ]
         },
         "J2": {
-          "symbol": "Connector_Generic:Conn_01x02",
+          "symbol": "nanosoul:TYPE-C-31-M-12",
           "ref": "J2",
           "value": "",
-          "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+          "footprint": "nanosoul:USB-C_SMD-TYPE-C-31-M-12_1",
+          "datasheet": "https://lcsc.com/product-detail/USB-Type-C_Korean-Hroparts-Elec-TYPE-C-31-M-12_C165948.html",
+          "description": "",
+          "properties": {},
+          "_extra_fields": {},
+          "pins": [
+            {
+              "pin_id": "1",
+              "name": "EH",
+              "func": "unspecified",
+              "unit": 1,
+              "x": 11.43,
+              "y": -13.97,
+              "length": 2.54,
+              "orientation": 180.0
+            },
+            {
+              "pin_id": "2",
+              "name": "EH",
+              "func": "unspecified",
+              "unit": 1,
+              "x": 11.43,
+              "y": -11.43,
+              "length": 2.54,
+              "orientation": 180.0
+            },
+            {
+              "pin_id": "3",
+              "name": "EH",
+              "func": "unspecified",
+              "unit": 1,
+              "x": 11.43,
+              "y": -8.89,
+              "length": 2.54,
+              "orientation": 180.0
+            },
+            {
+              "pin_id": "4",
+              "name": "EH",
+              "func": "unspecified",
+              "unit": 1,
+              "x": 11.43,
+              "y": -6.35,
+              "length": 2.54,
+              "orientation": 180.0
+            },
+            {
+              "pin_id": "A1B12",
+              "name": "GND",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": 13.97,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "A4B9",
+              "name": "VBUS",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": 11.43,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "B8",
+              "name": "SBU2",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": 8.89,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "A5",
+              "name": "CC1",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": 6.35,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "B7",
+              "name": "DN2",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": 3.81,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "A6",
+              "name": "DP1",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": 1.27,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "A7",
+              "name": "DN1",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": -1.27,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "B6",
+              "name": "DP2",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": -3.81,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "A8",
+              "name": "SBU1",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": -6.35,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "B5",
+              "name": "CC2",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": -8.89,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "B4A9",
+              "name": "VBUS",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": -11.43,
+              "length": 2.54,
+              "orientation": 0.0
+            },
+            {
+              "pin_id": "B1A12",
+              "name": "GND",
+              "func": "unspecified",
+              "unit": 1,
+              "x": -6.35,
+              "y": -13.97,
+              "length": 2.54,
+              "orientation": 0.0
+            }
+          ]
+        },
+        "R5": {
+          "symbol": "Device:R",
+          "ref": "R5",
+          "value": "5.1k",
+          "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
-          "description": "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)",
+          "description": "Resistor",
           "properties": {
-            "ki_fp_filters": "Connector*:*_1x??_*"
+            "ki_fp_filters": "R_*"
           },
           "_extra_fields": {
-            "ki_fp_filters": "Connector*:*_1x??_*"
+            "ki_fp_filters": "R_*"
           },
           "pins": [
             {
               "pin_id": "1",
-              "name": "Pin_1",
+              "name": "",
               "func": "passive",
               "unit": 1,
-              "x": -5.08,
-              "y": 0.0,
-              "length": 3.81,
-              "orientation": 0.0
+              "x": 0.0,
+              "y": 3.81,
+              "length": 1.27,
+              "orientation": 270.0
             },
             {
               "pin_id": "2",
-              "name": "Pin_2",
+              "name": "",
               "func": "passive",
               "unit": 1,
-              "x": -5.08,
-              "y": -2.54,
-              "length": 3.81,
-              "orientation": 0.0
+              "x": 0.0,
+              "y": -3.81,
+              "length": 1.27,
+              "orientation": 90.0
+            }
+          ]
+        },
+        "R6": {
+          "symbol": "Device:R",
+          "ref": "R6",
+          "value": "5.1k",
+          "footprint": "Resistor_SMD:R_0603_1608Metric",
+          "datasheet": "",
+          "description": "Resistor",
+          "properties": {
+            "ki_fp_filters": "R_*"
+          },
+          "_extra_fields": {
+            "ki_fp_filters": "R_*"
+          },
+          "pins": [
+            {
+              "pin_id": "1",
+              "name": "",
+              "func": "passive",
+              "unit": 1,
+              "x": 0.0,
+              "y": 3.81,
+              "length": 1.27,
+              "orientation": 270.0
+            },
+            {
+              "pin_id": "2",
+              "name": "",
+              "func": "passive",
+              "unit": 1,
+              "x": 0.0,
+              "y": -3.81,
+              "length": 1.27,
+              "orientation": 90.0
             }
           ]
         },
@@ -970,10 +1178,10 @@
             }
           ]
         },
-        "R5": {
+        "R7": {
           "symbol": "Device:R",
-          "ref": "R5",
-          "value": "91k",
+          "ref": "R7",
+          "value": "82k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
           "description": "Resistor",
@@ -1006,9 +1214,9 @@
             }
           ]
         },
-        "R6": {
+        "R8": {
           "symbol": "Device:R",
-          "ref": "R6",
+          "ref": "R8",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -1186,9 +1394,9 @@
             }
           ]
         },
-        "R7": {
+        "R9": {
           "symbol": "Device:R",
-          "ref": "R7",
+          "ref": "R9",
           "value": "0.05",
           "footprint": "Resistor_SMD:R_0805_2012Metric",
           "datasheet": "",
@@ -1222,9 +1430,9 @@
             }
           ]
         },
-        "R8": {
+        "R10": {
           "symbol": "Device:R",
-          "ref": "R8",
+          "ref": "R10",
           "value": "1k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -1543,8 +1751,64 @@
           {
             "component": "J2",
             "pin": {
+              "number": "A1B12",
+              "name": "GND",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "J2",
+            "pin": {
+              "number": "B1A12",
+              "name": "GND",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "J2",
+            "pin": {
+              "number": "4",
+              "name": "EH",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "J2",
+            "pin": {
+              "number": "3",
+              "name": "EH",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "J2",
+            "pin": {
               "number": "2",
-              "name": "Pin_2",
+              "name": "EH",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "J2",
+            "pin": {
+              "number": "1",
+              "name": "EH",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "R5",
+            "pin": {
+              "number": "2",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "R6",
+            "pin": {
+              "number": "2",
+              "name": "",
               "type": "passive"
             }
           },
@@ -1557,7 +1821,7 @@
             }
           },
           {
-            "component": "R6",
+            "component": "R8",
             "pin": {
               "number": "2",
               "name": "",
@@ -1589,7 +1853,7 @@
             }
           },
           {
-            "component": "R7",
+            "component": "R9",
             "pin": {
               "number": "2",
               "name": "",
@@ -1709,9 +1973,17 @@
             {
               "component": "J2",
               "pin": {
-                "number": "1",
-                "name": "Pin_1",
-                "type": "passive"
+                "number": "A4B9",
+                "name": "VBUS",
+                "type": "unspecified"
+              }
+            },
+            {
+              "component": "J2",
+              "pin": {
+                "number": "B4A9",
+                "name": "VBUS",
+                "type": "unspecified"
               }
             }
           ],
@@ -1986,6 +2258,56 @@
           "impedance": null,
           "properties": {}
         },
+        "USB_CC1": {
+          "nodes": [
+            {
+              "component": "J2",
+              "pin": {
+                "number": "A5",
+                "name": "CC1",
+                "type": "unspecified"
+              }
+            },
+            {
+              "component": "R5",
+              "pin": {
+                "number": "1",
+                "name": "",
+                "type": "passive"
+              }
+            }
+          ],
+          "is_power": false,
+          "power_symbol": null,
+          "trace_current": null,
+          "impedance": null,
+          "properties": {}
+        },
+        "USB_CC2": {
+          "nodes": [
+            {
+              "component": "J2",
+              "pin": {
+                "number": "B5",
+                "name": "CC2",
+                "type": "unspecified"
+              }
+            },
+            {
+              "component": "R6",
+              "pin": {
+                "number": "1",
+                "name": "",
+                "type": "passive"
+              }
+            }
+          ],
+          "is_power": false,
+          "power_symbol": null,
+          "trace_current": null,
+          "impedance": null,
+          "properties": {}
+        },
         "MT_SW": {
           "nodes": [
             {
@@ -2030,7 +2352,7 @@
               }
             },
             {
-              "component": "R5",
+              "component": "R7",
               "pin": {
                 "number": "2",
                 "name": "",
@@ -2038,7 +2360,7 @@
               }
             },
             {
-              "component": "R6",
+              "component": "R8",
               "pin": {
                 "number": "1",
                 "name": "",
@@ -2063,7 +2385,7 @@
               }
             },
             {
-              "component": "R5",
+              "component": "R7",
               "pin": {
                 "number": "1",
                 "name": "",
@@ -2121,7 +2443,7 @@
         "MOT_RTN": {
           "nodes": [
             {
-              "component": "R7",
+              "component": "R9",
               "pin": {
                 "number": "1",
                 "name": "",
@@ -2129,7 +2451,7 @@
               }
             },
             {
-              "component": "R8",
+              "component": "R10",
               "pin": {
                 "number": "1",
                 "name": "",
@@ -2146,7 +2468,7 @@
         "MOT_ISENSE": {
           "nodes": [
             {
-              "component": "R8",
+              "component": "R10",
               "pin": {
                 "number": "2",
                 "name": "",
@@ -2192,7 +2514,7 @@
     {
       "name": "Compute_Iface",
       "description": "",
-      "tstamps": "/compute_iface-140109246555984/",
+      "tstamps": "/compute_iface-139766980219424/",
       "source_file": "Compute_Iface.kicad_sch",
       "components": {
         "J3": {
@@ -2629,23 +2951,16 @@
         }
       },
       "nets": {
-        "MOTOR_STBY": {
-          "nodes": [
-            {
-              "component": "J3",
-              "pin": {
-                "number": "1",
-                "name": "Pin_1",
-                "type": "passive"
-              }
+        "MOT_ISENSE": [
+          {
+            "component": "J3",
+            "pin": {
+              "number": "1",
+              "name": "Pin_1",
+              "type": "passive"
             }
-          ],
-          "is_power": false,
-          "power_symbol": null,
-          "trace_current": null,
-          "impedance": null,
-          "properties": {}
-        },
+          }
+        ],
         "IMU_SCLK": {
           "nodes": [
             {
@@ -3164,16 +3479,23 @@
           "impedance": null,
           "properties": {}
         },
-        "MOT_ISENSE": [
-          {
-            "component": "J4",
-            "pin": {
-              "number": "16",
-              "name": "Pin_16",
-              "type": "passive"
+        "MOTOR_STBY": {
+          "nodes": [
+            {
+              "component": "J4",
+              "pin": {
+                "number": "16",
+                "name": "Pin_16",
+                "type": "passive"
+              }
             }
-          }
-        ],
+          ],
+          "is_power": false,
+          "power_symbol": null,
+          "trace_current": null,
+          "impedance": null,
+          "properties": {}
+        },
         "M2_ENC_A": {
           "nodes": [
             {
@@ -3232,9 +3554,45 @@
     {
       "name": "Motors",
       "description": "",
-      "tstamps": "/motors-140109228129552/",
+      "tstamps": "/motors-139766980222928/",
       "source_file": "Motors.kicad_sch",
       "components": {
+        "R11": {
+          "symbol": "Device:R",
+          "ref": "R11",
+          "value": "10k",
+          "footprint": "Resistor_SMD:R_0603_1608Metric",
+          "datasheet": "",
+          "description": "Resistor",
+          "properties": {
+            "ki_fp_filters": "R_*"
+          },
+          "_extra_fields": {
+            "ki_fp_filters": "R_*"
+          },
+          "pins": [
+            {
+              "pin_id": "1",
+              "name": "",
+              "func": "passive",
+              "unit": 1,
+              "x": 0.0,
+              "y": 3.81,
+              "length": 1.27,
+              "orientation": 270.0
+            },
+            {
+              "pin_id": "2",
+              "name": "",
+              "func": "passive",
+              "unit": 1,
+              "x": 0.0,
+              "y": -3.81,
+              "length": 1.27,
+              "orientation": 90.0
+            }
+          ]
+        },
         "U4": {
           "symbol": "nanosoul:TB6612FNG,C,8,EL",
           "ref": "U4",
@@ -3959,9 +4317,9 @@
             }
           ]
         },
-        "R9": {
+        "R12": {
           "symbol": "Device:R",
-          "ref": "R9",
+          "ref": "R12",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -3995,9 +4353,9 @@
             }
           ]
         },
-        "R10": {
+        "R13": {
           "symbol": "Device:R",
-          "ref": "R10",
+          "ref": "R13",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -4107,9 +4465,9 @@
             }
           ]
         },
-        "R11": {
+        "R14": {
           "symbol": "Device:R",
-          "ref": "R11",
+          "ref": "R14",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -4143,9 +4501,9 @@
             }
           ]
         },
-        "R12": {
+        "R15": {
           "symbol": "Device:R",
-          "ref": "R12",
+          "ref": "R15",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -4255,9 +4613,9 @@
             }
           ]
         },
-        "R13": {
+        "R16": {
           "symbol": "Device:R",
-          "ref": "R13",
+          "ref": "R16",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -4291,9 +4649,9 @@
             }
           ]
         },
-        "R14": {
+        "R17": {
           "symbol": "Device:R",
-          "ref": "R14",
+          "ref": "R17",
           "value": "10k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -4329,6 +4687,138 @@
         }
       },
       "nets": {
+        "MOTOR_STBY": [
+          {
+            "component": "R11",
+            "pin": {
+              "number": "1",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "U4",
+            "pin": {
+              "number": "19",
+              "name": "STBY",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "U5",
+            "pin": {
+              "number": "19",
+              "name": "STBY",
+              "type": "unspecified"
+            }
+          }
+        ],
+        "GND": [
+          {
+            "component": "R11",
+            "pin": {
+              "number": "2",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "U4",
+            "pin": {
+              "number": "18",
+              "name": "GND",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "C10",
+            "pin": {
+              "number": "2",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "C11",
+            "pin": {
+              "number": "2",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "U5",
+            "pin": {
+              "number": "15",
+              "name": "PWMB",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "U5",
+            "pin": {
+              "number": "16",
+              "name": "BIN2",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "U5",
+            "pin": {
+              "number": "17",
+              "name": "BIN1",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "U5",
+            "pin": {
+              "number": "18",
+              "name": "GND",
+              "type": "unspecified"
+            }
+          },
+          {
+            "component": "C12",
+            "pin": {
+              "number": "2",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "C13",
+            "pin": {
+              "number": "2",
+              "name": "",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "J5",
+            "pin": {
+              "number": "4",
+              "name": "Pin_4",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "J6",
+            "pin": {
+              "number": "4",
+              "name": "Pin_4",
+              "type": "passive"
+            }
+          },
+          {
+            "component": "J7",
+            "pin": {
+              "number": "4",
+              "name": "Pin_4",
+              "type": "passive"
+            }
+          }
+        ],
         "M0_OUT_A": {
           "nodes": [
             {
@@ -4623,122 +5113,6 @@
             }
           }
         ],
-        "GND": [
-          {
-            "component": "U4",
-            "pin": {
-              "number": "18",
-              "name": "GND",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "C10",
-            "pin": {
-              "number": "2",
-              "name": "",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "C11",
-            "pin": {
-              "number": "2",
-              "name": "",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "U5",
-            "pin": {
-              "number": "15",
-              "name": "PWMB",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U5",
-            "pin": {
-              "number": "16",
-              "name": "BIN2",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U5",
-            "pin": {
-              "number": "17",
-              "name": "BIN1",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U5",
-            "pin": {
-              "number": "18",
-              "name": "GND",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "C12",
-            "pin": {
-              "number": "2",
-              "name": "",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "C13",
-            "pin": {
-              "number": "2",
-              "name": "",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "J5",
-            "pin": {
-              "number": "4",
-              "name": "Pin_4",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "J6",
-            "pin": {
-              "number": "4",
-              "name": "Pin_4",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "J7",
-            "pin": {
-              "number": "4",
-              "name": "Pin_4",
-              "type": "passive"
-            }
-          }
-        ],
-        "MOTOR_STBY": [
-          {
-            "component": "U4",
-            "pin": {
-              "number": "19",
-              "name": "STBY",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U5",
-            "pin": {
-              "number": "19",
-              "name": "STBY",
-              "type": "unspecified"
-            }
-          }
-        ],
         "V3V3": [
           {
             "component": "U4",
@@ -4781,7 +5155,7 @@
             }
           },
           {
-            "component": "R9",
+            "component": "R12",
             "pin": {
               "number": "1",
               "name": "",
@@ -4789,7 +5163,7 @@
             }
           },
           {
-            "component": "R10",
+            "component": "R13",
             "pin": {
               "number": "1",
               "name": "",
@@ -4805,7 +5179,7 @@
             }
           },
           {
-            "component": "R11",
+            "component": "R14",
             "pin": {
               "number": "1",
               "name": "",
@@ -4813,7 +5187,7 @@
             }
           },
           {
-            "component": "R12",
+            "component": "R15",
             "pin": {
               "number": "1",
               "name": "",
@@ -4829,7 +5203,7 @@
             }
           },
           {
-            "component": "R13",
+            "component": "R16",
             "pin": {
               "number": "1",
               "name": "",
@@ -4837,7 +5211,7 @@
             }
           },
           {
-            "component": "R14",
+            "component": "R17",
             "pin": {
               "number": "1",
               "name": "",
@@ -4981,7 +5355,7 @@
             }
           },
           {
-            "component": "R9",
+            "component": "R12",
             "pin": {
               "number": "2",
               "name": "",
@@ -4999,7 +5373,7 @@
             }
           },
           {
-            "component": "R10",
+            "component": "R13",
             "pin": {
               "number": "2",
               "name": "",
@@ -5017,7 +5391,7 @@
             }
           },
           {
-            "component": "R11",
+            "component": "R14",
             "pin": {
               "number": "2",
               "name": "",
@@ -5035,7 +5409,7 @@
             }
           },
           {
-            "component": "R12",
+            "component": "R15",
             "pin": {
               "number": "2",
               "name": "",
@@ -5053,7 +5427,7 @@
             }
           },
           {
-            "component": "R13",
+            "component": "R16",
             "pin": {
               "number": "2",
               "name": "",
@@ -5071,7 +5445,7 @@
             }
           },
           {
-            "component": "R14",
+            "component": "R17",
             "pin": {
               "number": "2",
               "name": "",
@@ -5086,56 +5460,56 @@
     {
       "name": "Sensors",
       "description": "",
-      "tstamps": "/sensors-140109228250112/",
+      "tstamps": "/sensors-139766980228928/",
       "source_file": "Sensors.kicad_sch",
       "components": {
         "U6": {
-          "symbol": "nanosoul:ICM-42688-P",
+          "symbol": "nanosoul:QMI8658C",
           "ref": "U6",
           "value": "",
-          "footprint": "nanosoul:LGA-14_L3.0-W2.5-P0.50-TL",
-          "datasheet": "https://www.lcsc.com/datasheet/C1850418.pdf",
+          "footprint": "nanosoul:LGA-14_L3.0-W2.5-P0.50-BR",
+          "datasheet": "https://www.lcsc.com/datasheet/C2842151.pdf",
           "description": "",
           "properties": {},
           "_extra_fields": {},
           "pins": [
             {
               "pin_id": "1",
-              "name": "AP_SDO/AP_AD0",
+              "name": "SDO/SA0",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": 7.62,
+              "x": -16.51,
+              "y": 3.81,
               "length": 2.54,
               "orientation": 0.0
             },
             {
               "pin_id": "2",
-              "name": "RESV",
+              "name": "SDX",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": 5.08,
+              "x": -16.51,
+              "y": 1.27,
               "length": 2.54,
               "orientation": 0.0
             },
             {
               "pin_id": "3",
-              "name": "RESV",
+              "name": "SCX",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": 2.54,
+              "x": -16.51,
+              "y": -1.27,
               "length": 2.54,
               "orientation": 0.0
             },
             {
               "pin_id": "4",
-              "name": "INT1/INT",
+              "name": "INT1",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": -0.0,
+              "x": -16.51,
+              "y": -3.81,
               "length": 2.54,
               "orientation": 0.0
             },
@@ -5144,100 +5518,100 @@
               "name": "VDDIO",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": -2.54,
+              "x": -2.54,
+              "y": -15.24,
               "length": 2.54,
-              "orientation": 0.0
+              "orientation": 90.0
             },
             {
               "pin_id": "6",
               "name": "GND",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": -5.08,
+              "x": 0.0,
+              "y": -15.24,
               "length": 2.54,
-              "orientation": 0.0
+              "orientation": 90.0
             },
             {
               "pin_id": "7",
-              "name": "RESV",
+              "name": "GND",
               "func": "unspecified",
               "unit": 1,
-              "x": -34.29,
-              "y": -7.62,
+              "x": 2.54,
+              "y": -15.24,
               "length": 2.54,
-              "orientation": 0.0
+              "orientation": 90.0
             },
             {
               "pin_id": "8",
               "name": "VDD",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": -7.62,
+              "x": 16.51,
+              "y": -3.81,
               "length": 2.54,
               "orientation": 180.0
             },
             {
               "pin_id": "9",
-              "name": "INT2/FSYNC/CLKIN",
+              "name": "INT2",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": -5.08,
+              "x": 16.51,
+              "y": -1.27,
               "length": 2.54,
               "orientation": 180.0
             },
             {
               "pin_id": "10",
-              "name": "RESV",
+              "name": "CS-AUX",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": -2.54,
+              "x": 16.51,
+              "y": 1.27,
               "length": 2.54,
               "orientation": 180.0
             },
             {
               "pin_id": "11",
-              "name": "RESV",
+              "name": "SDO-SUX",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": -0.0,
+              "x": 16.51,
+              "y": 3.81,
               "length": 2.54,
               "orientation": 180.0
             },
             {
               "pin_id": "12",
-              "name": "AP_CS",
+              "name": "CS",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": 2.54,
+              "x": 2.54,
+              "y": 15.24,
               "length": 2.54,
-              "orientation": 180.0
+              "orientation": 270.0
             },
             {
               "pin_id": "13",
-              "name": "AP_SCL/AP_SCLK",
+              "name": "SCL",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": 5.08,
+              "x": 0.0,
+              "y": 15.24,
               "length": 2.54,
-              "orientation": 180.0
+              "orientation": 270.0
             },
             {
               "pin_id": "14",
-              "name": "AP_SDA/AP_SDIO/AP_SDI",
+              "name": "SDA",
               "func": "unspecified",
               "unit": 1,
-              "x": 34.29,
-              "y": 7.62,
+              "x": -2.54,
+              "y": 15.24,
               "length": 2.54,
-              "orientation": 180.0
+              "orientation": 270.0
             }
           ]
         },
@@ -5313,127 +5687,9 @@
             }
           ]
         },
-        "U7": {
-          "symbol": "nanosoul:BH1750FVI-TR",
-          "ref": "U7",
-          "value": "",
-          "footprint": "nanosoul:WSOF-6_L2.6-W1.6-P0.50-TL-EP",
-          "datasheet": "https://lcsc.com/product-detail/Sensors_ROHM_BH1750FVI-TR_BH1750FVI-TR_C78960.html",
-          "description": "",
-          "properties": {},
-          "_extra_fields": {},
-          "pins": [
-            {
-              "pin_id": "1",
-              "name": "VCC",
-              "func": "unspecified",
-              "unit": 1,
-              "x": -12.7,
-              "y": 1.27,
-              "length": 2.54,
-              "orientation": 0.0
-            },
-            {
-              "pin_id": "2",
-              "name": "ADDR",
-              "func": "unspecified",
-              "unit": 1,
-              "x": -12.7,
-              "y": -1.27,
-              "length": 2.54,
-              "orientation": 0.0
-            },
-            {
-              "pin_id": "3",
-              "name": "GND",
-              "func": "unspecified",
-              "unit": 1,
-              "x": -12.7,
-              "y": -3.81,
-              "length": 2.54,
-              "orientation": 0.0
-            },
-            {
-              "pin_id": "4",
-              "name": "SDA",
-              "func": "unspecified",
-              "unit": 1,
-              "x": 12.7,
-              "y": -3.81,
-              "length": 2.54,
-              "orientation": 180.0
-            },
-            {
-              "pin_id": "5",
-              "name": "DVI",
-              "func": "unspecified",
-              "unit": 1,
-              "x": 12.7,
-              "y": -1.27,
-              "length": 2.54,
-              "orientation": 180.0
-            },
-            {
-              "pin_id": "6",
-              "name": "SCL",
-              "func": "unspecified",
-              "unit": 1,
-              "x": 12.7,
-              "y": 1.27,
-              "length": 2.54,
-              "orientation": 180.0
-            },
-            {
-              "pin_id": "7",
-              "name": "EP",
-              "func": "unspecified",
-              "unit": 1,
-              "x": 12.7,
-              "y": 3.81,
-              "length": 2.54,
-              "orientation": 180.0
-            }
-          ]
-        },
-        "C16": {
-          "symbol": "Device:C",
-          "ref": "C16",
-          "value": "0.1uF",
-          "footprint": "Capacitor_SMD:C_0603_1608Metric",
-          "datasheet": "",
-          "description": "Unpolarized capacitor",
-          "properties": {
-            "ki_fp_filters": "C_*"
-          },
-          "_extra_fields": {
-            "ki_fp_filters": "C_*"
-          },
-          "pins": [
-            {
-              "pin_id": "1",
-              "name": "",
-              "func": "passive",
-              "unit": 1,
-              "x": 0.0,
-              "y": 3.81,
-              "length": 2.794,
-              "orientation": 270.0
-            },
-            {
-              "pin_id": "2",
-              "name": "",
-              "func": "passive",
-              "unit": 1,
-              "x": 0.0,
-              "y": -3.81,
-              "length": 2.794,
-              "orientation": 90.0
-            }
-          ]
-        },
-        "R15": {
+        "R18": {
           "symbol": "Device:R",
-          "ref": "R15",
+          "ref": "R18",
           "value": "4.7k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -5467,9 +5723,9 @@
             }
           ]
         },
-        "R16": {
+        "R19": {
           "symbol": "Device:R",
-          "ref": "R16",
+          "ref": "R19",
           "value": "4.7k",
           "footprint": "Resistor_SMD:R_0603_1608Metric",
           "datasheet": "",
@@ -5566,7 +5822,7 @@
             "component": "U6",
             "pin": {
               "number": "1",
-              "name": "AP_SDO/AP_AD0",
+              "name": "SDO/SA0",
               "type": "unspecified"
             }
           }
@@ -5576,7 +5832,7 @@
             "component": "U6",
             "pin": {
               "number": "4",
-              "name": "INT1/INT",
+              "name": "INT1",
               "type": "unspecified"
             }
           }
@@ -5615,23 +5871,7 @@
             }
           },
           {
-            "component": "U7",
-            "pin": {
-              "number": "1",
-              "name": "VCC",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U7",
-            "pin": {
-              "number": "5",
-              "name": "DVI",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "C16",
+            "component": "R18",
             "pin": {
               "number": "1",
               "name": "",
@@ -5639,15 +5879,7 @@
             }
           },
           {
-            "component": "R15",
-            "pin": {
-              "number": "1",
-              "name": "",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "R16",
+            "component": "R19",
             "pin": {
               "number": "1",
               "name": "",
@@ -5673,6 +5905,14 @@
             }
           },
           {
+            "component": "U6",
+            "pin": {
+              "number": "7",
+              "name": "GND",
+              "type": "unspecified"
+            }
+          },
+          {
             "component": "C14",
             "pin": {
               "number": "2",
@@ -5682,38 +5922,6 @@
           },
           {
             "component": "C15",
-            "pin": {
-              "number": "2",
-              "name": "",
-              "type": "passive"
-            }
-          },
-          {
-            "component": "U7",
-            "pin": {
-              "number": "2",
-              "name": "ADDR",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U7",
-            "pin": {
-              "number": "3",
-              "name": "GND",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "U7",
-            "pin": {
-              "number": "7",
-              "name": "EP",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "C16",
             "pin": {
               "number": "2",
               "name": "",
@@ -5734,7 +5942,7 @@
             "component": "U6",
             "pin": {
               "number": "12",
-              "name": "AP_CS",
+              "name": "CS",
               "type": "unspecified"
             }
           }
@@ -5744,7 +5952,7 @@
             "component": "U6",
             "pin": {
               "number": "13",
-              "name": "AP_SCL/AP_SCLK",
+              "name": "SCL",
               "type": "unspecified"
             }
           }
@@ -5754,22 +5962,14 @@
             "component": "U6",
             "pin": {
               "number": "14",
-              "name": "AP_SDA/AP_SDIO/AP_SDI",
+              "name": "SDA",
               "type": "unspecified"
             }
           }
         ],
         "I2C1_SDA": [
           {
-            "component": "U7",
-            "pin": {
-              "number": "4",
-              "name": "SDA",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "R15",
+            "component": "R18",
             "pin": {
               "number": "2",
               "name": "",
@@ -5787,15 +5987,7 @@
         ],
         "I2C1_SCL": [
           {
-            "component": "U7",
-            "pin": {
-              "number": "6",
-              "name": "SCL",
-              "type": "unspecified"
-            }
-          },
-          {
-            "component": "R16",
+            "component": "R19",
             "pin": {
               "number": "2",
               "name": "",
