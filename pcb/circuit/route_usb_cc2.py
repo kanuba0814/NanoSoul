@@ -53,25 +53,22 @@ def main():
         return True
 
     # 方案1: F.Cu 直连
-    before = set(id(t) for t in b.GetTracks())
     t = pcbnew.PCB_TRACK(b); t.SetStart(V(FM(a[0]), FM(a[1]))); t.SetEnd(V(FM(c[0]), FM(c[1])))
     t.SetWidth(FM(0.25)); t.SetLayer(pcbnew.F_Cu); t.SetNet(net); b.Add(t)
-    new = [x for x in b.GetTracks() if id(x) not in before]
+    new = [t]   # 直接持引用(坑#1: GetTracks 在 b.Add 后返回 stale SwigPyObject → .x 崩)
     if clean(new):
         pcbnew.SaveBoard(P, b); print("USB_CC2: F.Cu 直连 OK"); return
     for it in new:
         b.Remove(it)
     # 方案2: B.Cu 下穿(过孔放 B5 内侧下方 + R6 处)
     vy = a[1] + 1.4
-    before = set(id(t) for t in b.GetTracks())
-    for (x, y) in ((a[0], a[1]), (a[0], vy)):
-        pass
     seg = [(a[0], a[1], a[0], vy, pcbnew.F_Cu), (a[0], vy, c[0], c[1], pcbnew.B_Cu)]
-    via1 = pcbnew.PCB_VIA(b); via1.SetPosition(V(FM(a[0]), FM(vy))); via1.SetDrill(FM(0.3)); via1.SetWidth(FM(0.6)); via1.SetNet(net); b.Add(via1)
-    via2 = pcbnew.PCB_VIA(b); via2.SetPosition(V(FM(c[0]), FM(c[1]))); via2.SetDrill(FM(0.3)); via2.SetWidth(FM(0.6)); via2.SetNet(net); b.Add(via2)
+    new = []
+    for (vx, vyy) in ((a[0], vy), (c[0], c[1])):
+        via = pcbnew.PCB_VIA(b); via.SetViaType(pcbnew.VIATYPE_THROUGH); via.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+        via.SetPosition(V(FM(vx), FM(vyy))); via.SetDrill(FM(0.3)); via.SetWidth(FM(0.6)); via.SetNet(net); b.Add(via); new.append(via)
     for (x1, y1, x2, y2, ly) in seg:
-        t = pcbnew.PCB_TRACK(b); t.SetStart(V(FM(x1), FM(y1))); t.SetEnd(V(FM(x2), FM(y2))); t.SetWidth(FM(0.25)); t.SetLayer(ly); t.SetNet(net); b.Add(t)
-    new = [x for x in b.GetTracks() if id(x) not in before]
+        t = pcbnew.PCB_TRACK(b); t.SetStart(V(FM(x1), FM(y1))); t.SetEnd(V(FM(x2), FM(y2))); t.SetWidth(FM(0.25)); t.SetLayer(ly); t.SetNet(net); b.Add(t); new.append(t)
     if clean(new):
         pcbnew.SaveBoard(P, b); print("USB_CC2: B.Cu 下穿 OK"); return
     for it in new:
