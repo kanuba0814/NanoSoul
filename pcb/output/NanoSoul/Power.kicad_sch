@@ -3506,7 +3506,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "SW_SPST_CK_RS282G05A3"
+		(property "Footprint" "SW-SMD_L3.9-W3.0-P4.45"
 			(at 266.7 30.48 0.0000)
 			(effects
 				(font
