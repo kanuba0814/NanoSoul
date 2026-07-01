@@ -26,7 +26,7 @@ POLAR = set(IC) | {"D1", "D2", "D3", "C8", "J2"}
 # 已查实的 LCSC（无源/连接器/LED/开关；保留各自网表值为 Comment，只补料号）
 LCSC_BY_REF = {
     "C8": "C4747956",   # 470µF/25V/8×10.5 电解（原写 RYVP25V470UF8*10 查无此型号→替换）
-    "L1": "",           # 2.2µH → Sunlord SWPA6045S2R2NT(6045,5A,与 C78804 同 land)；JLC C号在下单页按型号匹配确认
+    "L1": "C36500",     # Sunlord SWPA6045S2R2NT 2.2µH 6045 7.4A(Isat4.6A,扩展库,库存5k+,与 C78804 同 land)
     "L2": "C78804",     # Sunlord SWPA6045S4R7MT 4.7µH 6045 3.6A(JLC常备,替代库存薄的 LQH66S)
     "J1": "C131337",    # B2B-PH-K-S JST-PH 2P 直插
     "J2": "C165948",    # TYPE-C-31-M-12 USB-C 充电口
