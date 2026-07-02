@@ -199,6 +199,65 @@ JUMP = [  # (net, from, to, 建议线色)
     ("IMU_INT", (2, 17), (28, 12), "蓝白"),
 ]
 
+# ---------------- 跳线曼哈顿布线(直角贴板走线, 电工整线手法) ----------------
+# 每根线: 出脚 → 孔间缝(±0.5) → 直角走缝 → 入脚。所有段横平竖直。
+def _route_one(S, E):
+    (sc, sr), (ec, er) = S, E
+    if sc == ec:                        # 同列: 走西侧缝
+        x = sc - 0.5
+        return [[sc, sr], [x, sr], [x, er], [ec, er]]
+    sgn = 1 if ec > sc else -1
+    if sr == er:                        # 同行: 中段贴行走(车道分配会让开焊盘)
+        return [[sc, sr], [sc + 0.5 * sgn, sr], [ec - 0.5 * sgn, sr], [ec, er]]
+    x1, x2 = sc + 0.5 * sgn, ec - 0.5 * sgn
+    ch = round((sr + er) / 2) + 0.5     # 中间横缝
+    pts = [[sc, sr]]
+    if sr == 24:                        # 底边接口垂直出线
+        pts += [[sc, ch]]
+    else:
+        pts += [[x1, sr], [x1, ch]]
+    if er == 24:
+        pts += [[ec, ch], [ec, er]]
+    else:
+        pts += [[x2, ch], [x2, er], [ec, er]]
+    return pts
+
+
+def build_routes():
+    """内部段按通道分车道: 平行线错开 0.15 孔距, 整数线基础偏移 -0.3 让开焊盘。
+    返回 (画图路径-带车道偏移, 规范路径-纯 .5 缝坐标供接线表)。"""
+    paths = [_route_one(a, b) for _, a, b, _ in JUMP]
+    canon = []
+    for pts in paths:
+        cp = []
+        for p in pts:
+            if not cp or tuple(p) != tuple(cp[-1]):
+                cp.append(tuple(p))
+        canon.append(cp)
+    chan = defaultdict(list)            # (H/V, 坐标) -> [(wire, seg)]
+    for wi, pts in enumerate(paths):
+        for si in range(1, len(pts) - 2):   # 只动内部段, 两端引脚不动
+            a, b = pts[si], pts[si + 1]
+            if a[1] == b[1]:
+                chan[("H", a[1])].append((wi, si))
+            elif a[0] == b[0]:
+                chan[("V", a[0])].append((wi, si))
+    for (kind, coord), members in chan.items():
+        n = len(members)
+        base = -0.30 if abs(coord - round(coord)) < 0.25 else 0.0
+        step = min(0.55 / n, 0.15) if n > 1 else 0.0
+        for k, (wi, si) in enumerate(members):
+            d = base + (k - (n - 1) / 2) * step
+            a, b = paths[wi][si], paths[wi][si + 1]
+            if kind == "H":
+                a[1] += d; b[1] += d
+            else:
+                a[0] += d; b[0] += d
+    return [[(x, y) for x, y in pts] for pts in paths], canon
+
+
+ROUTES, ROUTES_CANON = build_routes()
+
 # ---------------- 模块外形(画图用, top 视角) ----------------
 BODIES = [  # (x0,y0,x1,y1, 名称, 颜色) 单位=孔坐标
     (19.4, 1.9, 29.6, 23.1, "ESP32-P4-WIFI6 开发板(插排母,悬空8.5mm)", "#cde4f5"),
@@ -369,26 +428,29 @@ def render():
             ax.plot([X(c1), X(c2)], [r1, r2], color=NET_COLOR.get(net, "#444"),
                     lw=lw, solid_capstyle="round", zorder=3, alpha=0.95)
 
-    def draw_jump(ax, X, nets=None):
-        import numpy as np
+    def draw_jump(ax, X, nets=None, label=True):
+        import matplotlib.patheffects as pe
         for i, (net, a, b, color) in enumerate(JUMP):
             if nets and net not in nets:
                 continue
-            (c1, r1), (c2, r2) = a, b
-            x1, y1, x2, y2 = X(c1), r1, X(c2), r2
-            mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            dx, dy = x2 - x1, y2 - y1
-            L = math.hypot(dx, dy) or 1
-            # 垂直偏移做弧线, 弧高封顶防长线乱飞
-            k = min((0.10 + 0.02 * (i % 5)) * L, 1.6)
-            ox, oy = -dy / L * k, dx / L * k
-            t = np.linspace(0, 1, 24)
-            bx = (1 - t) ** 2 * x1 + 2 * (1 - t) * t * (mx + ox) + t ** 2 * x2
-            by = (1 - t) ** 2 * y1 + 2 * (1 - t) * t * (my + oy) + t ** 2 * y2
-            ax.plot(bx, by, color=NET_COLOR.get(net, "#444"), lw=1.6, zorder=6, alpha=0.9)
-            ax.text(mx + ox * 0.9, my + oy * 0.9, net, fontsize=5, color=NET_COLOR.get(net, "#444"),
-                    ha="center", va="center", zorder=7,
-                    bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none", alpha=0.7))
+            pts = ROUTES[i]
+            xs = [X(c) for c, r in pts]
+            ys = [r for c, r in pts]
+            ax.plot(xs, ys, color=NET_COLOR.get(net, "#444"), lw=1.8, zorder=6,
+                    solid_joinstyle="round", solid_capstyle="round", alpha=0.95,
+                    path_effects=[pe.Stroke(linewidth=3.0, foreground="white"), pe.Normal()])
+            if not label:
+                continue
+            # 标签放最长一段中点
+            best, bl = 0, -1
+            for s in range(len(pts) - 1):
+                L = abs(xs[s + 1] - xs[s]) + abs(ys[s + 1] - ys[s])
+                if L > bl:
+                    best, bl = s, L
+            mx, my = (xs[best] + xs[best + 1]) / 2, (ys[best] + ys[best + 1]) / 2
+            ax.text(mx, my, net, fontsize=5, color=NET_COLOR.get(net, "#444"),
+                    ha="center", va="center", zorder=7, rotation=0 if ys[best] == ys[best + 1] else 90,
+                    bbox=dict(boxstyle="round,pad=0.08", fc="white", ec="none", alpha=0.75))
 
     def draw_comps(ax, X):
         for name, na, ha_, nb, hb, note in COMPONENTS:
@@ -497,11 +559,16 @@ def table():
     lines += ["", "## ③ 元件", "", "| 元件 | A脚 | B脚 | 说明 |", "|---|---|---|---|"]
     for name, na, ha, nb, hb, note in COMPONENTS:
         lines.append(f"| {name} | {ha} ({na}) | {hb} ({nb}) | {note} |")
-    lines += ["", "## ④ 绝缘跳线（焊两端, 长度=曼哈顿距离×2.54×1.3+15mm 余量）", "",
-              "| # | 网络 | 从 | 到 | 建议线色 | 备长 |", "|---|---|---|---|---|---|"]
+    lines += ["", "## ④ 绝缘导线（0.5mm 单芯线, 直角贴板走缝, 只焊两端）", "",
+              "路径 = 拐点序列；坐标 x.5 表示走第 x 与 x+1 列(行)之间的缝。",
+              "同缝多线并排走成线束即可, 不必精确到小数(小数只是画图错位防重叠)。", "",
+              "| # | 网络 | 从 | 到 | 路径(拐点) | 线色 | 备长 |", "|---|---|---|---|---|---|---|"]
     for i, (net, a, b, color) in enumerate(JUMP, 1):
-        L = (abs(a[0] - b[0]) + abs(a[1] - b[1])) * 2.54 * 1.3 + 15
-        lines.append(f"| J{i} | {net} | {a} | {b} | {color} | {L:.0f}mm |")
+        pts = ROUTES_CANON[i - 1]
+        L = sum(abs(pts[s + 1][0] - pts[s][0]) + abs(pts[s + 1][1] - pts[s][1])
+                for s in range(len(pts) - 1)) * 2.54 + 20
+        path = "→".join(f"({p[0]:g},{p[1]:g})" for p in pts)
+        lines.append(f"| J{i} | {net} | {a} | {b} | {path} | {color} | {L:.0f}mm |")
     with open("perfboard/wiring_table.md", "w") as f:
         f.write("\n".join(lines) + "\n")
 
