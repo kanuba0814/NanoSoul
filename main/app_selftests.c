@@ -6,11 +6,19 @@
 #include "esp_heap_caps.h"
 #include "esp_partition.h"
 
+#include <stdlib.h>
+
+#include "board_i2c0.h"
+#include "bsp_pins.h"
+#include "camera.h"
 #include "face.h"
 #include "hud.h"
+#include "motion.h"
 #include "ns_config.h"
 #include "sd_storage.h"
 #include "selftest.h"
+#include "soul.h"
+#include "vision.h"
 
 /* ---------------- Phase 0 checks ---------------- */
 
@@ -104,6 +112,107 @@ static st_report_t check_hud(void)
     return hud_ready() ? st_pass("6 lines") : st_skip("overlay off");
 }
 
+/* ---------------- Phase B checks (camera + vision) ---------------- */
+
+static st_report_t check_i2c0_probe(void)
+{
+    if (!board_i2c0_bus()) {
+        return st_skip("i2c0 not up");
+    }
+    bool cam = board_i2c0_probe(BSP_CAMERA_SCCB_ADDR);
+    return cam ? st_pass("OV5647 @0x%02x ack", BSP_CAMERA_SCCB_ADDR)
+               : st_fail("no SCCB ack @0x%02x", BSP_CAMERA_SCCB_ADDR);
+}
+
+static st_report_t check_camera_stream(void)
+{
+    static uint32_t last;
+    if (!camera_running()) {
+        return st_skip("camera not streaming");
+    }
+    uint32_t f = camera_frame_count();
+    uint32_t d = f - last;
+    last = f;
+    return d > 0 ? st_pass("+%u frames/round", (unsigned)d) : st_fail("no frames (f=%u)", (unsigned)f);
+}
+
+static st_report_t check_face_detect(void)
+{
+    static uint32_t last;
+    if (!vision_ready()) {
+        return st_skip("vision not up");
+    }
+    uint32_t d = vision_detect_count() - last;
+    last = vision_detect_count();
+    tel_face_t f;
+    vision_get(&f);
+    if (d == 0) {
+        return st_fail("detector stalled");
+    }
+    return st_pass("%.1ffps face=%d a%.3f fr%.2f", vision_fps(), f.present, f.area_ratio, f.frontal_score);
+}
+
+/* ---------------- Phase C checks (motion IK + soul FSM, pure logic) ---------------- */
+
+static st_report_t check_motion_ik(void)
+{
+    int16_t fwd[3];
+    motion_ik(1.0f, 0.0f, 0.0f, 100, fwd);   /* pure forward */
+    /* wheels at {0,120,240}: expect ~{0, -MAX, +MAX} */
+    if (!(abs(fwd[0]) <= 3 && fwd[1] <= -1015 && fwd[2] >= 1015)) {
+        return st_fail("fwd[%d,%d,%d]", fwd[0], fwd[1], fwd[2]);
+    }
+    int16_t rot[3];
+    motion_ik(0.0f, 0.0f, 1.0f, 100, rot);   /* pure rotation: all equal */
+    if (!(rot[0] >= 1015 && rot[1] >= 1015 && rot[2] >= 1015)) {
+        return st_fail("rot[%d,%d,%d]", rot[0], rot[1], rot[2]);
+    }
+    return st_pass("fwd[%d,%d,%d] rot ok", fwd[0], fwd[1], fwd[2]);
+}
+
+static st_report_t check_soul_sim(void)
+{
+    soul_ctx_t c = {0};
+    c.state = SOUL_IDLE;
+    c.session = SOUL_IDLE;
+    c.emotion = "waiting";
+    ns_behavior_cfg_t b = {
+        .near_lo = 0.04f, .near_hi = 0.18f, .frontal_thresh = 0.7f,
+        .gaze_hold_ms = 1500, .idle_scan = false,
+    };
+
+    tel_face_t none = {0};
+    soul_eval(&c, &none, &b, 100, 0);
+    if (c.state != SOUL_IDLE) {
+        return st_fail("no-face!=IDLE (%s)", soul_state_name(c.state));
+    }
+    tel_face_t far = { .present = true, .area_ratio = 0.02f, .frontal_score = 0.2f };
+    soul_eval(&c, &far, &b, 100, 100);
+    if (c.state != SOUL_APPROACH) {
+        return st_fail("far!=APPROACH (%s)", soul_state_name(c.state));
+    }
+    tel_face_t mid = { .present = true, .area_ratio = 0.10f, .frontal_score = 0.3f };
+    soul_eval(&c, &mid, &b, 100, 200);
+    if (c.state != SOUL_ENGAGE) {
+        return st_fail("mid!=ENGAGE (%s)", soul_state_name(c.state));
+    }
+    tel_face_t gaze = { .present = true, .area_ratio = 0.10f, .frontal_score = 0.9f };
+    bool gazed = false;
+    int64_t t = 300;
+    for (int i = 0; i < 25; i++) {
+        soul_eval(&c, &gaze, &b, 100, t);
+        t += 100;
+        if (c.state == SOUL_GAZED) {
+            gazed = true;
+            break;
+        }
+    }
+    if (!gazed) {
+        return st_fail("no GAZED after sustained frontal gaze");
+    }
+    return st_pass("IDLE->APPROACH->ENGAGE->GAZED ok");
+}
+
 void app_selftests_register(void)
 {
     /* Phase 0 */
@@ -115,4 +224,11 @@ void app_selftests_register(void)
     selftest_register("emote_mount", check_emote_mount, 0);
     selftest_register("emote_render", check_emote_render, 0);
     selftest_register("hud_draw", check_hud, 0);
+    /* Phase B */
+    selftest_register("i2c0_probe", check_i2c0_probe, 0);
+    selftest_register("camera_stream", check_camera_stream, 0);
+    selftest_register("face_detect", check_face_detect, 0);
+    /* Phase C (pure logic — always run) */
+    selftest_register("motion_ik", check_motion_ik, 0);
+    selftest_register("soul_sim", check_soul_sim, 0);
 }
