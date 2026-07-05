@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.16)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(nanosoul)
 
+# Camera: point esp_video's CSI DPHY LDO at the shared MIPI rail (VO3 @ 2.5V).
+include("${CMAKE_SOURCE_DIR}/cmake/patch_esp_video_ldo.cmake")
+
 # --- Emote asset pack: merge the per-emotion packs in spiffs_image/ into one
 #     combined pack and flash it to the emote_gen partition. Regenerated on every
 #     build (off-board) and written by `idf.py flash`. ---
