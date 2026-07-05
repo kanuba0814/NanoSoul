@@ -8,12 +8,16 @@
 
 #include <stdlib.h>
 
+#include <time.h>
+
 #include "board_i2c0.h"
 #include "bsp_pins.h"
 #include "camera.h"
 #include "face.h"
 #include "hud.h"
+#include "llm.h"
 #include "motion.h"
+#include "netlink.h"
 #include "ns_config.h"
 #include "sd_storage.h"
 #include "selftest.h"
@@ -213,6 +217,59 @@ static st_report_t check_soul_sim(void)
     return st_pass("IDLE->APPROACH->ENGAGE->GAZED ok");
 }
 
+/* ---------------- Phase D checks (net + LLM) ---------------- */
+
+static st_report_t check_wifi(void)
+{
+    const ns_config_t *c = ns_config_get();
+    if (c->wifi.ssid[0] == '\0') {
+        return st_skip("no ssid configured");
+    }
+    if (netlink_is_up()) {
+        char ip[16];
+        netlink_get_ip(ip, sizeof(ip));
+        return st_pass("%s", ip);
+    }
+    return st_skip("connecting to %s", c->wifi.ssid);
+}
+
+static st_report_t check_sntp(void)
+{
+    if (!netlink_is_up()) {
+        return st_skip("offline");
+    }
+    time_t now = time(NULL);
+    struct tm tm;
+    localtime_r(&now, &tm);
+    if (tm.tm_year + 1900 < 2024) {
+        return st_skip("time not set yet");
+    }
+    return st_pass("%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+}
+
+static st_report_t check_llm_ping(void)
+{
+    static bool passed;
+    static char detail[48];
+    if (passed) {
+        return st_pass("%s", detail);
+    }
+    const ns_config_t *c = ns_config_get();
+    if (c->chat.api_key[0] == '\0') {
+        return st_skip("no api key");
+    }
+    if (!netlink_is_up()) {
+        return st_skip("offline");
+    }
+    char reply[128];
+    if (llm_chat("Reply with the single word: pong", reply, sizeof(reply)) != ESP_OK) {
+        return st_fail("chat failed: %.32s", reply);
+    }
+    snprintf(detail, sizeof(detail), "%s: %.24s", c->chat.provider, reply);
+    passed = true; /* latch — don't hammer the API every round */
+    return st_pass("%s", detail);
+}
+
 void app_selftests_register(void)
 {
     /* Phase 0 */
@@ -231,4 +288,8 @@ void app_selftests_register(void)
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
     selftest_register("soul_sim", check_soul_sim, 0);
+    /* Phase D */
+    selftest_register("wifi_connect", check_wifi, 0);
+    selftest_register("sntp", check_sntp, 0);
+    selftest_register("llm_ping", check_llm_ping, 0);
 }

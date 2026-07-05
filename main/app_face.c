@@ -8,10 +8,12 @@
 
 #include "board_i2c0.h"
 #include "camera.h"
+#include "dialog.h"
 #include "drv_motor.h"
 #include "face.h"
 #include "hud.h"
 #include "motion.h"
+#include "netlink.h"
 #include "ns_config.h"
 #include "selftest.h"
 #include "soul.h"
@@ -81,8 +83,12 @@ void app_face_run(bool run_selftest_loop)
         soul_start();
     }
 
-    /* Later phases extend the bring-up here: netlink, voice — all before the
-     * selftest loop so its checks probe a live system. */
+    /* Networking (C6 Wi-Fi) + cloud chat pipeline. Offline is fine — the local
+     * perception/decision loop above does not depend on any of it. */
+    netlink_start();
+    dialog_init();
+
+    /* Later phases extend the bring-up here: voice — before the selftest loop. */
 
     if (run_selftest_loop) {
         selftest_run_loop(5000); // never returns

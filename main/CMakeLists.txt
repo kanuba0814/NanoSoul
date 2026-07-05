@@ -23,6 +23,9 @@ idf_component_register(
         vision
         motion
         soul
+        netlink
+        llm
+        dialog
         # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc
