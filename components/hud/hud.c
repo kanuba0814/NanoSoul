@@ -22,6 +22,8 @@ extern const lv_font_t font_puhui_basic_20_4;
 #define HUD_X       4
 #define HUD_Y0      2
 #define HUD_DY      22
+#define HUD_W       632   /* label box width in the 640-wide emote canvas */
+#define HUD_H       20    /* one text line high */
 
 static gfx_obj_t       *s_labels[HUD_LINES];
 static gfx_handle_t     s_gfx;
@@ -50,6 +52,9 @@ esp_err_t hud_init(void)
         }
         gfx_label_set_font(s_labels[i], (void *)&font_puhui_basic_20_4);
         gfx_label_set_color(s_labels[i], GFX_COLOR_HEX(0x30FF60));
+        /* geometry MUST be set — the glyph mask buffer is width*height; a 0-size
+         * label makes every render fail with "no mem for mask_buf". */
+        gfx_obj_set_size(s_labels[i], HUD_W, HUD_H);
         gfx_obj_set_pos(s_labels[i], HUD_X, HUD_Y0 + i * HUD_DY);
         gfx_label_set_text(s_labels[i], "");
     }

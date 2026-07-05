@@ -92,13 +92,23 @@ static esp_err_t scale_full(const uint8_t *src)
         .scale_y = (float)CAMERA_DET_H / (float)s_height,
         .mode = PPA_TRANS_MODE_BLOCKING,
     };
-    return ppa_do_scale_rotate_mirror(s_ppa, &cfg);
+    esp_err_t err = ppa_do_scale_rotate_mirror(s_ppa, &cfg);
+    if (err != ESP_OK) {
+        static int n;
+        if (n++ < 3) {
+            ESP_LOGW(TAG, "PPA scale %ux%u->%dx%d failed: %s",
+                     (unsigned)s_width, (unsigned)s_height, CAMERA_DET_W, CAMERA_DET_H,
+                     esp_err_to_name(err));
+        }
+    }
+    return err;
 }
 
 static void stream_task(void *arg)
 {
     (void)arg;
     ESP_LOGI(TAG, "capture task started");
+    unsigned dq_err = 0, skip = 0;
     while (s_streaming) {
         struct v4l2_buffer buf = {
             .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
@@ -108,6 +118,9 @@ static void stream_task(void *arg)
             if (!s_streaming) {
                 break;
             }
+            if (dq_err++ < 3 || (dq_err % 100) == 0) {
+                ESP_LOGW(TAG, "DQBUF fail #%u errno=%d", dq_err, errno);
+            }
             vTaskDelay(pdMS_TO_TICKS(20));
             continue;
         }
@@ -115,11 +128,17 @@ static void stream_task(void *arg)
             const uint8_t *frame = s_bufs[buf.index].ptr;
             size_t used = buf.bytesused ? buf.bytesused : s_frame_size;
             if (used >= s_frame_size && scale_full(frame) == ESP_OK) {
-                s_frames++;
+                if (s_frames++ == 0) {
+                    ESP_LOGI(TAG, "first frame OK (%u bytes)", (unsigned)used);
+                }
                 if (s_cb) {
                     s_cb(s_det_buf, CAMERA_DET_W, CAMERA_DET_H, s_cb_ctx);
                 }
+            } else if (skip++ < 3) {
+                ESP_LOGW(TAG, "frame skipped: used=%u need=%u", (unsigned)used, (unsigned)s_frame_size);
             }
+        } else if (skip++ < 3) {
+            ESP_LOGW(TAG, "no DONE flag: flags=0x%lx idx=%lu", (unsigned long)buf.flags, (unsigned long)buf.index);
         }
         ioctl(s_fd, VIDIOC_QBUF, &buf);
     }
@@ -166,7 +185,10 @@ static esp_err_t open_video_device(void)
         ESP_RETURN_ON_ERROR(ioctl_checked(s_fd, VIDIOC_QBUF, &buf, "VIDIOC_QBUF"), TAG, "qbuf");
     }
 
-    s_det_buf = heap_caps_aligned_calloc(64, CAMERA_DET_W * CAMERA_DET_H, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+    /* PPA output buffer must be aligned to the cache line size (128B on P4 with
+     * an L2 128-byte line) — both addr and size — or ppa_do_scale returns
+     * INVALID_ARG. CAMERA_DET_W*H*2 = 288000 is 128-aligned; force 128 on addr. */
+    s_det_buf = heap_caps_aligned_calloc(128, CAMERA_DET_W * CAMERA_DET_H, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
     ESP_RETURN_ON_FALSE(s_det_buf, ESP_ERR_NO_MEM, TAG, "det buf");
     return ESP_OK;
 }

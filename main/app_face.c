@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -53,6 +54,8 @@ void app_face_run(bool run_selftest_loop)
             hud_start();
         }
     }
+    ESP_LOGI(TAG, "internal heap free after face: %u KB",
+             (unsigned)(heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024));
 
     /* Vision: board I2C0 -> OV5647 camera -> local face detection. Camera is a
      * ready subsystem; a failure logs and continues (the face still runs). */
