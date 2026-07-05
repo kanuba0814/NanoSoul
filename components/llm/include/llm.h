@@ -23,6 +23,17 @@ extern "C" {
 // (in which case `reply` holds a short fallback line).
 esp_err_t llm_chat(const char *user_msg, char *reply, size_t reply_cap);
 
+// Speech-to-text (OpenAI-compatible /v1/audio/transcriptions). PCM is 16-bit
+// mono at `sample_rate`; the recognized text lands in `text`. Uses the SD stt.*
+// config (may point at a different provider than chat).
+esp_err_t llm_stt(const int16_t *pcm, size_t samples, int sample_rate,
+                  char *text, size_t text_cap);
+
+// Text-to-speech (OpenAI-compatible /v1/audio/speech, wav). Returns a malloc'd
+// 16-bit mono PCM buffer resampled to `out_rate` (caller frees *pcm_out). Uses
+// the SD tts.* config.
+esp_err_t llm_tts(const char *text, int out_rate, int16_t **pcm_out, size_t *samples_out);
+
 #ifdef __cplusplus
 }
 #endif

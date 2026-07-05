@@ -26,6 +26,8 @@ idf_component_register(
         netlink
         llm
         dialog
+        audio
+        voice
         # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc

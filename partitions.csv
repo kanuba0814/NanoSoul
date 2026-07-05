@@ -1,13 +1,13 @@
 # NanoSoul 整机分区表 — 16MB flash, A/B 双 OTA + emote/人脸/语音模型数据分区
-# app 各 4MB (gfx + esp-dl + esp-sr + hosted + TLS 全栈同仓, 留足余量)
-# 注意: human_face_det 这个 label 是 human_face_detect 组件硬性要求, 勿改名
+# app 各 5MB (gfx + esp-dl + esp-sr + hosted + TLS 全栈同仓; 配合 -Os 尚有余量)
+# 注意: human_face_det / srmodel 这些 label 是组件硬性要求, 勿改名
 # Name,           Type, SubType,  Offset,    Size,     Flags
 nvs,              data, nvs,      0x9000,    0x6000,
 otadata,          data, ota,      0xf000,    0x2000,
 phy_init,         data, phy,      0x11000,   0x1000,
-ota_0,            app,  ota_0,    0x20000,   0x400000,
-ota_1,            app,  ota_1,    0x420000,  0x400000,
-emote_gen,        data, spiffs,   0x820000,  0x180000,
-human_face_det,   data, spiffs,   0x9a0000,  0x100000,
-srmodel,          data, spiffs,   0xaa0000,  0x400000,
-storage,          data, fat,      0xea0000,  0x140000,
+ota_0,            app,  ota_0,    0x20000,   0x500000,
+ota_1,            app,  ota_1,    0x520000,  0x500000,
+emote_gen,        data, spiffs,   0xa20000,  0x180000,
+human_face_det,   data, spiffs,   0xba0000,  0x100000,
+srmodel,          data, spiffs,   0xca0000,  0x300000,
+storage,          data, fat,      0xfa0000,  0x40000,
