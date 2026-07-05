@@ -1,8 +1,8 @@
 # NanoSoul test 分支默认配置（目标由 idf.py set-target esp32p4 写入 sdkconfig）
 CONFIG_IDF_TARGET="esp32p4"
 
-# Flash 8MB（开发板 ≥16MB；A/B 双分区需 ≥4MB）
-CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+# Flash 16MB（开发板板载 ≥16MB；整机固件 gfx+esp-dl+esp-sr+hosted 都要进 app）
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
 
 # 自定义分区（A/B OTA）

@@ -1,12 +1,20 @@
 idf_component_register(
     SRCS
         "nanosoul_main.c"
+        "app_selftests.c"
         "drv_motor.c"
         "drv_encoder.c"
         "drv_ina219.c"
         "test_app.c"
     INCLUDE_DIRS "."
     REQUIRES
+        # always-on core
+        telemetry
+        storage_sd
+        selftest
+        nvs_flash
+        esp_partition
+        # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc
         esp_driver_gpio
