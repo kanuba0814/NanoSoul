@@ -20,6 +20,8 @@
 #if CONFIG_NANOSOUL_MODE_TESTPANEL
 #include "display.h"
 #include "test_app.h"
+#else
+#include "app_face.h"
 #endif
 
 static const char *TAG = "nanosoul";
@@ -69,9 +71,8 @@ void app_main(void)
     ESP_ERROR_CHECK(display_init());   // ST7701 + LVGL
     ESP_ERROR_CHECK(test_app_start()); // 电机/编码器/电流 + 自动循环 + 面板
 #elif CONFIG_NANOSOUL_MODE_SELFTEST
-    selftest_run_loop(5000);
-#else /* FACE — real emote+HUD runtime lands in Phase A; Phase 0 falls back to diagnostics */
-    ESP_LOGW(TAG, "FACE runtime not wired yet (Phase A); running selftest loop");
-    selftest_run_loop(5000);
+    app_face_run(true);   // full runtime + auto-loop diagnostics
+#else /* FACE */
+    app_face_run(false);  // emote face + debug HUD (product/demo)
 #endif
 }
