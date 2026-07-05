@@ -18,6 +18,7 @@
 #include "selftest.h"
 #include "soul.h"
 #include "vision.h"
+#include "voice.h"
 
 static const char *TAG = "app_face";
 
@@ -88,7 +89,13 @@ void app_face_run(bool run_selftest_loop)
     netlink_start();
     dialog_init();
 
-    /* Later phases extend the bring-up here: voice — before the selftest loop. */
+    /* Voice pipeline (shares board I2C0 with the camera SCCB / codec). The mic
+     * record path is unverified on this board; a failure just disables voice. */
+    if (board_i2c0_bus() && voice_init(board_i2c0_bus()) == ESP_OK) {
+        voice_start();
+    } else {
+        ESP_LOGW(TAG, "voice init skipped/failed");
+    }
 
     if (run_selftest_loop) {
         selftest_run_loop(5000); // never returns

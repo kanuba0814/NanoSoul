@@ -15,6 +15,7 @@
 #include "camera.h"
 #include "face.h"
 #include "hud.h"
+#include "audio.h"
 #include "llm.h"
 #include "motion.h"
 #include "netlink.h"
@@ -23,6 +24,7 @@
 #include "selftest.h"
 #include "soul.h"
 #include "vision.h"
+#include "voice.h"
 
 /* ---------------- Phase 0 checks ---------------- */
 
@@ -270,6 +272,34 @@ static st_report_t check_llm_ping(void)
     return st_pass("%s", detail);
 }
 
+/* ---------------- Phase E checks (audio + voice) ---------------- */
+
+static st_report_t check_codec(void)
+{
+    return audio_ready() ? st_pass("ES8311 up (play verified in converse)")
+                         : st_skip("audio not up");
+}
+
+static st_report_t check_mic(void)
+{
+    if (!voice_ready()) {
+        return st_skip("voice not up");
+    }
+    float r = voice_last_rms();   /* voice task owns the codec; read its value */
+    if (r <= 0.5f) {
+        return st_fail("mic silent (rms=%.0f) — record path?", r);
+    }
+    if (r > 30000.0f) {
+        return st_fail("mic saturated (rms=%.0f)", r);
+    }
+    return st_pass("rms=%.0f", r);
+}
+
+static st_report_t check_wakenet(void)
+{
+    return st_skip("energy VAD (ESP-SR WakeNet is the upgrade)");
+}
+
 void app_selftests_register(void)
 {
     /* Phase 0 */
@@ -292,4 +322,8 @@ void app_selftests_register(void)
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);
     selftest_register("llm_ping", check_llm_ping, 0);
+    /* Phase E */
+    selftest_register("codec_playback", check_codec, 0);
+    selftest_register("mic_record", check_mic, 0);
+    selftest_register("wakenet_load", check_wakenet, SELFTEST_FLAG_MANUAL);
 }

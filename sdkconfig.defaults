@@ -12,6 +12,9 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 # 日志
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 
+# 优化为体积 (-Os): 全栈 gfx+esp-dl+esp-sr+hosted+tls 同仓, 省 flash
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+
 # 主任务栈（点屏 + 起任务）
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
