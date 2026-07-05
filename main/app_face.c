@@ -10,6 +10,7 @@
 #include "board_i2c0.h"
 #include "camera.h"
 #include "companion.h"
+#include "debugui.h"
 #include "dialog.h"
 #include "drv_motor.h"
 #include "face.h"
@@ -103,6 +104,12 @@ void app_face_run(bool run_selftest_loop)
 
     /* Companion WebSocket interface for the desktop app (telemetry + control). */
     companion_start();
+
+    /* Touch-driven hidden debug UI (FT6x36 on board I2C0): 10 rapid taps opens
+     * the debug menu. Shares the bus with the camera SCCB / codec. */
+    if (board_i2c0_bus() && debugui_init(board_i2c0_bus()) == ESP_OK) {
+        debugui_start();
+    }
 
     if (run_selftest_loop) {
         selftest_run_loop(5000); // never returns

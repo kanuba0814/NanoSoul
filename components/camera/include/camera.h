@@ -39,6 +39,11 @@ uint32_t  camera_frame_count(void);
 // companion snapshot command.
 esp_err_t camera_snapshot_jpeg(uint8_t **out, size_t *out_len);
 
+// Copy the latest detector frame (CAMERA_DET_W x CAMERA_DET_H RGB565) into a
+// caller buffer for on-screen preview. Copies up to dst_px pixels. A minor tear
+// against the capture task is cosmetic.
+esp_err_t camera_copy_latest(uint16_t *dst, size_t dst_px);
+
 #ifdef __cplusplus
 }
 #endif
