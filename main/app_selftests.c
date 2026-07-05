@@ -13,6 +13,7 @@
 #include "board_i2c0.h"
 #include "bsp_pins.h"
 #include "camera.h"
+#include "companion.h"
 #include "face.h"
 #include "hud.h"
 #include "audio.h"
@@ -300,6 +301,17 @@ static st_report_t check_wakenet(void)
     return st_skip("energy VAD (ESP-SR WakeNet is the upgrade)");
 }
 
+/* ---------------- Phase F check (companion WS) ---------------- */
+
+static st_report_t check_ws(void)
+{
+    const ns_config_t *c = ns_config_get();
+    if (!c->companion.enabled) {
+        return st_skip("companion disabled");
+    }
+    return companion_running() ? st_pass("WS :80/ws up") : st_fail("server down");
+}
+
 void app_selftests_register(void)
 {
     /* Phase 0 */
@@ -326,4 +338,6 @@ void app_selftests_register(void)
     selftest_register("codec_playback", check_codec, 0);
     selftest_register("mic_record", check_mic, 0);
     selftest_register("wakenet_load", check_wakenet, SELFTEST_FLAG_MANUAL);
+    /* Phase F */
+    selftest_register("ws_loopback", check_ws, 0);
 }

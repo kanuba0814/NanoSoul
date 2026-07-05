@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "driver/jpeg_encode.h"
 #include "driver/ppa.h"
 #include "esp_check.h"
 #include "esp_heap_caps.h"
@@ -247,4 +248,49 @@ void camera_sensor_wh(int *w, int *h)
 {
     if (w) *w = (int)s_width;
     if (h) *h = (int)s_height;
+}
+
+esp_err_t camera_snapshot_jpeg(uint8_t **out, size_t *out_len)
+{
+    if (!s_det_buf || !out || !out_len) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    size_t raw_size = (size_t)CAMERA_DET_W * CAMERA_DET_H * sizeof(uint16_t);
+
+    jpeg_encoder_handle_t enc = NULL;
+    jpeg_encode_engine_cfg_t eng = { .timeout_ms = 300 };
+    if (jpeg_new_encoder_engine(&eng, &enc) != ESP_OK) {
+        return ESP_FAIL;
+    }
+    jpeg_encode_memory_alloc_cfg_t in_cfg = { .buffer_direction = JPEG_ENC_ALLOC_INPUT_BUFFER };
+    jpeg_encode_memory_alloc_cfg_t out_cfg = { .buffer_direction = JPEG_ENC_ALLOC_OUTPUT_BUFFER };
+    size_t raw_alloc = 0, jpg_alloc = 0;
+    uint8_t *raw = jpeg_alloc_encoder_mem(raw_size, &in_cfg, &raw_alloc);
+    uint8_t *jpg = jpeg_alloc_encoder_mem(raw_size, &out_cfg, &jpg_alloc);
+    if (!raw || !jpg) {
+        free(raw);
+        free(jpg);
+        jpeg_del_encoder_engine(enc);
+        return ESP_ERR_NO_MEM;
+    }
+    memcpy(raw, s_det_buf, raw_size);   /* small buffer; minor tear is cosmetic */
+
+    jpeg_encode_cfg_t ecfg = {
+        .width = CAMERA_DET_W,
+        .height = CAMERA_DET_H,
+        .src_type = JPEG_ENCODE_IN_FORMAT_RGB565,
+        .sub_sample = JPEG_DOWN_SAMPLING_YUV422,
+        .image_quality = 80,
+    };
+    uint32_t jpg_size = 0;
+    esp_err_t err = jpeg_encoder_process(enc, &ecfg, raw, raw_size, jpg, jpg_alloc, &jpg_size);
+    free(raw);
+    jpeg_del_encoder_engine(enc);
+    if (err != ESP_OK) {
+        free(jpg);
+        return err;
+    }
+    *out = jpg;
+    *out_len = jpg_size;
+    return ESP_OK;
 }

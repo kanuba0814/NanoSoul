@@ -8,6 +8,7 @@
 
 #include "board_i2c0.h"
 #include "camera.h"
+#include "companion.h"
 #include "dialog.h"
 #include "drv_motor.h"
 #include "face.h"
@@ -96,6 +97,9 @@ void app_face_run(bool run_selftest_loop)
     } else {
         ESP_LOGW(TAG, "voice init skipped/failed");
     }
+
+    /* Companion WebSocket interface for the desktop app (telemetry + control). */
+    companion_start();
 
     if (run_selftest_loop) {
         selftest_run_loop(5000); // never returns
