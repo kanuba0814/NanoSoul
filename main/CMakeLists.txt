@@ -15,6 +15,7 @@ idf_component_register(
         selftest
         nvs_flash
         esp_partition
+        esp_netif
         # FACE runtime
         face
         hud

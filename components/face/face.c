@@ -85,7 +85,7 @@ static void update_cb(gfx_disp_event_t event, const void *obj, emote_gen_player_
 {
     (void)obj;
     (void)manager;
-    if (event == GFX_DISP_EVENT_ALL_FRAME_DONE) {
+    if (event == GFX_DISP_EVENT_ONE_FRAME_DONE || event == GFX_DISP_EVENT_ALL_FRAME_DONE) {
         s_frames++;
     }
 }
@@ -137,7 +137,8 @@ esp_err_t face_init(void)
             .swap = false,
             .double_buffer = true,
             .buff_dma = true,
-            .buff_spiram = false,
+            .buff_spiram = true,   /* draw buffers in PSRAM — internal RAM is scarce
+                                    * with gfx+wifi+esp-dl in one app */
         },
         .gfx_emote = {
             .h_res = CANVAS_W,

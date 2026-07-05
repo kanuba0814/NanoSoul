@@ -165,16 +165,17 @@ static st_report_t check_motion_ik(void)
 {
     int16_t fwd[3];
     motion_ik(1.0f, 0.0f, 0.0f, 100, fwd);   /* pure forward */
-    /* wheels at {0,120,240}: expect ~{0, -MAX, +MAX} */
-    if (!(abs(fwd[0]) <= 3 && fwd[1] <= -1015 && fwd[2] >= 1015)) {
+    /* wheels at {0,120,240}: forward projects onto tangents as {0,-sin120,-sin240}
+     * = {0, -0.866, +0.866}; no wheel saturates, so no normalization -> {0,-886,886} */
+    if (!(abs(fwd[0]) <= 3 && fwd[1] >= -895 && fwd[1] <= -875 && fwd[2] >= 875 && fwd[2] <= 895)) {
         return st_fail("fwd[%d,%d,%d]", fwd[0], fwd[1], fwd[2]);
     }
     int16_t rot[3];
-    motion_ik(0.0f, 0.0f, 1.0f, 100, rot);   /* pure rotation: all equal */
+    motion_ik(0.0f, 0.0f, 1.0f, 100, rot);   /* pure rotation: all wheels equal, saturate */
     if (!(rot[0] >= 1015 && rot[1] >= 1015 && rot[2] >= 1015)) {
         return st_fail("rot[%d,%d,%d]", rot[0], rot[1], rot[2]);
     }
-    return st_pass("fwd[%d,%d,%d] rot ok", fwd[0], fwd[1], fwd[2]);
+    return st_pass("fwd[%d,%d,%d] rot[%d]", fwd[0], fwd[1], fwd[2], rot[0]);
 }
 
 static st_report_t check_soul_sim(void)

@@ -12,6 +12,7 @@
 #include "freertos/task.h"
 
 #include "app_selftests.h"
+#include "esp_netif.h"
 #include "ns_config.h"
 #include "sd_storage.h"
 #include "selftest.h"
@@ -49,6 +50,10 @@ static void init_common(void)
 
     ESP_ERROR_CHECK(telemetry_init());
     ESP_ERROR_CHECK(selftest_init());
+
+    /* Bring up the TCP/IP stack unconditionally so the companion WS server can
+     * start even when no Wi-Fi is configured (netlink skips it when offline). */
+    ESP_ERROR_CHECK(esp_netif_init());
 
     if (sd_storage_mount(SD_MOUNT_POINT) != ESP_OK) {
         ESP_LOGW(TAG, "SD not mounted; continuing on default config");
