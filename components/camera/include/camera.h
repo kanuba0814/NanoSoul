@@ -35,6 +35,10 @@ bool      camera_running(void);
 void      camera_sensor_wh(int *w, int *h);
 uint32_t  camera_frame_count(void);
 
+// HW-JPEG-encode the latest detector frame. Caller frees *out. For the
+// companion snapshot command.
+esp_err_t camera_snapshot_jpeg(uint8_t **out, size_t *out_len);
+
 #ifdef __cplusplus
 }
 #endif

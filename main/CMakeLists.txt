@@ -28,6 +28,7 @@ idf_component_register(
         dialog
         audio
         voice
+        companion
         # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc
