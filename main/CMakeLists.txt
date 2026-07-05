@@ -18,6 +18,11 @@ idf_component_register(
         # FACE runtime
         face
         hud
+        board_i2c0
+        camera
+        vision
+        motion
+        soul
         # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc

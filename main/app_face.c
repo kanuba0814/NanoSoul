@@ -1,15 +1,34 @@
 #include "app_face.h"
 
+#include <stdlib.h>
+
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "board_i2c0.h"
+#include "camera.h"
+#include "drv_motor.h"
 #include "face.h"
 #include "hud.h"
+#include "motion.h"
 #include "ns_config.h"
 #include "selftest.h"
+#include "soul.h"
+#include "vision.h"
 
 static const char *TAG = "app_face";
+
+// Bridge motion's signed per-wheel duty to the TB6612 driver. Only ever called
+// when motion is enabled (wheels wired); motion stays free of drv_motor itself.
+static void motor_apply(const int16_t duty[3])
+{
+    for (int i = 0; i < MOTOR_COUNT; i++) {
+        int16_t d = duty[i];
+        motor_dir_t dir = d > 0 ? MOTOR_FORWARD : (d < 0 ? MOTOR_REVERSE : MOTOR_COAST);
+        motor_set(i, dir, abs(d));
+    }
+}
 
 void app_face_run(bool run_selftest_loop)
 {
@@ -31,8 +50,39 @@ void app_face_run(bool run_selftest_loop)
         }
     }
 
-    /* Later phases extend the bring-up here: camera, vision, soul, netlink,
-     * voice — all before the selftest loop so its checks probe a live system. */
+    /* Vision: board I2C0 -> OV5647 camera -> local face detection. Camera is a
+     * ready subsystem; a failure logs and continues (the face still runs). */
+    if (board_i2c0_init() == ESP_OK) {
+        if (camera_init(board_i2c0_bus()) == ESP_OK) {
+            camera_start();
+            if (vision_init() == ESP_OK) {
+                vision_start();
+            }
+        } else {
+            ESP_LOGW(TAG, "camera init failed; vision disabled");
+        }
+    }
+
+    /* Motion + decision. Motors are NOT wired in this build: motion.enabled is
+     * false by default, so motion only computes+publishes duty (visible on the
+     * HUD) and never touches the motor GPIOs. Only when the config enables it —
+     * after the wheels are wired and M1's pins moved off USB — do we init the
+     * H-bridge and register the apply bridge. */
+    motion_init(cfg->motion.max_duty_pct, cfg->motion.enabled);
+    if (cfg->motion.enabled) {
+        if (motors_init() == ESP_OK) {
+            motors_enable(true);
+            motion_set_apply(motor_apply);
+        } else {
+            ESP_LOGW(TAG, "motors_init failed; staying compute-only");
+        }
+    }
+    if (soul_init() == ESP_OK) {
+        soul_start();
+    }
+
+    /* Later phases extend the bring-up here: netlink, voice — all before the
+     * selftest loop so its checks probe a live system. */
 
     if (run_selftest_loop) {
         selftest_run_loop(5000); // never returns
