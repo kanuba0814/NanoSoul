@@ -30,6 +30,7 @@ idf_component_register(
         audio
         voice
         companion
+        debugui
         # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc

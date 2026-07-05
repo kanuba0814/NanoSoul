@@ -266,6 +266,19 @@ void camera_register_frame_cb(camera_frame_cb_t cb, void *ctx)
 bool     camera_running(void)            { return s_streaming; }
 uint32_t camera_frame_count(void)        { return s_frames; }
 
+esp_err_t camera_copy_latest(uint16_t *dst, size_t dst_px)
+{
+    if (!s_det_buf || !dst) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    size_t n = (size_t)CAMERA_DET_W * CAMERA_DET_H;
+    if (dst_px < n) {
+        n = dst_px;
+    }
+    memcpy(dst, s_det_buf, n * sizeof(uint16_t));   /* minor tear is cosmetic */
+    return ESP_OK;
+}
+
 void camera_sensor_wh(int *w, int *h)
 {
     if (w) *w = (int)s_width;

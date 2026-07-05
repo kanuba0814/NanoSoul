@@ -42,6 +42,12 @@ esp_err_t face_set_tip(const char *utf8);
 gfx_disp_t   *face_gfx_disp(void);
 gfx_handle_t  face_gfx_handle(void);
 
+// Translucent HUD veil: pixels inside this canvas rect are dimmed + gray-tinted
+// during flush so the overlay reads as see-through (labels draw on top). The HUD
+// sets it to its panel area; clearing removes the veil.
+void face_set_veil_rect(int x, int y, int w, int h);
+void face_clear_veil(void);
+
 // Rendered-frame counter (for HUD render-fps). Monotonic.
 uint32_t face_frame_count(void);
 

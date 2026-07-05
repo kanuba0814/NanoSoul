@@ -18,14 +18,19 @@ static const char *TAG = "hud";
 /* Reuse the PuHui font the emote player already links (has ASCII glyphs). */
 extern const lv_font_t font_puhui_basic_20_4;
 
-#define HUD_LINES   6
-#define HUD_X       4
-#define HUD_Y0      2
-#define HUD_DY      22
-#define HUD_W       632   /* label box width in the 640-wide emote canvas */
-#define HUD_H       20    /* one text line high */
+#define HUD_LINES   10
+#define HUD_X       6
+#define HUD_Y0      4
+#define HUD_DY      26
+#define HUD_W       288   /* narrow corner panel, not a full-width band */
+#define HUD_H       26    /* MUST be >= font line_height (25) or the label
+                           * renders zero glyphs (draw loop breaks on line 0). */
+/* Nominal wheel RPM at full duty (1023), for the computed target-speed readout.
+ * Rough gearmotor estimate; refine once a wheel is actually driven + measured. */
+#define HUD_WHEEL_RPM_FULL 200
 
 static gfx_obj_t       *s_labels[HUD_LINES];
+static int              s_made;   /* labels actually created (<= HUD_LINES) */
 static gfx_handle_t     s_gfx;
 static volatile bool    s_enabled = true;
 static volatile bool    s_running;
@@ -44,21 +49,43 @@ esp_err_t hud_init(void)
     if (gfx_emote_lock(s_gfx) != ESP_OK) {
         return ESP_FAIL;
     }
+    int made = 0;
     for (int i = 0; i < HUD_LINES; i++) {
         s_labels[i] = gfx_label_create(disp);
         if (!s_labels[i]) {
-            gfx_emote_unlock(s_gfx);
-            return ESP_FAIL;
+            /* Don't kill the whole overlay if the gfx object pool runs out —
+             * show as many lines as we could make and shout about the shortfall. */
+            ESP_LOGE(TAG, "gfx_label_create failed at line %d/%d", i, HUD_LINES);
+            break;
         }
         gfx_label_set_font(s_labels[i], (void *)&font_puhui_basic_20_4);
-        gfx_label_set_color(s_labels[i], GFX_COLOR_HEX(0x30FF60));
-        /* geometry MUST be set — the glyph mask buffer is width*height; a 0-size
-         * label makes every render fail with "no mem for mask_buf". */
+        gfx_label_set_color(s_labels[i], GFX_COLOR_HEX(0x40FF70));
+        /* No solid bg: the face module paints a translucent gray veil under this
+         * rect during flush, so the emote stays visible through the panel. */
+        /* Match the emote player's own (working) tip_label: single-line CLIP, not
+         * the default WRAP — a WRAP label one line tall renders no glyphs when the
+         * text is wider than the box. Left-align + explicit visible. */
+        gfx_label_set_text_align(s_labels[i], GFX_TEXT_ALIGN_LEFT);
+        gfx_label_set_long_mode(s_labels[i], GFX_LABEL_LONG_CLIP);
+        /* geometry MUST be >= font line_height (25) or the label renders zero
+         * glyphs (draw loop breaks on line 0). */
         gfx_obj_set_size(s_labels[i], HUD_W, HUD_H);
         gfx_obj_set_pos(s_labels[i], HUD_X, HUD_Y0 + i * HUD_DY);
         gfx_label_set_text(s_labels[i], "");
+        gfx_obj_set_visible(s_labels[i], true);
+        made++;
     }
     gfx_emote_unlock(s_gfx);
+
+    s_made = made;
+    if (made == 0) {
+        ESP_LOGE(TAG, "no HUD labels created — overlay will be blank");
+        return ESP_FAIL;
+    }
+    /* Translucent backing under the whole panel (a little padding around text). */
+    face_set_veil_rect(HUD_X - 4, HUD_Y0 - 2, HUD_W + 6, made * HUD_DY + 4);
+    ESP_LOGI(TAG, "HUD up: %d/%d lines, corner @(%d,%d) %dx%d px",
+             made, HUD_LINES, HUD_X, HUD_Y0, HUD_W, HUD_H);
 
     s_last_frames = face_frame_count();
     s_last_us = esp_timer_get_time();
@@ -87,31 +114,51 @@ static void hud_task(void *arg)
         s_last_us = now;
         telemetry_set_fps(render_fps, t.fps_detect);
 
-        snprintf(line[0], sizeof(line[0]), "SOUL %s  EMO %s",
-                 soul_state_name(t.soul), t.emotion);
-        snprintf(line[1], sizeof(line[1]), "FACE p%d x%+.2f y%+.2f a%.3f f%.2f",
-                 t.face.present, t.face.cx, t.face.cy, t.face.area_ratio, t.face.frontal_score);
-        snprintf(line[2], sizeof(line[2]), "MOT v(%.2f,%.2f,%.2f) d[%d,%d,%d]%s",
-                 t.motion.vx, t.motion.vy, t.motion.wz,
-                 t.motion.duty[0], t.motion.duty[1], t.motion.duty[2],
-                 t.motion.enabled ? "" : " off");
-        snprintf(line[3], sizeof(line[3]), "ENC[%d,%d,%d] CUR %s",
-                 (int)t.enc.rpm[0], (int)t.enc.rpm[1], (int)t.enc.rpm[2],
-                 t.current_present ? "" : "--");
-        if (t.current_present) {
-            snprintf(line[3] + strlen(line[3]), sizeof(line[3]) - strlen(line[3]),
-                     "%dmA", (int)(t.current_a * 1000));
+        /* Translucent corner panel, grouped as PERCEIVE -> DECIDE(expected) ->
+         * ACT(actual) so the expected decision output sits right next to what the
+         * hardware actually did. rpm* = computed target speed from the IK duty
+         * (motors unwired => 'act rpm' stays 0, but the target still shows). */
+        int tgt_rpm[3];
+        for (int k = 0; k < 3; k++) {
+            tgt_rpm[k] = t.motion.duty[k] * HUD_WHEEL_RPM_FULL / 1023;
         }
-        snprintf(line[4], sizeof(line[4]), "NET %s LLM %s VOI %s",
-                 t.net_up ? t.ip : "off", t.llm, t.voice);
-        snprintf(line[5], sizeof(line[5]), "FPS r%.0f/d%.0f HEAP %uk PSRAM %uM",
-                 render_fps, t.fps_detect, (unsigned)(t.free_heap / 1024),
-                 (unsigned)(t.free_psram / (1024 * 1024)));
+        snprintf(line[0], sizeof(line[0]), "NanoSoul %s  %s",
+                 soul_state_name(t.soul), t.emotion);
+        snprintf(line[1], sizeof(line[1]), "fps r%.0f d%.0f  mem %uk",
+                 render_fps, t.fps_detect, (unsigned)(t.free_heap / 1024));
+        /* --- perceive (actual sensor) --- */
+        snprintf(line[2], sizeof(line[2]), "SEE cam p%d x%+.2f y%+.2f",
+                 t.face.present, t.face.cx, t.face.cy);
+        snprintf(line[3], sizeof(line[3]), "    dist a%.3f front fr%.2f",
+                 t.face.area_ratio, t.face.frontal_score);
+        /* --- decide (expected / computed output) --- */
+        snprintf(line[4], sizeof(line[4]), "WANT v%+.2f %+.2f w%+.2f",
+                 t.motion.vx, t.motion.vy, t.motion.wz);
+        snprintf(line[5], sizeof(line[5]), "    rpm* %d/%d/%d %s",
+                 tgt_rpm[0], tgt_rpm[1], tgt_rpm[2], t.motion.enabled ? "" : "(calc)");
+        /* --- act (actual hardware) --- */
+        snprintf(line[6], sizeof(line[6]), "GOT rpm %d/%d/%d",
+                 (int)t.enc.rpm[0], (int)t.enc.rpm[1], (int)t.enc.rpm[2]);
+        if (t.current_present) {
+            snprintf(line[7], sizeof(line[7]), "    duty %d/%d/%d %dmA",
+                     t.motion.duty[0], t.motion.duty[1], t.motion.duty[2],
+                     (int)(t.current_a * 1000));
+        } else {
+            snprintf(line[7], sizeof(line[7]), "    duty %d/%d/%d cur--",
+                     t.motion.duty[0], t.motion.duty[1], t.motion.duty[2]);
+        }
+        /* --- links --- */
+        if (t.net_up) {
+            snprintf(line[8], sizeof(line[8]), "NET %s %ddB", t.ip, t.rssi);
+        } else {
+            snprintf(line[8], sizeof(line[8]), "NET off");
+        }
+        snprintf(line[9], sizeof(line[9]), "llm %s  voi %s", t.llm, t.voice);
 
         if (gfx_emote_lock(s_gfx) != ESP_OK) {
             continue;
         }
-        for (int i = 0; i < HUD_LINES; i++) {
+        for (int i = 0; i < s_made; i++) {
             gfx_label_set_text(s_labels[i], line[i]);
         }
         gfx_emote_unlock(s_gfx);
@@ -143,11 +190,17 @@ void hud_set_enabled(bool on)
     }
     s_enabled = on;
     if (gfx_emote_lock(s_gfx) == ESP_OK) {
-        for (int i = 0; i < HUD_LINES; i++) {
+        for (int i = 0; i < s_made; i++) {
             if (s_labels[i]) {
                 gfx_obj_set_visible(s_labels[i], on);
             }
         }
         gfx_emote_unlock(s_gfx);
+    }
+    /* Keep the translucent veil in lock-step with the labels. */
+    if (on) {
+        face_set_veil_rect(HUD_X - 4, HUD_Y0 - 2, HUD_W + 6, s_made * HUD_DY + 4);
+    } else {
+        face_clear_veil();
     }
 }
