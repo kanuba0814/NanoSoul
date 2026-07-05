@@ -1,0 +1,23 @@
+menu "NanoSoul"
+
+choice NANOSOUL_MODE
+    prompt "Boot mode"
+    default NANOSOUL_MODE_FACE
+    help
+        Selects what app_main brings up.
+        FACE     — emote face + debug HUD overlay (the product/demo mode).
+        SELFTEST — auto-loop diagnostics; one JSON line per check to serial.
+        TESTPANEL— legacy LVGL three-motor bring-up panel.
+
+config NANOSOUL_MODE_FACE
+    bool "Face (emote + debug HUD)"
+
+config NANOSOUL_MODE_SELFTEST
+    bool "Selftest (auto-loop diagnostics)"
+
+config NANOSOUL_MODE_TESTPANEL
+    bool "Test panel (LVGL motor test)"
+
+endchoice
+
+endmenu
