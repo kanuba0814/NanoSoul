@@ -2,6 +2,7 @@ idf_component_register(
     SRCS
         "nanosoul_main.c"
         "app_selftests.c"
+        "app_face.c"
         "drv_motor.c"
         "drv_encoder.c"
         "drv_ina219.c"
@@ -14,6 +15,9 @@ idf_component_register(
         selftest
         nvs_flash
         esp_partition
+        # FACE runtime
+        face
+        hud
         # TESTPANEL / legacy motor test path
         display
         esp_driver_ledc
