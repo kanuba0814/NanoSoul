@@ -42,3 +42,15 @@ assets/emote/
 
 # emote source packs are the emotion design + build input for emote_repack.py
 !spiffs_image/*.bin
+
+# ---- 个人本地 Claude 配置（.claude/skills 与 settings.json 仍可提交） ----
+.claude/settings.local.json
+
+# ---- 外壳 CAD：保留 .py/.scad/.md 源，忽略生成的 3D/渲染 ----
+enclosure/*.step
+enclosure/*.stl
+enclosure/*.png
+enclosure/model/.preview/
+
+# ---- 根目录散落的 DRC 报告 ----
+/NanoSoul-drc.rpt
