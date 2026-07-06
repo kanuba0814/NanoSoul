@@ -40,9 +40,9 @@ idf.py build      # 板外必过；commit 前跑
 - **I²C1 总线**（`SDA=IO20 / SCL=IO21`，挂 4 个从机，地址互不冲突；长线/多挂跑 100kHz + 2.2k 上拉）：
   - IMU **QMI8658**（`0x6A/0x6B`，`INT=IO23`）——走 I²C（实物模块无 CS 脚）；用 SensorLib/社区驱动；碰撞=Tap、抬起=Wake-on-Motion 片上事件出中断。
   - 环境光 **BH1750**（`0x23`）、电流 **INA219**（`0x40`，读电机电流做堵转判定）、电量 **MAX17048**（`0x36`，VLogic 接 3V3）。
-- **电机 ×3（2×TB6612FNG）**：PWM 用 **LEDC 或 MCPWM，~20kHz**；每电机 PWM+IN1+IN2，两片共用 **`STBY=IO52`**（拉低=急停）。
+- **电机 ×3（2×TB6612FNG）**：PWM 用 **LEDC，20kHz**（现实现 `main/drv_motor.c`）；每电机 PWM+IN1+IN2；两片 STBY **分置：M0/M1 桥=`IO51`、M2 桥=`IO52`**（实物杜邦没并到一起，固件同拉同放，拉低=急停）。
   - `M0: PWM=IO2 IN1=IO3 IN2=IO4` · `M1: IO5/IO24/IO25` · `M2: IO26/IO27/IO32`。真值表见 docs。
-- **编码器 ×3（PCNT 正交解码）**：A/B 是**集电极开漏 → 必须启用上拉**（`gpio_pullup_en` / PCNT 通道 pull-up，拉到 **3V3**）；`7PPR×118 = 826/相`，正交 ×4 = **3304 计数/圈**。
+- **编码器 ×3（PCNT 正交解码）**：A/B 是**集电极开漏 → 必须启用上拉**（`gpio_pullup_en` / PCNT 通道 pull-up，拉到 **3V3**）；固件按**电机轴**口径计数 `ENC_COUNTS_PER_REV=28`（7PPR×4，`main/drv_encoder.h`）；输出轴一圈 = 28×118 = **3304**（仅换算里程用，别混口径）。
   - `M0: A/B=IO30/IO31` · `M1: IO28/IO29` · `M2: IO46/IO47`。确认 P4 PCNT 单元 ≥3 路，不够的用 GPIO ISR 兜底。
 - **电机堵转过流保护（硬需求）**：固件读 **INA219 电流 + 编码器不动** → 拉低 STBY 急停。实测电机堵转 400mA/个、3 个全堵 1.2A。
 - 引脚是杜邦接的、可改；改了**同步更新本节 + `docs/BOARD_MAPPING.md`**。flash/monitor 谁有板谁本地跑（板外纪律）。
