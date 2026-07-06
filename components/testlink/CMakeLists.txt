@@ -1,0 +1,27 @@
+idf_component_register(
+    SRCS
+        "testlink.c"
+        "proto.c"
+        "hwinfo.c"
+        "sense_stream.c"
+    INCLUDE_DIRS "include"
+    REQUIRES
+        telemetry
+        simsense
+        soul
+        motion
+        face
+        hud
+        dialog
+        storage_sd
+        selftest
+        imu
+        light
+        board_i2c0
+        board_i2c1
+        json
+        esp_event
+    PRIV_REQUIRES
+        esp_timer
+        esp_app_format
+)

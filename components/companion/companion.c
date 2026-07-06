@@ -2,21 +2,24 @@
 
 #include <string.h>
 
-#include "cJSON.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
-#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "camera.h"
-#include "dialog.h"
-#include "face.h"
-#include "hud.h"
-#include "motion.h"
 #include "ns_config.h"
-#include "soul.h"
-#include "telemetry.h"
+#include "testlink.h"
+
+/*
+ * companion — the WS transport shell over the shared testlink protocol core.
+ *
+ * Owns only: the esp_http_server WS endpoint (/ws), token auth, client fd
+ * bookkeeping, the text-frame sink (async broadcast to clients), and the JPEG
+ * snapshot (WS-binary only). Command dispatch, the 1 Hz state heartbeat and the
+ * telemetry→event forwarding all live in testlink now, so the serial link (T4)
+ * shares them over the same core.
+ */
 
 static const char *TAG = "companion";
 
@@ -52,8 +55,12 @@ static void client_remove(int fd)
     }
 }
 
+/* text-frame sink: async broadcast of state/event/sense frames to all clients */
 static void ws_send_text_all(const char *json)
 {
+    if (!s_server) {
+        return;
+    }
     httpd_ws_frame_t f = {
         .type = HTTPD_WS_TYPE_TEXT,
         .payload = (uint8_t *)json,
@@ -68,286 +75,27 @@ static void ws_send_text_all(const char *json)
     }
 }
 
-/* -------- state heartbeat -------- */
-static char *build_state_json(void)
+/* -------- reply + snapshot hooks handed to the protocol core -------- */
+/* ack/reply is request-scoped (synchronous frame on the calling handler's req). */
+static void ws_reply(void *ctx, const char *json)
 {
-    tel_snapshot_t t;
-    telemetry_get(&t);
-
-    cJSON *r = cJSON_CreateObject();
-    cJSON_AddNumberToObject(r, "v", 1);
-    cJSON_AddStringToObject(r, "type", "state");
-    cJSON_AddNumberToObject(r, "ts", (double)(esp_timer_get_time() / 1000));
-    cJSON_AddStringToObject(r, "soul", soul_state_name(t.soul));
-    cJSON_AddStringToObject(r, "emotion", t.emotion);
-
-    cJSON *face = cJSON_AddObjectToObject(r, "face");
-    cJSON_AddBoolToObject(face, "present", t.face.present);
-    cJSON_AddNumberToObject(face, "cx", t.face.cx);
-    cJSON_AddNumberToObject(face, "cy", t.face.cy);
-    cJSON_AddNumberToObject(face, "area", t.face.area_ratio);
-    cJSON_AddNumberToObject(face, "frontal", t.face.frontal_score);
-
-    cJSON *mo = cJSON_AddObjectToObject(r, "motion");
-    cJSON *intent = cJSON_AddArrayToObject(mo, "intent");
-    cJSON_AddItemToArray(intent, cJSON_CreateNumber(t.motion.vx));
-    cJSON_AddItemToArray(intent, cJSON_CreateNumber(t.motion.vy));
-    cJSON_AddItemToArray(intent, cJSON_CreateNumber(t.motion.wz));
-    cJSON *duty = cJSON_AddArrayToObject(mo, "duty");
-    for (int i = 0; i < 3; i++) {
-        cJSON_AddItemToArray(duty, cJSON_CreateNumber(t.motion.duty[i]));
-    }
-    cJSON_AddBoolToObject(mo, "enabled", t.motion.enabled);
-
-    cJSON *enc = cJSON_AddArrayToObject(r, "enc_rpm");
-    for (int i = 0; i < 3; i++) {
-        cJSON_AddItemToArray(enc, cJSON_CreateNumber((int)t.enc.rpm[i]));
-    }
-    if (t.current_present) {
-        cJSON_AddNumberToObject(r, "current_ma", (int)(t.current_a * 1000));
-    } else {
-        cJSON_AddNullToObject(r, "current_ma");
-    }
-    cJSON *net = cJSON_AddObjectToObject(r, "net");
-    cJSON_AddStringToObject(net, "ip", t.net_up ? t.ip : "");
-    cJSON_AddNumberToObject(net, "rssi", t.rssi);
-    cJSON_AddStringToObject(r, "llm", t.llm);
-    cJSON_AddStringToObject(r, "voice", t.voice);
-    cJSON_AddNumberToObject(r, "heap", t.free_heap);
-    cJSON *fps = cJSON_AddObjectToObject(r, "fps");
-    cJSON_AddNumberToObject(fps, "render", t.fps_render);
-    cJSON_AddNumberToObject(fps, "detect", t.fps_detect);
-
-    cJSON_AddStringToObject(r, "beh", t.beh);
-    cJSON *mood = cJSON_AddObjectToObject(r, "mood");
-    cJSON_AddNumberToObject(mood, "energy", t.mood_energy);
-    cJSON_AddNumberToObject(mood, "social", t.mood_social);
-    if (t.pc.activity[0]) {
-        cJSON *pc = cJSON_AddObjectToObject(r, "pc");
-        cJSON_AddStringToObject(pc, "activity", t.pc.activity);
-        cJSON_AddNumberToObject(pc, "idle_s", t.pc.idle_s);
-        cJSON_AddStringToObject(pc, "focus", t.pc.focus);
-        cJSON_AddBoolToObject(pc, "media", t.pc.media);
-        cJSON_AddBoolToObject(pc, "dnd", t.pc.dnd);
-    } else {
-        cJSON_AddNullToObject(r, "pc");
-    }
-
-    char *s = cJSON_PrintUnformatted(r);
-    cJSON_Delete(r);
-    return s;
+    httpd_req_t *req = ctx;
+    httpd_ws_frame_t f = { .type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)json, .len = strlen(json) };
+    httpd_ws_send_frame(req, &f);
 }
 
-static void push_task(void *arg)
+static bool ws_snapshot(void *ctx)
 {
-    (void)arg;
-    for (;;) {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        if (!s_server) {
-            continue;
-        }
-        char *s = build_state_json();
-        if (s) {
-            ws_send_text_all(s);
-            free(s);
-        }
-    }
-}
-
-/* -------- telemetry event bus -> event frames -------- */
-static void emit_event(const char *name, cJSON *data /*takes ownership*/)
-{
-    cJSON *r = cJSON_CreateObject();
-    cJSON_AddNumberToObject(r, "v", 1);
-    cJSON_AddStringToObject(r, "type", "event");
-    cJSON_AddNumberToObject(r, "ts", (double)(esp_timer_get_time() / 1000));
-    cJSON_AddStringToObject(r, "name", name);
-    cJSON_AddItemToObject(r, "data", data ? data : cJSON_CreateObject());
-    char *s = cJSON_PrintUnformatted(r);
-    cJSON_Delete(r);
-    if (s) {
-        ws_send_text_all(s);
-        free(s);
-    }
-}
-
-static void on_ns_event(void *arg, esp_event_base_t base, int32_t id, void *data)
-{
-    (void)arg;
-    (void)base;
-    switch ((ns_event_id_t)id) {
-    case NS_EVT_SOUL_TRANSITION: {
-        ns_evt_soul_t *e = data;
-        cJSON *d = cJSON_CreateObject();
-        cJSON_AddStringToObject(d, "from", soul_state_name(e->from));
-        cJSON_AddStringToObject(d, "to", soul_state_name(e->to));
-        emit_event("soul_transition", d);
-        break;
-    }
-    case NS_EVT_FACE_PRESENT: emit_event("face_present", NULL); break;
-    case NS_EVT_FACE_LOST:    emit_event("face_lost", NULL); break;
-    case NS_EVT_GAZED:        emit_event("gazed", NULL); break;
-    case NS_EVT_WAKE:         emit_event("wake", NULL); break;
-    case NS_EVT_LLM_REPLY: {
-        ns_evt_text_t *e = data;
-        cJSON *d = cJSON_CreateObject();
-        cJSON_AddStringToObject(d, "text", e->text);
-        emit_event("llm_reply", d);
-        break;
-    }
-    case NS_EVT_FAULT: {
-        ns_evt_text_t *e = data;
-        cJSON *d = cJSON_CreateObject();
-        cJSON_AddStringToObject(d, "text", e->text);
-        emit_event("fault", d);
-        break;
-    }
-    /* --- interaction events (docs/12) --- */
-    case NS_EVT_TAP:         emit_event("tap", NULL); break;
-    case NS_EVT_LIFTED:      emit_event("lifted", NULL); break;
-    case NS_EVT_PLACED:      emit_event("placed", NULL); break;
-    case NS_EVT_DARK:        emit_event("dark", NULL); break;
-    case NS_EVT_BRIGHT:      emit_event("bright", NULL); break;
-    case NS_EVT_TOUCH: {
-        ns_evt_touch_t *e = data;
-        cJSON *d = cJSON_CreateObject();
-        cJSON_AddBoolToObject(d, "long", e && e->long_press);
-        emit_event("touch", d);
-        break;
-    }
-    case NS_EVT_WHEEL_MOVED: emit_event("wheel_moved", NULL); break;
-    case NS_EVT_LOUD:        emit_event("loud", NULL); break;
-    case NS_EVT_STALL: {
-        ns_evt_text_t *e = data;
-        cJSON *d = cJSON_CreateObject();
-        cJSON_AddStringToObject(d, "text", e ? e->text : "");
-        emit_event("stall", d);
-        break;
-    }
-    default: break;
-    }
-}
-
-/* -------- command handling -------- */
-static void send_ack(httpd_req_t *req, int id, bool ok, const char *err)
-{
-    cJSON *r = cJSON_CreateObject();
-    cJSON_AddStringToObject(r, "type", "ack");
-    cJSON_AddNumberToObject(r, "id", id);
-    cJSON_AddBoolToObject(r, "ok", ok);
-    if (err) {
-        cJSON_AddStringToObject(r, "err", err);
-    }
-    char *s = cJSON_PrintUnformatted(r);
-    cJSON_Delete(r);
-    if (s) {
-        httpd_ws_frame_t f = { .type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)s, .len = strlen(s) };
-        httpd_ws_send_frame(req, &f);
-        free(s);
-    }
-}
-
-static void send_snapshot(httpd_req_t *req)
-{
+    httpd_req_t *req = ctx;
     uint8_t *jpg = NULL;
     size_t len = 0;
     if (camera_snapshot_jpeg(&jpg, &len) == ESP_OK && jpg) {
         httpd_ws_frame_t f = { .type = HTTPD_WS_TYPE_BINARY, .payload = jpg, .len = len };
         httpd_ws_send_frame(req, &f);
         free(jpg);
+        return true;
     }
-}
-
-static void handle_command(httpd_req_t *req, const char *json)
-{
-    cJSON *root = cJSON_Parse(json);
-    if (!root) {
-        return;
-    }
-    const cJSON *type = cJSON_GetObjectItemCaseSensitive(root, "type");
-    const cJSON *jid = cJSON_GetObjectItemCaseSensitive(root, "id");
-    int id = cJSON_IsNumber(jid) ? jid->valueint : 0;
-    const char *cmd = cJSON_IsString(type) ? type->valuestring : "";
-
-    /* pc_state: continuous PC-status input, NOT a command — no ack (docs/09 v1.1). */
-    if (strcmp(cmd, "pc_state") == 0) {
-        tel_pc_t pc = {0};
-        const cJSON *v;
-        if ((v = cJSON_GetObjectItemCaseSensitive(root, "activity")) && cJSON_IsString(v)) {
-            strlcpy(pc.activity, v->valuestring, sizeof(pc.activity));
-        }
-        if ((v = cJSON_GetObjectItemCaseSensitive(root, "focus")) && cJSON_IsString(v)) {
-            strlcpy(pc.focus, v->valuestring, sizeof(pc.focus));
-        }
-        if ((v = cJSON_GetObjectItemCaseSensitive(root, "idle_s")) && cJSON_IsNumber(v)) {
-            pc.idle_s = v->valueint;
-        }
-        v = cJSON_GetObjectItemCaseSensitive(root, "media");
-        pc.media = cJSON_IsTrue(v);
-        v = cJSON_GetObjectItemCaseSensitive(root, "dnd");
-        pc.dnd = cJSON_IsTrue(v);
-        pc.rx_ms = esp_timer_get_time() / 1000;
-        telemetry_set_pc(&pc);
-        soul_set_pc(&pc);
-        cJSON_Delete(root);
-        return;
-    }
-
-    if (strcmp(cmd, "ask") == 0) {
-        const cJSON *t = cJSON_GetObjectItemCaseSensitive(root, "text");
-        bool ok = cJSON_IsString(t) && dialog_ask(t->valuestring) == ESP_OK;
-        send_ack(req, id, ok, ok ? NULL : "ask failed");
-    } else if (strcmp(cmd, "set_emotion") == 0) {
-        const cJSON *n = cJSON_GetObjectItemCaseSensitive(root, "name");
-        const cJSON *m = cJSON_GetObjectItemCaseSensitive(root, "mode");
-        if (cJSON_IsString(n)) {
-            bool fade = cJSON_IsString(m) && strcmp(m->valuestring, "fade") == 0;
-            face_set_emotion(n->valuestring, fade ? FACE_FADE : FACE_NOW);
-            soul_emotion_override(n->valuestring, 10000);
-            send_ack(req, id, true, NULL);
-        } else {
-            send_ack(req, id, false, "no name");
-        }
-    } else if (strcmp(cmd, "teleop") == 0) {
-        if (!motion_enabled()) {
-            send_ack(req, id, false, "motion disabled");
-        } else {
-            const cJSON *vx = cJSON_GetObjectItemCaseSensitive(root, "vx");
-            const cJSON *vy = cJSON_GetObjectItemCaseSensitive(root, "vy");
-            const cJSON *wz = cJSON_GetObjectItemCaseSensitive(root, "wz");
-            const cJSON *ttl = cJSON_GetObjectItemCaseSensitive(root, "ttl_ms");
-            uint32_t ttl_ms = cJSON_IsNumber(ttl) ? (uint32_t)ttl->valueint : 300;
-            if (ttl_ms < 100)  ttl_ms = 100;
-            if (ttl_ms > 2000) ttl_ms = 2000;
-            motion_request(MOTION_SRC_TELEOP,
-                           cJSON_IsNumber(vx) ? vx->valuedouble : 0,
-                           cJSON_IsNumber(vy) ? vy->valuedouble : 0,
-                           cJSON_IsNumber(wz) ? wz->valuedouble : 0,
-                           ttl_ms);
-            send_ack(req, id, true, NULL);
-        }
-    } else if (strcmp(cmd, "get_snapshot") == 0) {
-        send_snapshot(req);
-        send_ack(req, id, true, NULL);
-    } else if (strcmp(cmd, "estop") == 0) {
-        soul_notify_fault("estop (companion)");
-        send_ack(req, id, true, NULL);
-    } else if (strcmp(cmd, "clear_fault") == 0) {
-        soul_clear_fault();
-        send_ack(req, id, true, NULL);
-    } else if (strcmp(cmd, "config_reload") == 0) {
-        ns_config_init(NS_CONFIG_PATH);
-        send_ack(req, id, true, NULL);
-    } else if (strcmp(cmd, "set_overlay") == 0) {
-        const cJSON *on = cJSON_GetObjectItemCaseSensitive(root, "on");
-        hud_set_enabled(cJSON_IsBool(on) ? cJSON_IsTrue(on) : true);
-        send_ack(req, id, true, NULL);
-    } else if (strcmp(cmd, "selftest") == 0) {
-        send_ack(req, id, true, "see serial");
-    } else {
-        send_ack(req, id, false, "unknown cmd");
-    }
-    cJSON_Delete(root);
+    return false;
 }
 
 /* -------- WS URI handler -------- */
@@ -373,6 +121,13 @@ static esp_err_t ws_handler(httpd_req_t *req)
             return ESP_FAIL;
         }
         client_add(httpd_req_to_sockfd(req));
+        /* push a hwinfo frame to the freshly-connected client */
+        char *hw = ns_build_hwinfo_json("");
+        if (hw) {
+            httpd_ws_frame_t f = { .type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)hw, .len = strlen(hw) };
+            httpd_ws_send_frame(req, &f);
+            free(hw);
+        }
         return ESP_OK;
     }
 
@@ -386,7 +141,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         f.payload = malloc(f.len + 1);
         if (f.payload && httpd_ws_recv_frame(req, &f, f.len) == ESP_OK) {
             f.payload[f.len] = 0;
-            handle_command(req, (char *)f.payload);
+            ns_proto_handle((char *)f.payload, f.len, ws_reply, req);
         }
         free(f.payload);
     }
@@ -420,8 +175,11 @@ esp_err_t companion_start(void)
     };
     httpd_register_uri_handler(s_server, &ws);
 
-    esp_event_handler_instance_register(NANOSOUL_EVENT, ESP_EVENT_ANY_ID, on_ns_event, NULL, NULL);
-    xTaskCreatePinnedToCore(push_task, "companion", 6144, NULL, 3, NULL, 0);
+    /* Wire this transport into the shared protocol core. */
+    ns_proto_set_snapshot_hook(ws_snapshot);
+    ns_link_add_sink(ws_send_text_all);
+    testlink_core_start();   /* idempotent: state push + event forwarding */
+
     ESP_LOGI(TAG, "WS server up on :80/ws");
     return ESP_OK;
 }
