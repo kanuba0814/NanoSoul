@@ -205,6 +205,9 @@ const Link = {
     this.disconnect();
     const port=await navigator.serial.requestPort();
     await port.open({baudRate:115200});
+    // CH343/CP210x 自动复位板：DTR/RTS 接在 ESP EN/boot 上，open() 会把板子按在
+    // 复位里（屏黑、不启动）。开口后立刻释放，让它正常跑。
+    try { await port.setSignals({dataTerminalReady:false, requestToSend:false}); } catch(e){}
     this.serial=port; this.kind="serial";
     this.writer=port.writable.getWriter();
     this.setStatus(true,"串口 USB-Serial-JTAG");
