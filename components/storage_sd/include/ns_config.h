@@ -87,6 +87,19 @@ typedef struct {
 } ns_imu_cfg_t;
 
 typedef struct {
+    int stall_ma;          /* motor current above this = candidate stall */
+    int stall_ms;          /* stall condition must persist this long     */
+    int stall_retry;       /* auto-recovery attempts before locking out  */
+} ns_protect_cfg_t;
+
+typedef struct {
+    int approach_budget_cm; /* max travel per APPROACH before giving up */
+    int nudge_cm;           /* nominal nudge step size                  */
+    int ramp_ms;            /* primitive ramp in/out                    */
+    int jitter_pct;         /* amplitude jitter                         */
+} ns_move_cfg_t;
+
+typedef struct {
     bool enabled;          /* actually drive motors?      */
     int  max_duty_pct;     /* clamp on computed duty, 0-100 */
 } ns_motion_cfg_t;
@@ -111,6 +124,8 @@ typedef struct {
     ns_pc_cfg_t        pc;
     ns_light_cfg_t     light;
     ns_imu_cfg_t       imu;
+    ns_protect_cfg_t   protect;
+    ns_move_cfg_t      move;
     ns_motion_cfg_t    motion;
     ns_companion_cfg_t companion;
     ns_debug_cfg_t     debug;

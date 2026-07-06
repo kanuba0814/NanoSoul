@@ -214,6 +214,8 @@ static tel_pc_t   s_pc;               /* last PC state from companion */
 static float      s_energy = 0.5f;
 static float      s_social = 0.5f;
 static soul_prim_t s_prim;            /* active motion primitive (docs/12 §5) */
+static int64_t    s_idle_since;       /* when the current IDLE stretch began */
+static int64_t    s_autonomy_next;    /* earliest next self-initiated action */
 
 static void soul_evt_handler(void *a, esp_event_base_t base, int32_t id, void *data)
 {
@@ -349,8 +351,34 @@ static void soul_task(void *arg)
             telemetry_set_mood(s_energy, s_social);
         }
 
+        /* S11 autonomy: after a long idle, self-initiate a ZERO-TRANSLATION action
+         * (rotation / sway / a mutter) — never a translation, since there are no
+         * cliff sensors to move blindly (docs/12 S11). */
+        if (cfg->behavior.autonomy && s_ctx.state == SOUL_IDLE && !soul_prim_active(&s_prim) &&
+            in.perm != PERM_SILENT && in.perm != PERM_QUIET) {
+            if (s_idle_since == 0) {
+                s_idle_since = now_ms;
+            }
+            if ((now_ms - s_idle_since) > (int64_t)cfg->behavior.autonomy_idle_s * 1000 &&
+                now_ms >= s_autonomy_next) {
+                switch (esp_random() % 3) {
+                case 0: soul_prim_start(&s_prim, PRIM_SCAN, prim_jitter(), now_ms); break;
+                case 1: soul_prim_start(&s_prim, PRIM_SPIN, prim_jitter(), now_ms); break;
+                default:
+                    soul_expr_transient(&s_expr, "sleep", "idle", 3000, now_ms);
+                    face_set_tip("今天真安静");
+                    break;
+                }
+                int gap = 45000 + (int)((1.0f - s_energy) * 255000);   /* 45s..300s by energy */
+                s_autonomy_next = now_ms + gap;
+            }
+        } else if (s_ctx.state != SOUL_IDLE) {
+            s_idle_since = 0;
+        }
+
         /* Motion: an active primitive overrides the state machine's raw intent;
-         * FAULT holds the top-priority zero; otherwise the state intent drives. */
+         * FAULT holds the top-priority zero; a still state gets gentle micro-motion;
+         * otherwise the state intent drives. */
         float pv[3];
         if (s_ctx.state == SOUL_FAULT) {
             motion_request(MOTION_SRC_FAULT, 0.0f, 0.0f, 0.0f, 250);
@@ -359,8 +387,17 @@ static void soul_task(void *arg)
             motion_request(MOTION_SRC_BEHAVIOR, pv[0], pv[1], pv[2], 250);
             telemetry_set_beh(soul_prim_name(s_prim.id));
         } else {
-            motion_set_intent(s_ctx.vx, s_ctx.vy, s_ctx.wz);
-            telemetry_set_beh(soul_state_name(s_ctx.state));
+            bool still = fabsf(s_ctx.vx) < 0.01f && fabsf(s_ctx.vy) < 0.01f && fabsf(s_ctx.wz) < 0.01f;
+            if (still && in.perm != PERM_SILENT &&
+                (s_ctx.state == SOUL_IDLE || s_ctx.state == SOUL_ENGAGE)) {
+                /* S3 micro-motion: gentle breathing sway, lowest priority */
+                float mw = 0.04f * sinf(2.0f * (float)M_PI * (float)now_ms / 4000.0f);
+                motion_request(MOTION_SRC_MICRO, 0.0f, 0.0f, mw, 250);
+                telemetry_set_beh("micro");
+            } else {
+                motion_set_intent(s_ctx.vx, s_ctx.vy, s_ctx.wz);
+                telemetry_set_beh(soul_state_name(s_ctx.state));
+            }
         }
         telemetry_set_soul(s_ctx.state);
 

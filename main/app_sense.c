@@ -1,23 +1,87 @@
 #include "app_sense.h"
 
+#include <math.h>
 #include <stdlib.h>
 
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "board_i2c1.h"
 #include "drv_encoder.h"
 #include "drv_ina219.h"
+#include "drv_motor.h"
 #include "motion.h"
+#include "ns_config.h"
+#include "soul.h"
 #include "telemetry.h"
 
 #define WHEEL_MOVED_COUNTS 826   /* ~1/4 output-shaft rev (3304/4), in motor-axis counts */
+#define STALL_DUTY_MIN     307   /* ~30% of 1023: only judge a wheel that's driven hard */
+#define STALL_RPM_MAX      5.0f  /* below this = not turning */
+
+/* ---- stall protection FSM (pure) ---- */
+
+stall_action_t stall_step(stall_fsm_t *s, bool cond, int stall_ms,
+                          int retry_gap_ms, int max_retry, int64_t now_ms)
+{
+    if (!s->tripped) {
+        if (cond) {
+            if (s->cond_since_ms == 0) {
+                s->cond_since_ms = now_ms;
+            } else if (now_ms - s->cond_since_ms >= stall_ms) {
+                s->tripped = true;
+                s->cond_since_ms = 0;
+                s->next_try_ms = now_ms + retry_gap_ms;
+                return STALL_TRIP;
+            }
+        } else {
+            s->cond_since_ms = 0;
+        }
+        return STALL_OK;
+    }
+    /* tripped: wait out the retry gap, then try again or give up */
+    if (now_ms >= s->next_try_ms) {
+        if (s->tries < max_retry) {
+            s->tries++;
+            s->tripped = false;
+            s->cond_since_ms = now_ms;   /* re-arm: needs stall_ms again to re-trip */
+            s->next_try_ms = now_ms + retry_gap_ms;
+            return STALL_RETRY;
+        }
+        return STALL_GIVEUP;
+    }
+    return STALL_OK;
+}
+
+void stall_reset(stall_fsm_t *s)
+{
+    s->tripped = false;
+    s->cond_since_ms = 0;
+    s->tries = 0;
+    s->next_try_ms = 0;
+}
+
+static bool stall_cond(const tel_snapshot_t *t, int stall_ma)
+{
+    if (!t->current_present || (int)(t->current_a * 1000) < stall_ma) {
+        return false;
+    }
+    for (int i = 0; i < 3; i++) {
+        if (abs(t->motion.duty[i]) > STALL_DUTY_MIN && fabsf(t->enc.rpm[i]) < STALL_RPM_MAX) {
+            return true;
+        }
+    }
+    return false;
+}
 
 static void sense_task(void *arg)
 {
     (void)arg;
-    int  base[3] = {0};
-    bool have_base = false;
+    const ns_config_t *cfg = ns_config_get();
+    int         base[3] = {0};
+    bool        have_base = false;
+    stall_fsm_t stall = {0};
 
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(100));   /* 10 Hz */
@@ -51,6 +115,29 @@ static void sense_task(void *arg)
             }
         } else {
             for (int i = 0; i < 3; i++) base[i] = e.count[i];   /* reset baseline while driving */
+        }
+
+        /* Stall protection (docs/12 S14). Only meaningful when driving wheels. */
+        if (motion_enabled()) {
+            int64_t now = esp_timer_get_time() / 1000;
+            bool cond = stall_cond(&t, cfg->protect.stall_ma);
+            stall_action_t act = stall_step(&stall, cond, cfg->protect.stall_ms,
+                                            3000, cfg->protect.stall_retry, now);
+            if (act == STALL_TRIP) {
+                motors_enable(false);
+                soul_notify_fault("stall");
+                ns_evt_text_t ev = { .text = "stall" };
+                telemetry_post(NS_EVT_STALL, &ev, sizeof(ev));
+            } else if (act == STALL_RETRY) {
+                motors_enable(true);   /* re-arm; if it still stalls it re-trips */
+            }
+            /* Fault cleared elsewhere (touch long / companion) -> reset + re-enable */
+            if (t.soul != SOUL_FAULT && stall.tripped) {
+                stall_reset(&stall);
+                motors_enable(true);
+            }
+        } else {
+            stall_reset(&stall);
         }
     }
 }
