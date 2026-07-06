@@ -191,6 +191,7 @@ static volatile struct {
     bool lifted;         /* level: LIFTED sets, PLACED clears */
     bool dark;           /* level: DARK sets, BRIGHT clears   */
     bool touch_pending;
+    bool touch_long_pending;
     bool wheel_pending;
     bool loud_pending;
 } s_latch;
@@ -216,7 +217,15 @@ static void soul_evt_handler(void *a, esp_event_base_t base, int32_t id, void *d
     case NS_EVT_PLACED:      s_latch.lifted = false;     break;
     case NS_EVT_DARK:        s_latch.dark = true;        break;
     case NS_EVT_BRIGHT:      s_latch.dark = false;       break;
-    case NS_EVT_TOUCH:       s_latch.touch_pending = true; break;
+    case NS_EVT_TOUCH: {
+        ns_evt_touch_t *e = data;
+        if (e && e->long_press) {
+            s_latch.touch_long_pending = true;
+        } else {
+            s_latch.touch_pending = true;
+        }
+        break;
+    }
     case NS_EVT_WHEEL_MOVED: s_latch.wheel_pending = true; break;
     case NS_EVT_LOUD:        s_latch.loud_pending = true;  break;
     default: break;
@@ -251,9 +260,10 @@ static void soul_task(void *arg)
         in.double_tap   = s_latch.double_pending;  s_latch.double_pending = false;
         in.lifted       = s_latch.lifted;
         in.dark         = s_latch.dark;
-        in.touched      = s_latch.touch_pending;   s_latch.touch_pending = false;
-        in.wheel_moved  = s_latch.wheel_pending;   s_latch.wheel_pending = false;
-        in.loud         = s_latch.loud_pending;    s_latch.loud_pending = false;
+        in.touched      = s_latch.touch_pending;      s_latch.touch_pending = false;
+        in.touch_long   = s_latch.touch_long_pending; s_latch.touch_long_pending = false;
+        in.wheel_moved  = s_latch.wheel_pending;      s_latch.wheel_pending = false;
+        in.loud         = s_latch.loud_pending;       s_latch.loud_pending = false;
         in.perm         = soul_perm_eval(&s_pc, in.face.present, &cfg->pc, now_ms);
 
         soul_eval(&s_ctx, &in, &cfg->behavior, SOUL_TICK_MS, now_ms);
@@ -277,6 +287,19 @@ static void soul_task(void *arg)
             ci = (ci + 1) % (int)(sizeof(CLIPS) / sizeof(CLIPS[0]));
             soul_expr_transient(&s_expr, CLIPS[ci], "egg", 1500, now_ms);
             face_set_tip("换个脸~");
+        }
+        if (in.touched) {                          /* poke the screen -> pleased */
+            soul_expr_transient(&s_expr, "o", "touch", 800, now_ms);
+            face_set_tip("嘿嘿");
+            s_social += 0.05f;
+            if (s_social > 1.0f) s_social = 1.0f;
+        }
+        if (in.touch_long && s_ctx.fault) {        /* long press clears a fault (S14) */
+            soul_clear_fault();
+            face_set_tip("好啦好啦");
+        }
+        if (in.loud) {                             /* startled by a sudden noise */
+            soul_expr_transient(&s_expr, "o", "loud", 800, now_ms);
         }
 
         /* mood slow variables (docs/12 §3.1): idle energy recovery + social decay */
@@ -318,6 +341,8 @@ static void soul_task(void *arg)
             } else if (last_state == SOUL_LIFTED) {            /* S8 set back down */
                 soul_mem_note(MEM_LIFTED, now_ms);
                 face_set_tip("唔…吓死我了");
+            } else if (last_state == SOUL_DOZE) {              /* S10 waking: rub eyes */
+                soul_expr_transient(&s_expr, "o", "wake", 1000, now_ms);
             }
             last_state = s_ctx.state;
         }

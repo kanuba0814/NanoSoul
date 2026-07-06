@@ -16,6 +16,7 @@
 #include "camera.h"
 #include "imu.h"
 #include "light.h"
+#include "touch_router.h"
 #include "companion.h"
 #include "face.h"
 #include "hud.h"
@@ -179,6 +180,14 @@ static st_report_t check_imu_probe(void)
         return st_pass("QMI8658 present");
     }
     return st_skip("no QMI8658 @0x6A/0x6B");
+}
+
+static st_report_t check_touch(void)
+{
+    if (!board_i2c0_probe(0x38)) {
+        return st_skip("no FT6x36 @0x38");
+    }
+    return st_pass("touch %s", touch_router_ready() ? "ready" : "present");
 }
 
 static st_report_t check_imu_sim(void)
@@ -563,6 +572,7 @@ void app_selftests_register(void)
     /* Interaction sensors (off-board I2C1) */
     selftest_register("light_read", check_light, 0);
     selftest_register("imu_probe", check_imu_probe, 0);
+    selftest_register("touch_probe", check_touch, 0);
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
     selftest_register("arbiter_sim", check_arbiter_sim, 0);
