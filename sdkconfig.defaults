@@ -56,6 +56,12 @@ CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
 # —— 上位机 WebSocket (esp_http_server) ——
 CONFIG_HTTPD_WS_SUPPORT=y
 
+# —— Console ——
+# Free the USB-Serial-JTAG peripheral for the testlink NDJSON channel (docs/13);
+# logs stay on UART0. TEST mode installs its own USJ driver, which conflicts with
+# a secondary console on the same peripheral.
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
 # —— LVGL ——
 CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_USE_BUILTIN_MALLOC=y

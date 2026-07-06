@@ -1,5 +1,6 @@
 #include "app_face.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "app_sense.h"
@@ -33,7 +34,7 @@ static const char *TAG = "app_face";
 
 // Bridge motion's signed per-wheel duty to the TB6612 driver. Only ever called
 // when motion is enabled (wheels wired); motion stays free of drv_motor itself.
-static void motor_apply(const int16_t duty[3])
+void app_face_motor_apply(const int16_t duty[3])
 {
     for (int i = 0; i < MOTOR_COUNT; i++) {
         int16_t d = duty[i];
@@ -94,7 +95,7 @@ void app_face_run(bool run_selftest_loop)
     if (cfg->motion.enabled) {
         if (motors_init() == ESP_OK) {
             motors_enable(true);
-            motion_set_apply(motor_apply);
+            motion_set_apply(app_face_motor_apply);
         } else {
             ESP_LOGW(TAG, "motors_init failed; staying compute-only");
         }

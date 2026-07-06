@@ -3,6 +3,7 @@ idf_component_register(
         "nanosoul_main.c"
         "app_selftests.c"
         "app_face.c"
+        "app_testmode.c"
         "app_sense.c"
         "drv_motor.c"
         "drv_encoder.c"
@@ -35,6 +36,7 @@ idf_component_register(
         audio
         voice
         companion
+        testlink
         touch_router
         debugui
         # TESTPANEL / legacy motor test path

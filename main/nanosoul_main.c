@@ -1,9 +1,12 @@
 // NanoSoul 整机固件入口。
-// Boot mode (Kconfig NANOSOUL_MODE):
+// Boot mode: an IO48-to-GND strap at boot forces TEST mode; otherwise the
+// Kconfig NANOSOUL_MODE choice decides:
 //   FACE     — emote face + debug HUD (wired from Phase A onward).
 //   SELFTEST — auto-loop diagnostics; JSON matrix to serial.
+//   TEST     — full runtime + test services (override/motor_test/serial link).
 //   TESTPANEL— legacy LVGL three-motor bring-up panel.
 // ESP-IDF v5.5.2 / ESP32-P4. flash/monitor 由持板者本地手动跑（板外纪律）。
+#include "driver/gpio.h"
 #include "esp_chip_info.h"
 #include "esp_idf_version.h"
 #include "esp_log.h"
@@ -11,7 +14,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "app_face.h"
 #include "app_selftests.h"
+#include "app_testmode.h"
 #include "esp_netif.h"
 #include "ns_config.h"
 #include "sd_storage.h"
@@ -22,18 +27,42 @@
 #if CONFIG_NANOSOUL_MODE_TESTPANEL
 #include "display.h"
 #include "test_app.h"
-#else
-#include "app_face.h"
 #endif
+
+// Boot strap: short IO48 to GND to force TEST mode (internal pull-up; conflict
+// fallback = IO33 — change only this one line). Read once at boot, then release.
+#define TEST_STRAP_GPIO GPIO_NUM_48
 
 static const char *TAG = "nanosoul";
 
-static const char *boot_mode_name(void)
+static bool strap_test_mode(void)
+{
+    gpio_config_t io = {
+        .pin_bit_mask = 1ULL << TEST_STRAP_GPIO,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&io);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    int low = 0;
+    for (int i = 0; i < 5; i++) {
+        low += (gpio_get_level(TEST_STRAP_GPIO) == 0);
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+    gpio_reset_pin(TEST_STRAP_GPIO);
+    return low >= 4;   /* strapped to GND */
+}
+
+static const char *kconfig_mode_name(void)
 {
 #if CONFIG_NANOSOUL_MODE_FACE
     return "FACE";
 #elif CONFIG_NANOSOUL_MODE_SELFTEST
     return "SELFTEST";
+#elif CONFIG_NANOSOUL_MODE_TEST
+    return "TEST";
 #else
     return "TESTPANEL";
 #endif
@@ -69,10 +98,24 @@ void app_main(void)
 {
     esp_chip_info_t chip;
     esp_chip_info(&chip);
-    ESP_LOGI(TAG, "NanoSoul boot — mode=%s, ESP-IDF %s, target %s, %d core(s)",
-             boot_mode_name(), esp_get_idf_version(), CONFIG_IDF_TARGET, chip.cores);
+
+    bool strap = strap_test_mode();
+#if CONFIG_NANOSOUL_MODE_TEST
+    bool test_mode = true;             // Kconfig forces TEST (board-off, no jumper)
+#else
+    bool test_mode = strap;            // strap overrides the Kconfig default
+#endif
+
+    ESP_LOGI(TAG, "NanoSoul boot — kconfig=%s strap=%d -> %s, ESP-IDF %s, target %s, %d core(s)",
+             kconfig_mode_name(), strap, test_mode ? "TEST" : kconfig_mode_name(),
+             esp_get_idf_version(), CONFIG_IDF_TARGET, chip.cores);
 
     init_common();
+
+    if (test_mode) {
+        app_test_run();                // full runtime + test services (docs/13)
+        return;
+    }
 
 #if CONFIG_NANOSOUL_MODE_TESTPANEL
     ESP_ERROR_CHECK(display_init());   // ST7701 + LVGL

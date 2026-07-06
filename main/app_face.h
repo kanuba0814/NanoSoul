@@ -15,6 +15,10 @@ extern "C" {
 // (never returns); otherwise return, leaving the runtime tasks running.
 void app_face_run(bool run_selftest_loop);
 
+// The motion→TB6612 apply bridge. Exposed so test mode can detach it during a
+// motor_test burst (drive a single wheel) and re-attach it afterward.
+void app_face_motor_apply(const int16_t duty[3]);
+
 #ifdef __cplusplus
 }
 #endif

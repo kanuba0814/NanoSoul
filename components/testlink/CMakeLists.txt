@@ -4,6 +4,7 @@ idf_component_register(
         "proto.c"
         "hwinfo.c"
         "sense_stream.c"
+        "serial_link.c"
     INCLUDE_DIRS "include"
     REQUIRES
         telemetry
@@ -24,4 +25,5 @@ idf_component_register(
     PRIV_REQUIRES
         esp_timer
         esp_app_format
+        esp_driver_usb_serial_jtag
 )
