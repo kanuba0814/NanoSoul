@@ -50,6 +50,10 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->pc.invite_idle_s = 300;
     cfg->pc.invite_cooldown_min = 60;
 
+    cfg->light.dark_lux = 10;
+    cfg->light.bright_lux = 30;
+    cfg->light.dark_hold_s = 30;
+
     cfg->motion.enabled = false;
     cfg->motion.max_duty_pct = 40;
 
@@ -145,6 +149,11 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_bool(o, "quiet_meeting", &cfg->pc.quiet_meeting);
         ov_int(o, "invite_idle_s", &cfg->pc.invite_idle_s);
         ov_int(o, "invite_cooldown_min", &cfg->pc.invite_cooldown_min);
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "light"))) {
+        ov_int(o, "dark_lux", &cfg->light.dark_lux);
+        ov_int(o, "bright_lux", &cfg->light.bright_lux);
+        ov_int(o, "dark_hold_s", &cfg->light.dark_hold_s);
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "motion"))) {
         ov_bool(o, "enabled", &cfg->motion.enabled);

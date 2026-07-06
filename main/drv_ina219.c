@@ -6,32 +6,22 @@
 
 static const char *TAG = "ina219";
 
-#define I2C_PORT        I2C_NUM_1
-#define I2C_SDA         GPIO_NUM_20
-#define I2C_SCL         GPIO_NUM_21
 #define I2C_FREQ_HZ     100000        // 长线/多挂兼容（docs：100kHz + 2.2k 上拉）
 #define INA219_ADDR     0x40
 #define REG_SHUNT       0x01          // 分流电压寄存器，LSB = 10µV（有符号）
 #define SHUNT_OHM       0.1f          // 模块板载 0.1Ω 采样电阻
 #define SHUNT_LSB_V     10e-6f
 
-static i2c_master_bus_handle_t s_bus = NULL;
 static i2c_master_dev_handle_t s_dev = NULL;
 static bool s_present = false;
 
-esp_err_t ina219_init(void)
+esp_err_t ina219_init(i2c_master_bus_handle_t bus)
 {
-    i2c_master_bus_config_t bus_cfg = {
-        .i2c_port = I2C_PORT,
-        .sda_io_num = I2C_SDA,
-        .scl_io_num = I2C_SCL,
-        .clk_source = I2C_CLK_SRC_DEFAULT,
-        .glitch_ignore_cnt = 7,
-        .flags.enable_internal_pullup = true,   // 模块通常自带上拉，这里兜底
-    };
-    ESP_RETURN_ON_ERROR(i2c_new_master_bus(&bus_cfg, &s_bus), TAG, "i2c bus");
-
-    if (i2c_master_probe(s_bus, INA219_ADDR, 50) != ESP_OK) {
+    if (!bus) {
+        ESP_LOGW(TAG, "no I2C1 bus → 跳过电流显示");
+        return ESP_OK;
+    }
+    if (i2c_master_probe(bus, INA219_ADDR, 50) != ESP_OK) {
         ESP_LOGW(TAG, "INA219 @0x%02X 未探到 → 跳过电流显示", INA219_ADDR);
         return ESP_OK;   // 没接也算成功，仅置 absent
     }
@@ -41,9 +31,9 @@ esp_err_t ina219_init(void)
         .device_address = INA219_ADDR,
         .scl_speed_hz = I2C_FREQ_HZ,
     };
-    ESP_RETURN_ON_ERROR(i2c_master_bus_add_device(s_bus, &dev_cfg, &s_dev), TAG, "add dev");
+    ESP_RETURN_ON_ERROR(i2c_master_bus_add_device(bus, &dev_cfg, &s_dev), TAG, "add dev");
     s_present = true;
-    ESP_LOGI(TAG, "INA219 在线 @0x%02X (SDA=IO%d SCL=IO%d)", INA219_ADDR, I2C_SDA, I2C_SCL);
+    ESP_LOGI(TAG, "INA219 在线 @0x%02X (shared I2C1)", INA219_ADDR);
     return ESP_OK;
 }
 

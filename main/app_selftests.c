@@ -11,8 +11,10 @@
 #include <time.h>
 
 #include "board_i2c0.h"
+#include "board_i2c1.h"
 #include "bsp_pins.h"
 #include "camera.h"
+#include "light.h"
 #include "companion.h"
 #include "face.h"
 #include "hud.h"
@@ -158,6 +160,16 @@ static st_report_t check_face_detect(void)
         return st_fail("detector stalled");
     }
     return st_pass("%.1ffps face=%d a%.3f fr%.2f", vision_fps(), f.present, f.area_ratio, f.frontal_score);
+}
+
+/* ---------------- Interaction sensors (I2C1, off-board) ---------------- */
+
+static st_report_t check_light(void)
+{
+    if (!board_i2c1_probe(0x23)) {
+        return st_skip("no BH1750 @0x23");
+    }
+    return st_pass("lux %.0f", light_lux());
 }
 
 /* ---------------- Phase C checks (motion IK + soul FSM, pure logic) ---------------- */
@@ -491,6 +503,8 @@ void app_selftests_register(void)
     selftest_register("i2c0_probe", check_i2c0_probe, 0);
     selftest_register("camera_stream", check_camera_stream, 0);
     selftest_register("face_detect", check_face_detect, 0);
+    /* Interaction sensors (off-board I2C1) */
+    selftest_register("light_read", check_light, 0);
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
     selftest_register("arbiter_sim", check_arbiter_sim, 0);

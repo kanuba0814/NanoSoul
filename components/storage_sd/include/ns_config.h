@@ -73,6 +73,12 @@ typedef struct {
 } ns_pc_cfg_t;
 
 typedef struct {
+    int dark_lux;          /* lux below this (held) -> DARK  */
+    int bright_lux;        /* lux above this -> BRIGHT       */
+    int dark_hold_s;       /* dark must persist this long    */
+} ns_light_cfg_t;
+
+typedef struct {
     bool enabled;          /* actually drive motors?      */
     int  max_duty_pct;     /* clamp on computed duty, 0-100 */
 } ns_motion_cfg_t;
@@ -95,6 +101,7 @@ typedef struct {
     ns_behavior_cfg_t  behavior;
     ns_mood_cfg_t      mood;
     ns_pc_cfg_t        pc;
+    ns_light_cfg_t     light;
     ns_motion_cfg_t    motion;
     ns_companion_cfg_t companion;
     ns_debug_cfg_t     debug;

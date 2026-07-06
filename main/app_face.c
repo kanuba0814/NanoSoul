@@ -8,6 +8,7 @@
 #include "freertos/task.h"
 
 #include "board_i2c0.h"
+#include "board_i2c1.h"
 #include "camera.h"
 #include "companion.h"
 #include "debugui.h"
@@ -15,6 +16,7 @@
 #include "drv_motor.h"
 #include "face.h"
 #include "hud.h"
+#include "light.h"
 #include "motion.h"
 #include "netlink.h"
 #include "ns_config.h"
@@ -70,6 +72,12 @@ void app_face_run(bool run_selftest_loop)
             ESP_LOGW(TAG, "camera init failed; vision disabled");
         }
     }
+
+    /* Off-board sensor bus (I2C1, dupont): ambient light now; IMU + motor
+     * current land in later milestones. Every sensor degrades gracefully if
+     * unplugged (probe misses -> absent, no fault). */
+    board_i2c1_init();
+    light_init(board_i2c1_bus());
 
     /* Motion + decision. Motors are NOT wired in this build: motion.enabled is
      * false by default, so motion only computes+publishes duty (visible on the

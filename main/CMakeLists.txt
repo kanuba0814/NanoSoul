@@ -20,6 +20,8 @@ idf_component_register(
         face
         hud
         board_i2c0
+        board_i2c1
+        light
         camera
         vision
         motion
