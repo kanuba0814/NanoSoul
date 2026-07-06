@@ -79,6 +79,14 @@ typedef struct {
 } ns_light_cfg_t;
 
 typedef struct {
+    float tap_th;          /* jerk magnitude (m/s^2) for a tap */
+    float lift_g_dev;      /* |mag-1g| fraction to call lifted */
+    int   lift_hold_ms;    /* deviation must persist this long */
+    int   place_still_ms;  /* stillness before PLACED          */
+    int   tilt_deg;        /* pitch/roll beyond this -> tilted  */
+} ns_imu_cfg_t;
+
+typedef struct {
     bool enabled;          /* actually drive motors?      */
     int  max_duty_pct;     /* clamp on computed duty, 0-100 */
 } ns_motion_cfg_t;
@@ -102,6 +110,7 @@ typedef struct {
     ns_mood_cfg_t      mood;
     ns_pc_cfg_t        pc;
     ns_light_cfg_t     light;
+    ns_imu_cfg_t       imu;
     ns_motion_cfg_t    motion;
     ns_companion_cfg_t companion;
     ns_debug_cfg_t     debug;

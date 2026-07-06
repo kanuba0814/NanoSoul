@@ -54,6 +54,12 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->light.bright_lux = 30;
     cfg->light.dark_hold_s = 30;
 
+    cfg->imu.tap_th = 3.0f;
+    cfg->imu.lift_g_dev = 0.15f;
+    cfg->imu.lift_hold_ms = 300;
+    cfg->imu.place_still_ms = 1500;
+    cfg->imu.tilt_deg = 8;
+
     cfg->motion.enabled = false;
     cfg->motion.max_duty_pct = 40;
 
@@ -154,6 +160,13 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_int(o, "dark_lux", &cfg->light.dark_lux);
         ov_int(o, "bright_lux", &cfg->light.bright_lux);
         ov_int(o, "dark_hold_s", &cfg->light.dark_hold_s);
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "imu"))) {
+        ov_float(o, "tap_th", &cfg->imu.tap_th);
+        ov_float(o, "lift_g_dev", &cfg->imu.lift_g_dev);
+        ov_int(o, "lift_hold_ms", &cfg->imu.lift_hold_ms);
+        ov_int(o, "place_still_ms", &cfg->imu.place_still_ms);
+        ov_int(o, "tilt_deg", &cfg->imu.tilt_deg);
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "motion"))) {
         ov_bool(o, "enabled", &cfg->motion.enabled);

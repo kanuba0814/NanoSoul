@@ -50,7 +50,8 @@ typedef struct {
     tel_face_t  face;
     bool        lifted;      /* IMU: currently held aloft */
     bool        dark;        /* ambient below dark threshold (hysteresis) */
-    int         tap_count;   /* taps consumed this tick (0/1/2) */
+    int         tap_count;   /* single taps consumed this tick */
+    bool        double_tap;  /* a double tap happened this tick */
     bool        touched;
     bool        touch_long;
     bool        wheel_moved;

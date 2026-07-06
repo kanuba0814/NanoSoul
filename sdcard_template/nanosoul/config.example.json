@@ -15,6 +15,7 @@
   "mood": { "enabled": true, "energy_init": 0.5, "social_init": 0.5, "social_tau_min": 10 },
   "pc": { "stale_s": 15, "respect_dnd": true, "quiet_work": true, "quiet_meeting": true, "invite_idle_s": 300, "invite_cooldown_min": 60 },
   "light": { "dark_lux": 10, "bright_lux": 30, "dark_hold_s": 30 },
+  "imu": { "tap_th": 3.0, "lift_g_dev": 0.15, "lift_hold_ms": 300, "place_still_ms": 1500, "tilt_deg": 8 },
   "motion": { "enabled": false, "max_duty_pct": 40 },
   "companion": { "enabled": true, "token": "change-me" },
   "debug":  { "overlay": true, "log_level": "info" }

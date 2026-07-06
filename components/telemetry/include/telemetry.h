@@ -77,6 +77,10 @@ typedef struct {
 } ns_evt_st_t;
 
 typedef struct {
+    int count;       /* 1 = single tap, 2 = double tap */
+} ns_evt_tap_t;
+
+typedef struct {
     bool     present;
     float    cx, cy;        /* normalized offset from frame center, -1..1 */
     float    area_ratio;    /* bbox area / frame area, 0..1               */
