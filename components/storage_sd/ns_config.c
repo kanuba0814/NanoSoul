@@ -60,6 +60,15 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->imu.place_still_ms = 1500;
     cfg->imu.tilt_deg = 8;
 
+    cfg->protect.stall_ma = 350;
+    cfg->protect.stall_ms = 200;
+    cfg->protect.stall_retry = 3;
+
+    cfg->move.approach_budget_cm = 15;
+    cfg->move.nudge_cm = 4;
+    cfg->move.ramp_ms = 100;
+    cfg->move.jitter_pct = 15;
+
     cfg->motion.enabled = false;
     cfg->motion.max_duty_pct = 40;
 
@@ -167,6 +176,17 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_int(o, "lift_hold_ms", &cfg->imu.lift_hold_ms);
         ov_int(o, "place_still_ms", &cfg->imu.place_still_ms);
         ov_int(o, "tilt_deg", &cfg->imu.tilt_deg);
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "protect"))) {
+        ov_int(o, "stall_ma", &cfg->protect.stall_ma);
+        ov_int(o, "stall_ms", &cfg->protect.stall_ms);
+        ov_int(o, "stall_retry", &cfg->protect.stall_retry);
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "move"))) {
+        ov_int(o, "approach_budget_cm", &cfg->move.approach_budget_cm);
+        ov_int(o, "nudge_cm", &cfg->move.nudge_cm);
+        ov_int(o, "ramp_ms", &cfg->move.ramp_ms);
+        ov_int(o, "jitter_pct", &cfg->move.jitter_pct);
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "motion"))) {
         ov_bool(o, "enabled", &cfg->motion.enabled);

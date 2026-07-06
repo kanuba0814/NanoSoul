@@ -16,6 +16,8 @@
   "pc": { "stale_s": 15, "respect_dnd": true, "quiet_work": true, "quiet_meeting": true, "invite_idle_s": 300, "invite_cooldown_min": 60 },
   "light": { "dark_lux": 10, "bright_lux": 30, "dark_hold_s": 30 },
   "imu": { "tap_th": 3.0, "lift_g_dev": 0.15, "lift_hold_ms": 300, "place_still_ms": 1500, "tilt_deg": 8 },
+  "protect": { "stall_ma": 350, "stall_ms": 200, "stall_retry": 3 },
+  "move": { "approach_budget_cm": 15, "nudge_cm": 4, "ramp_ms": 100, "jitter_pct": 15 },
   "motion": { "enabled": false, "max_duty_pct": 40 },
   "companion": { "enabled": true, "token": "change-me" },
   "debug":  { "overlay": true, "log_level": "info" }

@@ -10,6 +10,7 @@
 
 #include <time.h>
 
+#include "app_sense.h"
 #include "board_i2c0.h"
 #include "board_i2c1.h"
 #include "bsp_pins.h"
@@ -497,6 +498,30 @@ static st_report_t check_prim_sim(void)
     return st_pass("nudge/wiggle/scan ok");
 }
 
+static st_report_t check_stall_sim(void)
+{
+    stall_fsm_t s = {0};
+    int64_t t = 100000;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_OK)     return st_fail("t0");
+    t += 200;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_TRIP)   return st_fail("trip");
+    t += 100;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_OK)     return st_fail("locked");
+    t += 3000;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_RETRY)  return st_fail("retry1");
+    t += 200;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_TRIP)   return st_fail("retrip1");
+    t += 3000;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_RETRY)  return st_fail("retry2");
+    t += 200;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_TRIP)   return st_fail("retrip2");
+    t += 3000;
+    if (stall_step(&s, true, 200, 3000, 2, t) != STALL_GIVEUP) return st_fail("giveup");
+    stall_reset(&s);
+    if (stall_step(&s, false, 200, 3000, 2, t) != STALL_OK)    return st_fail("reset");
+    return st_pass("trip/retry/giveup ok");
+}
+
 /* ---------------- Phase D checks (net + LLM) ---------------- */
 
 static st_report_t check_wifi(void)
@@ -616,6 +641,7 @@ void app_selftests_register(void)
     selftest_register("fusion_sim", check_fusion_sim, 0);
     selftest_register("imu_sim", check_imu_sim, 0);
     selftest_register("prim_sim", check_prim_sim, 0);
+    selftest_register("stall_sim", check_stall_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);
