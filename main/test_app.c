@@ -13,6 +13,7 @@
 #include "display.h"
 #include "drv_motor.h"
 #include "drv_encoder.h"
+#include "board_i2c1.h"
 #include "drv_ina219.h"
 
 static const char *TAG = "test_app";
@@ -147,7 +148,8 @@ esp_err_t test_app_start(void)
 {
     ESP_RETURN_ON_ERROR(motors_init(), TAG, "motors");
     ESP_RETURN_ON_ERROR(encoders_init(), TAG, "encoders");
-    ESP_ERROR_CHECK_WITHOUT_ABORT(ina219_init());   // 探不到不致命
+    ESP_ERROR_CHECK_WITHOUT_ABORT(board_i2c1_init());
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ina219_init(board_i2c1_bus()));   // 探不到不致命
 
     build_ui();
 

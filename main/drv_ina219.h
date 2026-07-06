@@ -3,10 +3,12 @@
 #pragma once
 
 #include <stdbool.h>
+#include "driver/i2c_master.h"
 #include "esp_err.h"
 
-// 建 I²C1 总线 + 探测 0x40。探不到也返回 ESP_OK（present 置 false）。
-esp_err_t ina219_init(void);
+// 挂到共享 I²C1 总线 + 探测 0x40。探不到也返回 ESP_OK（present 置 false）。
+// bus 由 board_i2c1 统一创建（与 IMU/BH1750 共总线）。
+esp_err_t ina219_init(i2c_master_bus_handle_t bus);
 
 // 0x40 是否在线。
 bool ina219_present(void);
