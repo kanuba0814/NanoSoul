@@ -6,6 +6,7 @@
  * checks can probe the live system.
  */
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
