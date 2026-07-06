@@ -4,9 +4,13 @@ choice NANOSOUL_MODE
     prompt "Boot mode"
     default NANOSOUL_MODE_FACE
     help
-        Selects what app_main brings up.
+        Selects what app_main brings up. A boot-time IO48-to-GND strap forces
+        TEST mode regardless of this choice; this only picks the default when the
+        strap is open (and lets a board-off build force TEST without a jumper).
         FACE     — emote face + debug HUD overlay (the product/demo mode).
         SELFTEST — auto-loop diagnostics; one JSON line per check to serial.
+        TEST     — full runtime + test services (sensor override, motor_test,
+                   serial NDJSON link) for the browser test host (docs/13).
         TESTPANEL— legacy LVGL three-motor bring-up panel.
 
 config NANOSOUL_MODE_FACE
@@ -14,6 +18,9 @@ config NANOSOUL_MODE_FACE
 
 config NANOSOUL_MODE_SELFTEST
     bool "Selftest (auto-loop diagnostics)"
+
+config NANOSOUL_MODE_TEST
+    bool "Test mode (override + motor_test + serial link)"
 
 config NANOSOUL_MODE_TESTPANEL
     bool "Test panel (LVGL motor test)"
