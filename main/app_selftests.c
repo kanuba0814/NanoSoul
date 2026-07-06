@@ -16,6 +16,8 @@
 #include "board_i2c0.h"
 #include "board_i2c1.h"
 #include "bsp_pins.h"
+#include "drv_encoder.h"
+#include "drv_ina219.h"
 #include "camera.h"
 #include "imu.h"
 #include "light.h"
@@ -617,6 +619,50 @@ static st_report_t check_ws(void)
     return companion_running() ? st_pass("WS :80/ws up") : st_fail("server down");
 }
 
+/* ---------------- Off-board I2C1 hardware (test coverage) ---------------- */
+
+static st_report_t check_i2c1_scan(void)
+{
+    if (!board_i2c1_bus()) {
+        return st_skip("i2c1 not up");
+    }
+    bool imu  = board_i2c1_probe(0x6A) || board_i2c1_probe(0x6B);
+    bool light = board_i2c1_probe(0x23);
+    bool ina  = board_i2c1_probe(0x40);
+    bool batt = board_i2c1_probe(0x36);   /* MAX17048: 信息位，不参与判定 */
+    if (imu && light && ina) {
+        return st_pass("QMI+BH1750+INA219 ok%s", batt ? " (+MAX17048)" : "");
+    }
+    return st_fail("missing:%s%s%s", imu ? "" : " IMU", light ? "" : " BH1750",
+                   ina ? "" : " INA219");
+}
+
+static st_report_t check_ina219_read(void)
+{
+    if (!ina219_present()) {
+        return st_skip("no INA219 @0x40");
+    }
+    float a = ina219_current_a();
+    if (a < -3.2f || a > 3.2f) {
+        return st_fail("%.3fA out of ±3.2A", a);
+    }
+    return st_pass("%.0f mA", a * 1000.0f);
+}
+
+/* Passive encoder readability (MANUAL): reports counts + A/B levels for all
+ * three. The active drive-and-verify-direction test runs on the test host's
+ * motor_test panel, which properly detaches the motion apply callback first. */
+static st_report_t check_encoder_pulse(void)
+{
+    int a0, b0, a1, b1, a2, b2;
+    encoder_raw_levels(0, &a0, &b0);
+    encoder_raw_levels(1, &a1, &b1);
+    encoder_raw_levels(2, &a2, &b2);
+    return st_pass("cnt %d/%d/%d AB %d%d/%d%d/%d%d",
+                   encoder_count(0), encoder_count(1), encoder_count(2),
+                   a0, b0, a1, b1, a2, b2);
+}
+
 /* ---------------- Test-mode override layer (pure logic) ---------------- */
 
 static st_report_t check_override_sim(void)
@@ -678,6 +724,9 @@ void app_selftests_register(void)
     selftest_register("light_read", check_light, 0);
     selftest_register("imu_probe", check_imu_probe, 0);
     selftest_register("touch_probe", check_touch, 0);
+    selftest_register("i2c1_scan", check_i2c1_scan, 0);
+    selftest_register("ina219_read", check_ina219_read, 0);
+    selftest_register("encoder_pulse", check_encoder_pulse, SELFTEST_FLAG_MANUAL);
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
     selftest_register("arbiter_sim", check_arbiter_sim, 0);
