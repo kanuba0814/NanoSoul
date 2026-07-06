@@ -178,6 +178,41 @@ static st_report_t check_motion_ik(void)
     return st_pass("fwd[%d,%d,%d] rot[%d]", fwd[0], fwd[1], fwd[2], rot[0]);
 }
 
+static st_report_t check_arbiter_sim(void)
+{
+    const int64_t now = 1000;
+    motion_slot_t s[MOTION_SRC_MAX] = {0};
+
+    s[MOTION_SRC_BEHAVIOR].deadline_ms = now + 250;
+    if (motion_arbitrate(s, now) != MOTION_SRC_BEHAVIOR) {
+        return st_fail("behavior alone");
+    }
+    s[MOTION_SRC_TELEOP].deadline_ms = now + 300;    /* teleop preempts behavior */
+    if (motion_arbitrate(s, now) != MOTION_SRC_TELEOP) {
+        return st_fail("teleop preempt");
+    }
+    s[MOTION_SRC_FAULT].deadline_ms = now + 250;     /* fault preempts teleop */
+    if (motion_arbitrate(s, now) != MOTION_SRC_FAULT) {
+        return st_fail("fault preempt");
+    }
+    s[MOTION_SRC_FAULT].deadline_ms = 0;             /* fault + teleop gone -> behavior */
+    s[MOTION_SRC_TELEOP].deadline_ms = now;          /* == now counts as expired */
+    if (motion_arbitrate(s, now) != MOTION_SRC_BEHAVIOR) {
+        return st_fail("teleop expire fallback");
+    }
+    s[MOTION_SRC_BEHAVIOR].deadline_ms = 0;          /* all expired -> none */
+    if (motion_arbitrate(s, now) != MOTION_SRC_MAX) {
+        return st_fail("none active");
+    }
+    motion_slot_t r[MOTION_SRC_MAX] = {0};           /* reflex tops everything */
+    r[MOTION_SRC_REFLEX].deadline_ms = now + 150;
+    r[MOTION_SRC_TELEOP].deadline_ms = now + 300;
+    if (motion_arbitrate(r, now) != MOTION_SRC_REFLEX) {
+        return st_fail("reflex top");
+    }
+    return st_pass("preempt+expire+reflex ok");
+}
+
 static st_report_t check_soul_sim(void)
 {
     soul_ctx_t c = {0};
@@ -330,6 +365,7 @@ void app_selftests_register(void)
     selftest_register("face_detect", check_face_detect, 0);
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
+    selftest_register("arbiter_sim", check_arbiter_sim, 0);
     selftest_register("soul_sim", check_soul_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
