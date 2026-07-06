@@ -1,7 +1,8 @@
 // LVGL ↔ ESP-LCD 胶水层 + display.h 公共入口。
-// 取自 NanoSoul-Alpha ui_lvgl_port.c，去掉 FT6x36 触摸（本测试无输入）。
+// 取自 NanoSoul-Alpha ui_lvgl_port.c；触摸走 FT6x36（board I²C0）接 LVGL indev。
 #include "display.h"
 #include "st7701.h"
+#include "touch.h"
 
 #include <sys/lock.h>
 #include <sys/param.h>
@@ -27,6 +28,7 @@ static const char *TAG = "lvgl_port";
 
 static _lock_t s_lvgl_api_lock;
 static lv_display_t *s_display = NULL;
+static lv_indev_t *s_indev = NULL;
 static esp_timer_handle_t s_lvgl_tick_timer = NULL;
 static TaskHandle_t s_lvgl_task = NULL;
 static void *s_buf1 = NULL;
@@ -131,4 +133,46 @@ void display_unlock(void)
 lv_display_t *display_get_lv(void)
 {
     return s_display;
+}
+
+// —— 触摸 ——
+// FT6x36 返回裸坐标；面板竖装 480×640，LVGL 直画面板（flush 不旋转）。
+// 变换取自 debugui 已验证的 raw_to_canvas（canvas 640×480: cx=639-raw.y, cy=raw.x）
+// 复合「canvas 90°CW → 480×640 面板」，化简为直接的 raw→竖屏映射：
+//   lvgl_x = 479 - raw.x ,  lvgl_y = 639 - raw.y
+// 两轴镜像/轴向是面板触摸装配方向决定的——上板若点偏/点反，只调这两行的
+// 取反与 x/y 互换（参照 debugui 的口径）。
+static void touch_read_cb(lv_indev_t *indev, lv_indev_data_t *data)
+{
+    (void)indev;
+    touch_point_t pt;
+    bool pressed = false;
+    if (touch_read_raw(&pt, &pressed) != ESP_OK || !pressed) {
+        data->state = LV_INDEV_STATE_RELEASED;
+        return;
+    }
+    int32_t x = (int32_t)(DISP_H_RES - 1) - (int32_t)pt.x;   // 479 - raw.x
+    int32_t y = (int32_t)(DISP_V_RES - 1) - (int32_t)pt.y;   // 639 - raw.y
+    if (x < 0) x = 0; else if (x > DISP_H_RES - 1) x = DISP_H_RES - 1;
+    if (y < 0) y = 0; else if (y > DISP_V_RES - 1) y = DISP_V_RES - 1;
+    data->point.x = x;
+    data->point.y = y;
+    data->state = LV_INDEV_STATE_PRESSED;
+}
+
+esp_err_t display_touch_init(i2c_master_bus_handle_t bus)
+{
+    esp_err_t err = touch_init(bus);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "touch absent (%s) — 屏可显示但无输入", esp_err_to_name(err));
+        return err;   // non-fatal to the caller; display still works
+    }
+    _lock_acquire(&s_lvgl_api_lock);
+    s_indev = lv_indev_create();
+    lv_indev_set_type(s_indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_display(s_indev, s_display);
+    lv_indev_set_read_cb(s_indev, touch_read_cb);
+    _lock_release(&s_lvgl_api_lock);
+    ESP_LOGI(TAG, "touch indev ready");
+    return ESP_OK;
 }

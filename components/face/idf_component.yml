@@ -1,6 +1,0 @@
-dependencies:
-  idf:
-    version: ">=5.5"
-  # vendored emote engine at the repo root; pulls esp_emote_gfx + esp_mmap_assets.
-  esp_emote_gen_player:
-    path: ../../esp_emote_gen_player

@@ -1,4 +1,4 @@
-## test 分支：单电机桥 + 编码器测试固件依赖。
+## test 分支：最简屏控硬件自检的托管依赖（ST7701 屏 + LVGL）。
 ## 屏栈与 NanoSoul-Alpha 同版（IDF 5.5.2 实测可用）。
 dependencies:
   idf:

@@ -10,8 +10,10 @@ idf_component_register(
         esp_lcd
         esp_lcd_st7701
         esp_driver_gpio
+        esp_driver_i2c
         esp_timer
         lvgl
+        touch
     PRIV_REQUIRES
         esp_hw_support
 )
