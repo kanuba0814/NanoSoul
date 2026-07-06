@@ -13,6 +13,7 @@
 #include "drv_motor.h"
 #include "motion.h"
 #include "ns_config.h"
+#include "simsense.h"
 #include "soul.h"
 #include "telemetry.h"
 
@@ -87,15 +88,24 @@ static void sense_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(100));   /* 10 Hz */
 
         tel_encoder_t e = {0};
+        float rpms[3];
         for (int i = 0; i < 3; i++) {
             e.present[i] = true;
             e.count[i]   = encoder_count(i);
-            e.rpm[i]     = encoder_rpm(i);
+            rpms[i]      = encoder_rpm(i);
+        }
+        /* 测试注入：覆盖转速（count 不覆盖，手推轮判定用真值）。 */
+        override_apply(OVR_ENC_RPM, rpms, 3);
+        for (int i = 0; i < 3; i++) {
+            e.rpm[i] = rpms[i];
         }
         telemetry_set_encoder(&e);
 
-        telemetry_set_current(ina219_present(),
-                              ina219_present() ? ina219_current_a() : 0.0f);
+        /* 测试注入：覆盖电机电流。覆盖时必须强制 present=true，否则堵转判定
+         * (stall_cond 先看 current_present) 直接短路，注入的电流测不到。 */
+        float cur = ina219_present() ? ina219_current_a() : 0.0f;
+        bool  cur_covered = override_apply(OVR_CURRENT_A, &cur, 1);
+        telemetry_set_current(ina219_present() || cur_covered, cur);
 
         /* WHEEL_MOVED: encoder motion while we are NOT driving = pushed by hand. */
         tel_snapshot_t t;

@@ -23,6 +23,7 @@ esp_err_t imu_init(i2c_master_bus_handle_t bus);  /* probe+config+task; absent -
 bool      imu_present(void);
 bool      imu_lifted(void);    /* current lifted level */
 bool      imu_tilted(void);    /* pitch/roll beyond threshold (for protect) */
+void      imu_last_accel(float out[3]); /* 最近一帧 m/s^2（含测试覆盖）供 sense 流 */
 
 /* --- pure detectors (for imu_sim; no hardware). Accel in m/s^2. --- */
 

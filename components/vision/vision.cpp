@@ -15,6 +15,7 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "human_face_detect.hpp"
+#include "simsense.h"   // 测试注入：face 覆盖（含 extern "C" 守卫）
 
 static const char *TAG = "vision";
 
@@ -181,6 +182,8 @@ extern "C" void vision_get(tel_face_t *out)
     } else {
         *out = (tel_face_t){};
     }
+    // 测试注入：face 覆盖优先于真实观测（soul 唯一视觉入口，即使无摄像头也生效）。
+    override_face_apply(out);
 }
 
 extern "C" uint32_t vision_detect_count(void) { return s_count; }

@@ -16,6 +16,7 @@
 #include "ns_config.h"
 #include "sd_storage.h"
 #include "selftest.h"
+#include "simsense.h"
 #include "telemetry.h"
 
 #if CONFIG_NANOSOUL_MODE_TESTPANEL
@@ -50,6 +51,7 @@ static void init_common(void)
 
     ESP_ERROR_CHECK(telemetry_init());
     ESP_ERROR_CHECK(selftest_init());
+    ESP_ERROR_CHECK(simsense_init());   /* 传感覆盖层：所有模式常驻，非测试时整表空 */
 
     /* Bring up the TCP/IP stack unconditionally so the companion WS server can
      * start even when no Wi-Fi is configured (netlink skips it when offline). */
