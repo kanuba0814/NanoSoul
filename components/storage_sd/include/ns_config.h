@@ -50,8 +50,27 @@ typedef struct {
     float near_hi;         /* bbox area ratio above which we RETREAT   */
     float frontal_thresh;  /* frontal_score above which counts as gaze */
     int   gaze_hold_ms;    /* sustained gaze before GAZED fires        */
+    int   gaze_cooldown_s; /* min gap before GAZED can re-fire         */
     bool  idle_scan;       /* slow scan sweep while IDLE               */
+    bool  autonomy;        /* allow self-initiated idle behaviors      */
+    int   autonomy_idle_s; /* idle time before autonomy may kick in    */
 } ns_behavior_cfg_t;
+
+typedef struct {
+    bool  enabled;
+    float energy_init;     /* 0..1 */
+    float social_init;     /* 0..1 */
+    int   social_tau_min;  /* social decay time constant, minutes      */
+} ns_mood_cfg_t;
+
+typedef struct {
+    int  stale_s;          /* PC info older than this -> ignored        */
+    bool respect_dnd;      /* honor the manual do-not-disturb flag      */
+    bool quiet_work;       /* focus=work + active -> QUIET (no invite)  */
+    bool quiet_meeting;    /* focus=meeting -> SILENT (hold still)      */
+    int  invite_idle_s;    /* PC idle this long + face -> may invite    */
+    int  invite_cooldown_min; /* min gap between invitations            */
+} ns_pc_cfg_t;
 
 typedef struct {
     bool enabled;          /* actually drive motors?      */
@@ -74,6 +93,8 @@ typedef struct {
     ns_stt_cfg_t       stt;
     ns_tts_cfg_t       tts;
     ns_behavior_cfg_t  behavior;
+    ns_mood_cfg_t      mood;
+    ns_pc_cfg_t        pc;
     ns_motion_cfg_t    motion;
     ns_companion_cfg_t companion;
     ns_debug_cfg_t     debug;

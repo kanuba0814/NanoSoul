@@ -31,6 +31,16 @@ typedef enum {
     NS_EVT_LLM_REPLY,           /* data: ns_evt_text_t   */
     NS_EVT_FAULT,               /* data: ns_evt_text_t   */
     NS_EVT_SELFTEST_ITEM,       /* data: ns_evt_st_t     */
+    /* --- interaction events (docs/12); data: none unless noted. Append only. */
+    NS_EVT_TAP,                 /* IMU tap (single)      */
+    NS_EVT_LIFTED,              /* picked up             */
+    NS_EVT_PLACED,              /* set back down         */
+    NS_EVT_DARK,                /* ambient went dark     */
+    NS_EVT_BRIGHT,              /* ambient went bright   */
+    NS_EVT_TOUCH,               /* screen touched        */
+    NS_EVT_WHEEL_MOVED,         /* wheel pushed by hand  */
+    NS_EVT_STALL,               /* data: ns_evt_text_t   */
+    NS_EVT_LOUD,                /* sudden loud noise     */
 } ns_event_id_t;
 
 typedef enum {
@@ -43,6 +53,8 @@ typedef enum {
     SOUL_THINK,
     SOUL_SPEAK,
     SOUL_FAULT,
+    SOUL_LIFTED,   /* held aloft — motion frozen */
+    SOUL_DOZE,     /* dozing in the dark         */
     SOUL_STATE_MAX,
 } soul_state_t;
 
@@ -85,6 +97,15 @@ typedef struct {
 } tel_encoder_t;
 
 typedef struct {
+    char    activity[8];  /* "active"|"idle"|"locked"|"" (empty = never received) */
+    int     idle_s;
+    char    focus[8];     /* work/meeting/media/browse/comm/other/unknown */
+    bool    media;
+    bool    dnd;
+    int64_t rx_ms;        /* device-side receive time (esp_timer ms), for staleness */
+} tel_pc_t;
+
+typedef struct {
     soul_state_t  soul;
     char          emotion[16];
     tel_face_t    face;
@@ -101,6 +122,10 @@ typedef struct {
     uint32_t      free_psram;
     float         fps_render;
     float         fps_detect;
+    tel_pc_t      pc;           /* PC-state fusion input (docs/12 §3.5) */
+    char          beh[16];      /* current behavior / motion primitive label */
+    float         mood_energy;  /* 0..1 */
+    float         mood_social;  /* 0..1 */
 } tel_snapshot_t;
 
 esp_err_t telemetry_init(void);
@@ -116,6 +141,9 @@ void telemetry_set_net(bool up, const char *ip, int8_t rssi);
 void telemetry_set_llm(const char *s);
 void telemetry_set_voice(const char *s);
 void telemetry_set_fps(float render, float detect);
+void telemetry_set_pc(const tel_pc_t *pc);
+void telemetry_set_beh(const char *name);
+void telemetry_set_mood(float energy, float social);
 void telemetry_refresh_perf(void); /* recompute free heap / psram */
 
 esp_err_t telemetry_post(ns_event_id_t id, const void *data, size_t size);

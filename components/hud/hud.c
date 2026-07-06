@@ -148,12 +148,18 @@ static void hud_task(void *arg)
                      t.motion.duty[0], t.motion.duty[1], t.motion.duty[2]);
         }
         /* --- links --- */
-        if (t.net_up) {
-            snprintf(line[8], sizeof(line[8]), "NET %s %ddB", t.ip, t.rssi);
-        } else {
-            snprintf(line[8], sizeof(line[8]), "NET off");
+        char pcbuf[28] = "";
+        if (t.pc.activity[0]) {
+            snprintf(pcbuf, sizeof(pcbuf), " PC:%.4s/%s%s", t.pc.focus,
+                     t.pc.activity, t.pc.dnd ? "/dnd" : "");
         }
-        snprintf(line[9], sizeof(line[9]), "llm %s  voi %s", t.llm, t.voice);
+        if (t.net_up) {
+            snprintf(line[8], sizeof(line[8]), "NET %s %ddB%s", t.ip, t.rssi, pcbuf);
+        } else {
+            snprintf(line[8], sizeof(line[8]), "NET off%s", pcbuf);
+        }
+        snprintf(line[9], sizeof(line[9]), "llm %s  voi %s  E%.1f S%.1f",
+                 t.llm, t.voice, t.mood_energy, t.mood_social);
 
         if (gfx_emote_lock(s_gfx) != ESP_OK) {
             continue;

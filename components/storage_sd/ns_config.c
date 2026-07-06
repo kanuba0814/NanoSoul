@@ -33,7 +33,22 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->behavior.near_hi = 0.18f;
     cfg->behavior.frontal_thresh = 0.70f;
     cfg->behavior.gaze_hold_ms = 1500;
+    cfg->behavior.gaze_cooldown_s = 30;
     cfg->behavior.idle_scan = false;
+    cfg->behavior.autonomy = true;
+    cfg->behavior.autonomy_idle_s = 90;
+
+    cfg->mood.enabled = true;
+    cfg->mood.energy_init = 0.5f;
+    cfg->mood.social_init = 0.5f;
+    cfg->mood.social_tau_min = 10;
+
+    cfg->pc.stale_s = 15;
+    cfg->pc.respect_dnd = true;
+    cfg->pc.quiet_work = true;
+    cfg->pc.quiet_meeting = true;
+    cfg->pc.invite_idle_s = 300;
+    cfg->pc.invite_cooldown_min = 60;
 
     cfg->motion.enabled = false;
     cfg->motion.max_duty_pct = 40;
@@ -112,7 +127,24 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_float(o, "near_hi", &cfg->behavior.near_hi);
         ov_float(o, "frontal_thresh", &cfg->behavior.frontal_thresh);
         ov_int(o, "gaze_hold_ms", &cfg->behavior.gaze_hold_ms);
+        ov_int(o, "gaze_cooldown_s", &cfg->behavior.gaze_cooldown_s);
         ov_bool(o, "idle_scan", &cfg->behavior.idle_scan);
+        ov_bool(o, "autonomy", &cfg->behavior.autonomy);
+        ov_int(o, "autonomy_idle_s", &cfg->behavior.autonomy_idle_s);
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "mood"))) {
+        ov_bool(o, "enabled", &cfg->mood.enabled);
+        ov_float(o, "energy_init", &cfg->mood.energy_init);
+        ov_float(o, "social_init", &cfg->mood.social_init);
+        ov_int(o, "social_tau_min", &cfg->mood.social_tau_min);
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "pc"))) {
+        ov_int(o, "stale_s", &cfg->pc.stale_s);
+        ov_bool(o, "respect_dnd", &cfg->pc.respect_dnd);
+        ov_bool(o, "quiet_work", &cfg->pc.quiet_work);
+        ov_bool(o, "quiet_meeting", &cfg->pc.quiet_meeting);
+        ov_int(o, "invite_idle_s", &cfg->pc.invite_idle_s);
+        ov_int(o, "invite_cooldown_min", &cfg->pc.invite_cooldown_min);
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "motion"))) {
         ov_bool(o, "enabled", &cfg->motion.enabled);
