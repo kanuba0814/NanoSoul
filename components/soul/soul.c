@@ -3,12 +3,14 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "esp_random.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "face.h"
 #include "motion.h"
+#include "soul_expr.h"
 #include "vision.h"
 
 static const char *TAG = "soul";
@@ -87,23 +89,25 @@ void soul_eval(soul_ctx_t *c, const tel_face_t *face,
 }
 
 /* ---- live wiring ---- */
-static soul_ctx_t  s_ctx;
-static const char *s_last_emotion;
-static char        s_override_name[16];
-static int64_t     s_override_until_ms;
+static soul_ctx_t        s_ctx;
+static soul_expr_state_t s_expr;
 
-static void apply_emotion(const char *emo, bool now_cut)
+/* ---- short-term memory ring (docs/12 §3.4) ---- */
+typedef enum { MEM_TAP = 0, MEM_GAZED, MEM_LIFTED, MEM_INVITE } soul_mem_kind_t;
+static struct { uint8_t kind; int64_t ts; } s_mem[8];
+static int s_mem_head;
+
+static void soul_mem_note(uint8_t kind, int64_t now_ms)
 {
-    int64_t now = esp_timer_get_time() / 1000;
-    if (now < s_override_until_ms && s_override_name[0]) {
-        emo = s_override_name;
-    }
-    if (emo != s_last_emotion && (s_last_emotion == NULL || strcmp(emo, s_last_emotion) != 0)) {
-        face_set_emotion(emo, now_cut ? FACE_NOW : FACE_FADE);
-        telemetry_set_emotion(emo);
-        s_last_emotion = emo;
-    }
+    s_mem[s_mem_head].kind = kind;
+    s_mem[s_mem_head].ts = now_ms;
+    s_mem_head = (s_mem_head + 1) % 8;
 }
+
+/* S5 shy tip variants, picked at random when GAZED fires. */
+static const char *SHY_TIPS[] = {
+    "别一直盯着看啦", "我会害羞的", "看什么看~", "唔…被发现了",
+};
 
 static void soul_task(void *arg)
 {
@@ -129,15 +133,25 @@ static void soul_task(void *arg)
             motion_set_intent(s_ctx.vx, s_ctx.vy, s_ctx.wz);
         }
         telemetry_set_soul(s_ctx.state);
-        apply_emotion(s_ctx.emotion, s_ctx.state == SOUL_FAULT || s_ctx.state == SOUL_GAZED);
 
         if (s_ctx.state != last_state) {
             ns_evt_soul_t e = { .from = last_state, .to = s_ctx.state };
             telemetry_post(NS_EVT_SOUL_TRANSITION, &e, sizeof(e));
             if (s_ctx.state == SOUL_GAZED) {
                 telemetry_post(NS_EVT_GAZED, NULL, 0);
+                soul_mem_note(MEM_GAZED, now_ms);
+                soul_expr_transient(&s_expr, "o", "gazed", 800, now_ms);
+                face_set_tip(SHY_TIPS[esp_random() % (sizeof(SHY_TIPS) / sizeof(SHY_TIPS[0]))]);
             }
             last_state = s_ctx.state;
+        }
+
+        const char *emo;
+        bool        now_cut;
+        if (soul_expr_decide(&s_expr, s_ctx.emotion, s_ctx.state == SOUL_FAULT,
+                             now_ms, &emo, &now_cut)) {
+            face_set_emotion(emo, now_cut ? FACE_NOW : FACE_FADE);
+            telemetry_set_emotion(emo);
         }
     }
 }
@@ -148,6 +162,7 @@ esp_err_t soul_init(void)
     s_ctx.state = SOUL_IDLE;
     s_ctx.session = SOUL_IDLE;
     s_ctx.emotion = "waiting";
+    soul_expr_init(&s_expr);
     return ESP_OK;
 }
 
@@ -186,11 +201,5 @@ void soul_clear_fault(void)
 
 void soul_emotion_override(const char *name, uint32_t ms)
 {
-    if (!name || !name[0]) {
-        s_override_until_ms = 0;
-        return;
-    }
-    strlcpy(s_override_name, name, sizeof(s_override_name));
-    s_override_until_ms = esp_timer_get_time() / 1000 + ms;
-    s_last_emotion = NULL;  /* force re-apply on next tick */
+    soul_expr_override(&s_expr, name, ms, esp_timer_get_time() / 1000);
 }

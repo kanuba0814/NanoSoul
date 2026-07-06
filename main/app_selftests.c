@@ -24,6 +24,7 @@
 #include "sd_storage.h"
 #include "selftest.h"
 #include "soul.h"
+#include "soul_expr.h"
 #include "vision.h"
 #include "voice.h"
 
@@ -256,6 +257,59 @@ static st_report_t check_soul_sim(void)
     return st_pass("IDLE->APPROACH->ENGAGE->GAZED ok");
 }
 
+static st_report_t check_expr_sim(void)
+{
+    soul_expr_state_t e;
+    soul_expr_init(&e);
+    const char *emo;
+    bool        now;
+    const int64_t t = 10000;
+
+    /* first baseline switch issues immediately */
+    if (!soul_expr_decide(&e, "waiting", false, t, &emo, &now) || strcmp(emo, "waiting")) {
+        return st_fail("baseline1");
+    }
+    /* same baseline -> no switch; change within 2s throttled */
+    if (soul_expr_decide(&e, "waiting", false, t, &emo, &now)) {
+        return st_fail("baseline dup");
+    }
+    if (soul_expr_decide(&e, "think", false, t + 500, &emo, &now)) {
+        return st_fail("baseline throttle");
+    }
+    if (!soul_expr_decide(&e, "think", false, t + 2100, &emo, &now) || strcmp(emo, "think")) {
+        return st_fail("baseline after 2s");
+    }
+    /* transient preempts baseline with NOW, held for its window */
+    soul_expr_transient(&e, "o", "tap", 800, t + 2200);
+    if (!soul_expr_decide(&e, "think", false, t + 2200, &emo, &now) || strcmp(emo, "o") || !now) {
+        return st_fail("transient preempt");
+    }
+    if (soul_expr_decide(&e, "think", false, t + 2800, &emo, &now)) {
+        return st_fail("transient hold");
+    }
+    /* same-kind re-fire within cooldown ignored */
+    soul_expr_transient(&e, "sad", "tap", 800, t + 2900);
+    if (soul_expr_decide(&e, "think", false, t + 2900, &emo, &now)) {
+        return st_fail("kind cooldown");
+    }
+    /* fault beats everything */
+    if (!soul_expr_decide(&e, "waiting", true, t + 3000, &emo, &now) || strcmp(emo, "sad") || !now) {
+        return st_fail("fault wins");
+    }
+    /* override beats baseline but not fault */
+    soul_expr_state_t e2;
+    soul_expr_init(&e2);
+    soul_expr_decide(&e2, "waiting", false, t, &emo, &now);
+    soul_expr_override(&e2, "sleep", 10000, t + 3000);
+    if (!soul_expr_decide(&e2, "waiting", false, t + 3000, &emo, &now) || strcmp(emo, "sleep")) {
+        return st_fail("override>baseline");
+    }
+    if (!soul_expr_decide(&e2, "waiting", true, t + 3100, &emo, &now) || strcmp(emo, "sad")) {
+        return st_fail("fault>override");
+    }
+    return st_pass("E1-E5 debounce ok");
+}
+
 /* ---------------- Phase D checks (net + LLM) ---------------- */
 
 static st_report_t check_wifi(void)
@@ -367,6 +421,7 @@ void app_selftests_register(void)
     selftest_register("motion_ik", check_motion_ik, 0);
     selftest_register("arbiter_sim", check_arbiter_sim, 0);
     selftest_register("soul_sim", check_soul_sim, 0);
+    selftest_register("expr_sim", check_expr_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);
