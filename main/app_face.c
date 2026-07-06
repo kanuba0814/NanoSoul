@@ -23,6 +23,7 @@
 #include "ns_config.h"
 #include "selftest.h"
 #include "soul.h"
+#include "touch_router.h"
 #include "vision.h"
 #include "voice.h"
 
@@ -115,10 +116,13 @@ void app_face_run(bool run_selftest_loop)
     /* Companion WebSocket interface for the desktop app (telemetry + control). */
     companion_start();
 
-    /* Touch-driven hidden debug UI (FT6x36 on board I2C0): 10 rapid taps opens
-     * the debug menu. Shares the bus with the camera SCCB / codec. */
-    if (board_i2c0_bus() && debugui_init(board_i2c0_bus()) == ESP_OK) {
-        debugui_start();
+    /* Touch (FT6x36 on board I2C0): touch_router is the single owner/reader; it
+     * feeds both the interaction events (NS_EVT_TOUCH) and the hidden debug UI
+     * (10 rapid taps opens the menu). Shares the bus with the camera SCCB/codec. */
+    if (board_i2c0_bus() && touch_router_init(board_i2c0_bus()) == ESP_OK) {
+        if (debugui_init(board_i2c0_bus()) == ESP_OK) {
+            debugui_start();
+        }
     }
 
     if (run_selftest_loop) {

@@ -208,7 +208,13 @@ static void on_ns_event(void *arg, esp_event_base_t base, int32_t id, void *data
     case NS_EVT_PLACED:      emit_event("placed", NULL); break;
     case NS_EVT_DARK:        emit_event("dark", NULL); break;
     case NS_EVT_BRIGHT:      emit_event("bright", NULL); break;
-    case NS_EVT_TOUCH:       emit_event("touch", NULL); break;
+    case NS_EVT_TOUCH: {
+        ns_evt_touch_t *e = data;
+        cJSON *d = cJSON_CreateObject();
+        cJSON_AddBoolToObject(d, "long", e && e->long_press);
+        emit_event("touch", d);
+        break;
+    }
     case NS_EVT_WHEEL_MOVED: emit_event("wheel_moved", NULL); break;
     case NS_EVT_LOUD:        emit_event("loud", NULL); break;
     case NS_EVT_STALL: {

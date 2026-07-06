@@ -16,6 +16,7 @@
 #include "netlink.h"
 #include "telemetry.h"
 #include "touch.h"
+#include "touch_router.h"
 
 static const char *TAG = "debugui";
 
@@ -378,7 +379,7 @@ static void ui_task(void *arg)
 
         touch_point_t pt;
         bool pressed;
-        if (touch_read_raw(&pt, &pressed) != ESP_OK) { was = false; continue; }
+        touch_router_last(&pt, &pressed);   /* single reader owns the panel */
         if (!(pressed && !was)) { was = pressed; continue; }
         int64_t now = esp_timer_get_time();
         int64_t gap_ms = (now - last_tap_us) / 1000;
@@ -449,10 +450,10 @@ static void ui_task(void *arg)
 
 esp_err_t debugui_init(i2c_master_bus_handle_t bus)
 {
-    esp_err_t err = touch_init(bus);
-    if (err != ESP_OK) {
-        ESP_LOGW(TAG, "touch init failed (%s) — debug UI disabled", esp_err_to_name(err));
-        return err;
+    (void)bus;   /* touch panel is owned by touch_router now */
+    if (!touch_router_ready()) {
+        ESP_LOGW(TAG, "touch router not ready — debug UI disabled");
+        return ESP_ERR_INVALID_STATE;
     }
 
     s_cam_buf = heap_caps_aligned_calloc(128, (size_t)CAM_W * CAM_H, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
@@ -506,7 +507,7 @@ esp_err_t debugui_init(i2c_master_bus_handle_t bus)
 
 esp_err_t debugui_start(void)
 {
-    if (!touch_ready()) {
+    if (!touch_router_ready()) {
         return ESP_ERR_INVALID_STATE;
     }
     if (xTaskCreatePinnedToCore(ui_task, "debugui", 4096, NULL, 4, NULL, 0) != pdPASS) {
@@ -518,5 +519,5 @@ esp_err_t debugui_start(void)
 
 bool debugui_touch_ok(void)
 {
-    return touch_ready();
+    return touch_router_ready();
 }

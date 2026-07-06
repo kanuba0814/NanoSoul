@@ -60,6 +60,16 @@ static bool wake_detected(void)
         return false;
     }
     s_last_rms = e;
+    /* Sudden loud noise -> LOUD event (docs/12), edge-triggered with hysteresis. */
+    static bool loud_latched;
+    if (e > WAKE_RMS * 4.0f) {
+        if (!loud_latched) {
+            loud_latched = true;
+            telemetry_post(NS_EVT_LOUD, NULL, 0);
+        }
+    } else if (e < WAKE_RMS * 2.0f) {
+        loud_latched = false;
+    }
     static int loud_ms;
     if (e > WAKE_RMS) {
         loud_ms += CHUNK_MS;

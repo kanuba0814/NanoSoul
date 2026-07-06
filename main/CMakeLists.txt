@@ -33,6 +33,7 @@ idf_component_register(
         audio
         voice
         companion
+        touch_router
         debugui
         # TESTPANEL / legacy motor test path
         display

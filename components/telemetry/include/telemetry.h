@@ -81,6 +81,10 @@ typedef struct {
 } ns_evt_tap_t;
 
 typedef struct {
+    bool long_press; /* true = held past the long-press threshold */
+} ns_evt_touch_t;
+
+typedef struct {
     bool     present;
     float    cx, cy;        /* normalized offset from frame center, -1..1 */
     float    area_ratio;    /* bbox area / frame area, 0..1               */
