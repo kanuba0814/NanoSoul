@@ -3,6 +3,7 @@ idf_component_register(
         "nanosoul_main.c"
         "app_selftests.c"
         "app_face.c"
+        "app_sense.c"
         "drv_motor.c"
         "drv_encoder.c"
         "drv_ina219.c"

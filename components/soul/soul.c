@@ -1,5 +1,6 @@
 #include "soul.h"
 
+#include <math.h>
 #include <string.h>
 
 #include "esp_log.h"
@@ -11,7 +12,14 @@
 #include "face.h"
 #include "motion.h"
 #include "soul_expr.h"
+#include "soul_prim.h"
 #include "vision.h"
+
+/* ±15% amplitude jitter for a primitive start (docs/12 P3). */
+static float prim_jitter(void)
+{
+    return 1.0f + ((float)(esp_random() % 31) - 15.0f) / 100.0f;
+}
 
 static const char *TAG = "soul";
 
@@ -110,8 +118,14 @@ void soul_eval(soul_ctx_t *c, const soul_inputs_t *in,
             c->gaze_ms = 0;
         } else if (area < b->near_lo && proactive_ok) {
             st = SOUL_APPROACH;
-            vx = SOUL_SLOW;
             wz = center_wz;
+            /* turn to face first (|cx|>0.15 = only turn); then advance at a speed
+             * proportional to how far the face still is (docs/12 S4). */
+            if (fabsf(face->cx) < 0.15f) {
+                float err = (b->near_lo - area) / b->near_lo;   /* 0..1 */
+                if (err > 1.0f) err = 1.0f;
+                vx = SOUL_SLOW * (0.4f + 0.6f * err);
+            }
             c->gaze_ms = 0;
         } else {
             st = SOUL_ENGAGE;
@@ -196,9 +210,10 @@ static volatile struct {
     bool loud_pending;
 } s_latch;
 
-static tel_pc_t s_pc;                 /* last PC state from companion */
-static float    s_energy = 0.5f;
-static float    s_social = 0.5f;
+static tel_pc_t   s_pc;               /* last PC state from companion */
+static float      s_energy = 0.5f;
+static float      s_social = 0.5f;
+static soul_prim_t s_prim;            /* active motion primitive (docs/12 §5) */
 
 static void soul_evt_handler(void *a, esp_event_base_t base, int32_t id, void *data)
 {
@@ -277,8 +292,10 @@ static void soul_task(void *arg)
                 face_set_tip("别敲啦");
                 s_social -= 0.1f;
                 if (s_social < 0) s_social = 0;
+                soul_prim_start(&s_prim, PRIM_NUDGE, 2.0f * prim_jitter(), now_ms);
             } else {
                 face_set_tip("呀");
+                soul_prim_start(&s_prim, PRIM_NUDGE, prim_jitter(), now_ms);
             }
         }
         if (in.double_tap) {                       /* S7 easter egg: cycle the face */
@@ -301,6 +318,20 @@ static void soul_task(void *arg)
         if (in.loud) {                             /* startled by a sudden noise */
             soul_expr_transient(&s_expr, "o", "loud", 800, now_ms);
         }
+        if (in.wheel_moved) {                      /* S9: pushed by hand -> curious/play */
+            static int     wheel_run;
+            static int64_t wheel_last;
+            soul_expr_transient(&s_expr, "o", "wheel", 800, now_ms);
+            wheel_run = (now_ms - wheel_last < 5000) ? wheel_run + 1 : 1;
+            wheel_last = now_ms;
+            if (wheel_run >= 3) {
+                face_set_tip("好玩吗 :P");
+                s_social += 0.05f;
+                if (s_social > 1.0f) s_social = 1.0f;
+            } else {
+                face_set_tip("咦？");
+            }
+        }
 
         /* mood slow variables (docs/12 §3.1): idle energy recovery + social decay */
         if (cfg->mood.enabled) {
@@ -313,17 +344,23 @@ static void soul_task(void *arg)
             }
         }
 
-        telemetry_set_beh(soul_state_name(s_ctx.state));
         if (++perf_div >= 10) {                            /* ~1 Hz mood publish */
             perf_div = 0;
             telemetry_set_mood(s_energy, s_social);
         }
 
+        /* Motion: an active primitive overrides the state machine's raw intent;
+         * FAULT holds the top-priority zero; otherwise the state intent drives. */
+        float pv[3];
         if (s_ctx.state == SOUL_FAULT) {
-            /* Hold on the FAULT source so teleop can't move a faulted robot. */
             motion_request(MOTION_SRC_FAULT, 0.0f, 0.0f, 0.0f, 250);
+            telemetry_set_beh("FAULT");
+        } else if (soul_prim_tick(&s_prim, now_ms, pv)) {
+            motion_request(MOTION_SRC_BEHAVIOR, pv[0], pv[1], pv[2], 250);
+            telemetry_set_beh(soul_prim_name(s_prim.id));
         } else {
             motion_set_intent(s_ctx.vx, s_ctx.vy, s_ctx.wz);
+            telemetry_set_beh(soul_state_name(s_ctx.state));
         }
         telemetry_set_soul(s_ctx.state);
 
@@ -335,6 +372,7 @@ static void soul_task(void *arg)
                 soul_mem_note(MEM_GAZED, now_ms);
                 soul_expr_transient(&s_expr, "o", "gazed", 800, now_ms);
                 face_set_tip(SHY_TIPS[esp_random() % (sizeof(SHY_TIPS) / sizeof(SHY_TIPS[0]))]);
+                soul_prim_start(&s_prim, PRIM_RETREAT_SHY, prim_jitter(), now_ms);  /* S5 */
             } else if (s_ctx.state == SOUL_LIFTED) {           /* S8 picked up */
                 soul_expr_transient(&s_expr, "o", "lift", 1200, now_ms);
                 face_set_tip("哇——放我下来");
@@ -343,6 +381,13 @@ static void soul_task(void *arg)
                 face_set_tip("唔…吓死我了");
             } else if (last_state == SOUL_DOZE) {              /* S10 waking: rub eyes */
                 soul_expr_transient(&s_expr, "o", "wake", 1000, now_ms);
+            } else if (s_ctx.state == SOUL_SPEAK) {            /* S12 speaking rhythm */
+                soul_prim_start(&s_prim, PRIM_WIGGLE, prim_jitter(), now_ms);
+            } else if (s_ctx.state == SOUL_IDLE &&
+                       (last_state == SOUL_ENGAGE || last_state == SOUL_APPROACH ||
+                        last_state == SOUL_RETREAT || last_state == SOUL_GAZED)) {
+                soul_prim_start(&s_prim, PRIM_SCAN, prim_jitter(), now_ms);  /* S6 look for lost face */
+                face_set_tip("咦？人呢");
             }
             last_state = s_ctx.state;
         }

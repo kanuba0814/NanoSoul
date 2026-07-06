@@ -27,8 +27,11 @@
 #include "ns_config.h"
 #include "sd_storage.h"
 #include "selftest.h"
+#include <math.h>
+
 #include "soul.h"
 #include "soul_expr.h"
+#include "soul_prim.h"
 #include "vision.h"
 #include "voice.h"
 
@@ -462,6 +465,38 @@ static st_report_t check_expr_sim(void)
     return st_pass("E1-E5 debounce ok");
 }
 
+static st_report_t check_prim_sim(void)
+{
+    soul_prim_t p = {0};
+    float o[3];
+
+    /* nudge: env(0)=0, backward at mid, ends after its duration */
+    soul_prim_start(&p, PRIM_NUDGE, 1.0f, 1000);
+    if (!soul_prim_tick(&p, 1000, o)) return st_fail("nudge start");
+    if (o[0] != 0.0f)                 return st_fail("nudge t0 env %.2f", o[0]);
+    soul_prim_tick(&p, 1300, o);
+    if (!(o[0] < -0.2f))              return st_fail("nudge mid %.2f", o[0]);
+    if (soul_prim_tick(&p, 1600, o))  return st_fail("nudge should end");
+    if (soul_prim_active(&p))         return st_fail("nudge still active");
+
+    /* wiggle: wz oscillation, net integral ~0 over its duration */
+    soul_prim_start(&p, PRIM_WIGGLE, 1.0f, 0);
+    float integ = 0.0f;
+    for (int64_t t = 0; t < 1200; t += 10) {
+        soul_prim_tick(&p, t, o);
+        integ += o[2];
+    }
+    if (fabsf(integ) > 5.0f)          return st_fail("wiggle integ %.2f", integ);
+
+    /* scan: turn-only sweep */
+    soul_prim_start(&p, PRIM_SCAN, 1.0f, 0);
+    soul_prim_tick(&p, 400, o);
+    if (o[0] != 0.0f || o[1] != 0.0f) return st_fail("scan translates");
+    if (fabsf(o[2]) < 0.01f)          return st_fail("scan no turn");
+
+    return st_pass("nudge/wiggle/scan ok");
+}
+
 /* ---------------- Phase D checks (net + LLM) ---------------- */
 
 static st_report_t check_wifi(void)
@@ -580,6 +615,7 @@ void app_selftests_register(void)
     selftest_register("expr_sim", check_expr_sim, 0);
     selftest_register("fusion_sim", check_fusion_sim, 0);
     selftest_register("imu_sim", check_imu_sim, 0);
+    selftest_register("prim_sim", check_prim_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);

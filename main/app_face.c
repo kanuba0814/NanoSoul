@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#include "app_sense.h"
+
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -81,6 +83,7 @@ void app_face_run(bool run_selftest_loop)
     board_i2c1_init();
     light_init(board_i2c1_bus());
     imu_init(board_i2c1_bus());
+    app_sense_start();   /* encoder + current telemetry @10 Hz + WHEEL_MOVED */
 
     /* Motion + decision. Motors are NOT wired in this build: motion.enabled is
      * false by default, so motion only computes+publishes duty (visible on the

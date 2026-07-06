@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "soul.c" "soul_expr.c"
+    SRCS "soul.c" "soul_expr.c" "soul_prim.c"
     INCLUDE_DIRS "include"
     REQUIRES
         telemetry
