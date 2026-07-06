@@ -5,6 +5,8 @@
 
 #include "esp_heap_caps.h"
 #include "esp_partition.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include <stdlib.h>
 
@@ -28,6 +30,7 @@
 #include "ns_config.h"
 #include "sd_storage.h"
 #include "selftest.h"
+#include "simsense.h"
 #include <math.h>
 
 #include "soul.h"
@@ -614,6 +617,48 @@ static st_report_t check_ws(void)
     return companion_running() ? st_pass("WS :80/ws up") : st_fail("server down");
 }
 
+/* ---------------- Test-mode override layer (pure logic) ---------------- */
+
+static st_report_t check_override_sim(void)
+{
+    override_clear_all();
+    float v = 0;
+
+    /* 未激活：apply 不动 inout、返回 false。 */
+    v = 42.0f;
+    if (override_apply(OVR_LUX, &v, 1) || v != 42.0f) return st_fail("idle apply");
+
+    /* set → apply 得覆盖值、返回 true；mask 命中该位。 */
+    float lux = 123.0f;
+    if (override_set(OVR_LUX, &lux, 1, 0) != ESP_OK)  return st_fail("set");
+    v = 0;
+    if (!override_apply(OVR_LUX, &v, 1) || v != 123.0f) return st_fail("apply=%f", v);
+    if (!(override_mask() & (1u << OVR_LUX)))          return st_fail("mask");
+
+    /* 通道值数不匹配 → set 拒绝。 */
+    float three[3] = {1, 2, 3};
+    if (override_set(OVR_LUX, three, 3, 0) == ESP_OK) return st_fail("bad n");
+
+    /* clear → apply 返回 false。 */
+    override_clear(OVR_LUX);
+    v = 7.0f;
+    if (override_apply(OVR_LUX, &v, 1) || v != 7.0f)  return st_fail("clear");
+
+    /* TTL 惰性过期。 */
+    float a[3] = {0, 0, 9.81f};
+    if (override_set(OVR_ACCEL, a, 3, 1) != ESP_OK)   return st_fail("ttl set");
+    vTaskDelay(pdMS_TO_TICKS(10));
+    float b[3] = {5, 5, 5};
+    if (override_apply(OVR_ACCEL, b, 3) || b[0] != 5) return st_fail("ttl expire");
+
+    /* 名字映射。 */
+    if (ovr_ch_from_name("current_a") != OVR_CURRENT_A) return st_fail("name");
+    if (ovr_ch_from_name("nope") != -1)                 return st_fail("badname");
+
+    override_clear_all();
+    return st_pass("set/apply/ttl/clear/name ok");
+}
+
 void app_selftests_register(void)
 {
     /* Phase 0 */
@@ -642,6 +687,7 @@ void app_selftests_register(void)
     selftest_register("imu_sim", check_imu_sim, 0);
     selftest_register("prim_sim", check_prim_sim, 0);
     selftest_register("stall_sim", check_stall_sim, 0);
+    selftest_register("override_sim", check_override_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);

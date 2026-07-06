@@ -9,6 +9,7 @@
 
 #include "motion.h"
 #include "ns_config.h"
+#include "simsense.h"
 #include "telemetry.h"
 
 static const char *TAG = "imu";
@@ -36,6 +37,7 @@ static i2c_master_dev_handle_t s_dev;
 static bool s_present;
 static bool s_lifted;
 static bool s_tilted;
+static float s_last_accel[3];   /* 最近一帧（含覆盖后）供 sense 流 */
 
 /* ---- pure detectors ---- */
 
@@ -155,6 +157,11 @@ static void imu_task(void *arg)
         if (!read_accel(a)) {
             continue;
         }
+        /* 测试注入：覆盖值经下方真实 tap/lift/tilt 检测器产真实事件（docs/13）。 */
+        override_apply(OVR_ACCEL, a, 3);
+        s_last_accel[0] = a[0];
+        s_last_accel[1] = a[1];
+        s_last_accel[2] = a[2];
         int64_t now = esp_timer_get_time() / 1000;
 
         int t = imu_tap_feed(&tap, a, cfg->imu.tap_th, now);
@@ -228,3 +235,10 @@ esp_err_t imu_init(i2c_master_bus_handle_t bus)
 bool imu_present(void) { return s_present; }
 bool imu_lifted(void)  { return s_lifted; }
 bool imu_tilted(void)  { return s_tilted; }
+
+void imu_last_accel(float out[3])
+{
+    out[0] = s_last_accel[0];
+    out[1] = s_last_accel[1];
+    out[2] = s_last_accel[2];
+}

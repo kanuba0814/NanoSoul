@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 
 #include "ns_config.h"
+#include "simsense.h"
 #include "telemetry.h"
 
 static const char *TAG = "light";
@@ -39,6 +40,7 @@ static void light_task(void *arg)
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(1000));
         s_lux = read_lux();
+        override_apply(OVR_LUX, &s_lux, 1);   /* 测试注入：覆盖值走真实迟滞 → DARK/BRIGHT */
         int64_t now = esp_timer_get_time() / 1000;
 
         if (!dark) {

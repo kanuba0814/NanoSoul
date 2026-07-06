@@ -14,6 +14,7 @@ idf_component_register(
         telemetry
         storage_sd
         selftest
+        simsense
         nvs_flash
         esp_partition
         esp_netif
