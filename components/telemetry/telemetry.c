@@ -16,7 +16,7 @@ static SemaphoreHandle_t s_lock;
 
 static const char *const s_soul_names[SOUL_STATE_MAX] = {
     "IDLE", "ENGAGE", "APPROACH", "RETREAT", "GAZED",
-    "LISTEN", "THINK", "SPEAK", "FAULT",
+    "LISTEN", "THINK", "SPEAK", "FAULT", "LIFTED", "DOZE",
 };
 
 const char *soul_state_name(soul_state_t s)
@@ -149,6 +149,31 @@ void telemetry_set_fps(float render, float detect)
     lock();
     s_snap.fps_render = render;
     s_snap.fps_detect = detect;
+    unlock();
+}
+
+void telemetry_set_pc(const tel_pc_t *pc)
+{
+    if (!pc) {
+        return;
+    }
+    lock();
+    s_snap.pc = *pc;
+    unlock();
+}
+
+void telemetry_set_beh(const char *name)
+{
+    lock();
+    strlcpy(s_snap.beh, name ? name : "", sizeof(s_snap.beh));
+    unlock();
+}
+
+void telemetry_set_mood(float energy, float social)
+{
+    lock();
+    s_snap.mood_energy = energy;
+    s_snap.mood_social = social;
     unlock();
 }
 

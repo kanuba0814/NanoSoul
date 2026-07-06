@@ -118,6 +118,21 @@ static char *build_state_json(void)
     cJSON_AddNumberToObject(fps, "render", t.fps_render);
     cJSON_AddNumberToObject(fps, "detect", t.fps_detect);
 
+    cJSON_AddStringToObject(r, "beh", t.beh);
+    cJSON *mood = cJSON_AddObjectToObject(r, "mood");
+    cJSON_AddNumberToObject(mood, "energy", t.mood_energy);
+    cJSON_AddNumberToObject(mood, "social", t.mood_social);
+    if (t.pc.activity[0]) {
+        cJSON *pc = cJSON_AddObjectToObject(r, "pc");
+        cJSON_AddStringToObject(pc, "activity", t.pc.activity);
+        cJSON_AddNumberToObject(pc, "idle_s", t.pc.idle_s);
+        cJSON_AddStringToObject(pc, "focus", t.pc.focus);
+        cJSON_AddBoolToObject(pc, "media", t.pc.media);
+        cJSON_AddBoolToObject(pc, "dnd", t.pc.dnd);
+    } else {
+        cJSON_AddNullToObject(r, "pc");
+    }
+
     char *s = cJSON_PrintUnformatted(r);
     cJSON_Delete(r);
     return s;
@@ -187,6 +202,22 @@ static void on_ns_event(void *arg, esp_event_base_t base, int32_t id, void *data
         emit_event("fault", d);
         break;
     }
+    /* --- interaction events (docs/12) --- */
+    case NS_EVT_TAP:         emit_event("tap", NULL); break;
+    case NS_EVT_LIFTED:      emit_event("lifted", NULL); break;
+    case NS_EVT_PLACED:      emit_event("placed", NULL); break;
+    case NS_EVT_DARK:        emit_event("dark", NULL); break;
+    case NS_EVT_BRIGHT:      emit_event("bright", NULL); break;
+    case NS_EVT_TOUCH:       emit_event("touch", NULL); break;
+    case NS_EVT_WHEEL_MOVED: emit_event("wheel_moved", NULL); break;
+    case NS_EVT_LOUD:        emit_event("loud", NULL); break;
+    case NS_EVT_STALL: {
+        ns_evt_text_t *e = data;
+        cJSON *d = cJSON_CreateObject();
+        cJSON_AddStringToObject(d, "text", e ? e->text : "");
+        emit_event("stall", d);
+        break;
+    }
     default: break;
     }
 }
@@ -231,6 +262,30 @@ static void handle_command(httpd_req_t *req, const char *json)
     const cJSON *jid = cJSON_GetObjectItemCaseSensitive(root, "id");
     int id = cJSON_IsNumber(jid) ? jid->valueint : 0;
     const char *cmd = cJSON_IsString(type) ? type->valuestring : "";
+
+    /* pc_state: continuous PC-status input, NOT a command — no ack (docs/09 v1.1). */
+    if (strcmp(cmd, "pc_state") == 0) {
+        tel_pc_t pc = {0};
+        const cJSON *v;
+        if ((v = cJSON_GetObjectItemCaseSensitive(root, "activity")) && cJSON_IsString(v)) {
+            strlcpy(pc.activity, v->valuestring, sizeof(pc.activity));
+        }
+        if ((v = cJSON_GetObjectItemCaseSensitive(root, "focus")) && cJSON_IsString(v)) {
+            strlcpy(pc.focus, v->valuestring, sizeof(pc.focus));
+        }
+        if ((v = cJSON_GetObjectItemCaseSensitive(root, "idle_s")) && cJSON_IsNumber(v)) {
+            pc.idle_s = v->valueint;
+        }
+        v = cJSON_GetObjectItemCaseSensitive(root, "media");
+        pc.media = cJSON_IsTrue(v);
+        v = cJSON_GetObjectItemCaseSensitive(root, "dnd");
+        pc.dnd = cJSON_IsTrue(v);
+        pc.rx_ms = esp_timer_get_time() / 1000;
+        telemetry_set_pc(&pc);
+        soul_set_pc(&pc);
+        cJSON_Delete(root);
+        return;
+    }
 
     if (strcmp(cmd, "ask") == 0) {
         const cJSON *t = cJSON_GetObjectItemCaseSensitive(root, "text");

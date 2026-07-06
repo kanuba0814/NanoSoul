@@ -11,7 +11,9 @@
   },
   "stt":    { "base_url": "https://api.openai.com", "api_key": "sk-...", "model": "whisper-1" },
   "tts":    { "base_url": "https://api.openai.com", "api_key": "sk-...", "model": "tts-1", "voice": "alloy" },
-  "behavior": { "near_lo": 0.04, "near_hi": 0.18, "frontal_thresh": 0.7, "gaze_hold_ms": 1500, "idle_scan": false },
+  "behavior": { "near_lo": 0.04, "near_hi": 0.18, "frontal_thresh": 0.7, "gaze_hold_ms": 1500, "gaze_cooldown_s": 30, "idle_scan": false, "autonomy": true, "autonomy_idle_s": 90 },
+  "mood": { "enabled": true, "energy_init": 0.5, "social_init": 0.5, "social_tau_min": 10 },
+  "pc": { "stale_s": 15, "respect_dnd": true, "quiet_work": true, "quiet_meeting": true, "invite_idle_s": 300, "invite_cooldown_min": 60 },
   "motion": { "enabled": false, "max_duty_pct": 40 },
   "companion": { "enabled": true, "token": "change-me" },
   "debug":  { "overlay": true, "log_level": "info" }

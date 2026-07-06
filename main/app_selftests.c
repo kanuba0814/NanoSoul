@@ -222,29 +222,29 @@ static st_report_t check_soul_sim(void)
     c.emotion = "waiting";
     ns_behavior_cfg_t b = {
         .near_lo = 0.04f, .near_hi = 0.18f, .frontal_thresh = 0.7f,
-        .gaze_hold_ms = 1500, .idle_scan = false,
+        .gaze_hold_ms = 1500, .gaze_cooldown_s = 30, .idle_scan = false,
     };
 
-    tel_face_t none = {0};
-    soul_eval(&c, &none, &b, 100, 0);
+    soul_inputs_t in = {0};
+    soul_eval(&c, &in, &b, 100, 0);                    /* no face -> IDLE */
     if (c.state != SOUL_IDLE) {
         return st_fail("no-face!=IDLE (%s)", soul_state_name(c.state));
     }
-    tel_face_t far = { .present = true, .area_ratio = 0.02f, .frontal_score = 0.2f };
-    soul_eval(&c, &far, &b, 100, 100);
+    in.face = (tel_face_t){ .present = true, .area_ratio = 0.02f, .frontal_score = 0.2f };
+    soul_eval(&c, &in, &b, 100, 100);
     if (c.state != SOUL_APPROACH) {
         return st_fail("far!=APPROACH (%s)", soul_state_name(c.state));
     }
-    tel_face_t mid = { .present = true, .area_ratio = 0.10f, .frontal_score = 0.3f };
-    soul_eval(&c, &mid, &b, 100, 200);
+    in.face = (tel_face_t){ .present = true, .area_ratio = 0.10f, .frontal_score = 0.3f };
+    soul_eval(&c, &in, &b, 100, 200);
     if (c.state != SOUL_ENGAGE) {
         return st_fail("mid!=ENGAGE (%s)", soul_state_name(c.state));
     }
-    tel_face_t gaze = { .present = true, .area_ratio = 0.10f, .frontal_score = 0.9f };
+    in.face = (tel_face_t){ .present = true, .area_ratio = 0.10f, .frontal_score = 0.9f };
     bool gazed = false;
     int64_t t = 300;
     for (int i = 0; i < 25; i++) {
-        soul_eval(&c, &gaze, &b, 100, t);
+        soul_eval(&c, &in, &b, 100, t);
         t += 100;
         if (c.state == SOUL_GAZED) {
             gazed = true;
@@ -254,7 +254,81 @@ static st_report_t check_soul_sim(void)
     if (!gazed) {
         return st_fail("no GAZED after sustained frontal gaze");
     }
-    return st_pass("IDLE->APPROACH->ENGAGE->GAZED ok");
+
+    /* lifted overrides even a session */
+    soul_ctx_t c2 = {0};
+    c2.session = SOUL_THINK;
+    soul_inputs_t li = {0};
+    li.lifted = true;
+    soul_eval(&c2, &li, &b, 100, 0);
+    if (c2.state != SOUL_LIFTED) {
+        return st_fail("lifted!=LIFTED (%s)", soul_state_name(c2.state));
+    }
+    /* dark + no face -> DOZE */
+    soul_ctx_t c3 = {0};
+    soul_inputs_t di = {0};
+    di.dark = true;
+    soul_eval(&c3, &di, &b, 100, 0);
+    if (c3.state != SOUL_DOZE) {
+        return st_fail("dark!=DOZE (%s)", soul_state_name(c3.state));
+    }
+    /* SILENT perm suppresses APPROACH -> still ENGAGE */
+    soul_ctx_t c4 = {0};
+    soul_inputs_t si = {0};
+    si.face = (tel_face_t){ .present = true, .area_ratio = 0.02f, .frontal_score = 0.2f };
+    si.perm = PERM_SILENT;
+    soul_eval(&c4, &si, &b, 100, 0);
+    if (c4.state != SOUL_ENGAGE || c4.vx != 0.0f) {
+        return st_fail("silent!=still ENGAGE (%s v%.1f)", soul_state_name(c4.state), c4.vx);
+    }
+    return st_pass("v2 IDLE/APPROACH/ENGAGE/GAZED/LIFTED/DOZE/SILENT ok");
+}
+
+static st_report_t check_fusion_sim(void)
+{
+    ns_pc_cfg_t cfg = {
+        .stale_s = 15, .respect_dnd = true, .quiet_work = true,
+        .quiet_meeting = true, .invite_idle_s = 300, .invite_cooldown_min = 60,
+    };
+    const int64_t now = 100000;
+    tel_pc_t pc;
+
+    tel_pc_t empty = {0};
+    if (soul_perm_eval(&empty, true, &cfg, now) != PERM_NORMAL) return st_fail("empty");
+
+    pc = (tel_pc_t){ .rx_ms = now - 20000 };
+    strcpy(pc.activity, "active");
+    if (soul_perm_eval(&pc, true, &cfg, now) != PERM_NORMAL) return st_fail("stale");
+
+    pc = (tel_pc_t){ .rx_ms = now, .dnd = true };
+    strcpy(pc.activity, "active");
+    if (soul_perm_eval(&pc, true, &cfg, now) != PERM_QUIET) return st_fail("dnd");
+
+    pc = (tel_pc_t){ .rx_ms = now };
+    strcpy(pc.activity, "active");
+    strcpy(pc.focus, "work");
+    if (soul_perm_eval(&pc, true, &cfg, now) != PERM_QUIET) return st_fail("work");
+
+    pc = (tel_pc_t){ .rx_ms = now };
+    strcpy(pc.activity, "active");
+    strcpy(pc.focus, "meeting");
+    if (soul_perm_eval(&pc, true, &cfg, now) != PERM_SILENT) return st_fail("meeting");
+
+    pc = (tel_pc_t){ .rx_ms = now, .idle_s = 400 };
+    strcpy(pc.activity, "idle");
+    strcpy(pc.focus, "other");
+    if (soul_perm_eval(&pc, true, &cfg, now) != PERM_INVITE) return st_fail("invite");
+
+    pc = (tel_pc_t){ .rx_ms = now };
+    strcpy(pc.activity, "active");
+    strcpy(pc.focus, "work");
+    if (soul_perm_eval(&pc, false, &cfg, now) != PERM_AWAY_WAIT) return st_fail("away");
+
+    pc = (tel_pc_t){ .rx_ms = now };
+    strcpy(pc.activity, "locked");
+    if (soul_perm_eval(&pc, false, &cfg, now) != PERM_REST) return st_fail("rest");
+
+    return st_pass("fusion 8 rows ok");
 }
 
 static st_report_t check_expr_sim(void)
@@ -422,6 +496,7 @@ void app_selftests_register(void)
     selftest_register("arbiter_sim", check_arbiter_sim, 0);
     selftest_register("soul_sim", check_soul_sim, 0);
     selftest_register("expr_sim", check_expr_sim, 0);
+    selftest_register("fusion_sim", check_fusion_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);
