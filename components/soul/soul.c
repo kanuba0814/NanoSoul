@@ -166,6 +166,17 @@ static void soul_mem_note(uint8_t kind, int64_t now_ms)
     s_mem_head = (s_mem_head + 1) % 8;
 }
 
+static int soul_mem_count_recent(uint8_t kind, int64_t window_ms, int64_t now_ms)
+{
+    int n = 0;
+    for (int i = 0; i < 8; i++) {
+        if (s_mem[i].ts && s_mem[i].kind == kind && (now_ms - s_mem[i].ts) <= window_ms) {
+            n++;
+        }
+    }
+    return n;
+}
+
 /* S5 shy tip variants, picked at random when GAZED fires. */
 static const char *SHY_TIPS[] = {
     "别一直盯着看啦", "我会害羞的", "看什么看~", "唔…被发现了",
@@ -176,6 +187,7 @@ static const char *SHY_TIPS[] = {
  * benign one-tick race is fine (no lock). ---- */
 static volatile struct {
     int  tap_pending;
+    bool double_pending;
     bool lifted;         /* level: LIFTED sets, PLACED clears */
     bool dark;           /* level: DARK sets, BRIGHT clears   */
     bool touch_pending;
@@ -191,7 +203,15 @@ static void soul_evt_handler(void *a, esp_event_base_t base, int32_t id, void *d
 {
     (void)a; (void)base; (void)data;
     switch ((ns_event_id_t)id) {
-    case NS_EVT_TAP:         s_latch.tap_pending++;      break;
+    case NS_EVT_TAP: {
+        ns_evt_tap_t *e = data;
+        if (e && e->count >= 2) {
+            s_latch.double_pending = true;
+        } else {
+            s_latch.tap_pending++;
+        }
+        break;
+    }
     case NS_EVT_LIFTED:      s_latch.lifted = true;      break;
     case NS_EVT_PLACED:      s_latch.lifted = false;     break;
     case NS_EVT_DARK:        s_latch.dark = true;        break;
@@ -227,7 +247,8 @@ static void soul_task(void *arg)
         }
         int taps = s_latch.tap_pending;
         s_latch.tap_pending = 0;
-        in.tap_count    = taps > 2 ? 2 : taps;
+        in.tap_count    = taps;
+        in.double_tap   = s_latch.double_pending;  s_latch.double_pending = false;
         in.lifted       = s_latch.lifted;
         in.dark         = s_latch.dark;
         in.touched      = s_latch.touch_pending;   s_latch.touch_pending = false;
@@ -236,6 +257,27 @@ static void soul_task(void *arg)
         in.perm         = soul_perm_eval(&s_pc, in.face.present, &cfg->pc, now_ms);
 
         soul_eval(&s_ctx, &in, &cfg->behavior, SOUL_TICK_MS, now_ms);
+
+        /* S7 tap reactions (a transient, not a state). */
+        if (in.tap_count > 0) {
+            int recent = soul_mem_count_recent(MEM_TAP, 60000, now_ms);
+            soul_mem_note(MEM_TAP, now_ms);
+            soul_expr_transient(&s_expr, "o", "tap", 800, now_ms);
+            if (recent >= 1) {                     /* 2nd+ tap within 60 s -> escalate */
+                face_set_tip("别敲啦");
+                s_social -= 0.1f;
+                if (s_social < 0) s_social = 0;
+            } else {
+                face_set_tip("呀");
+            }
+        }
+        if (in.double_tap) {                       /* S7 easter egg: cycle the face */
+            static const char *CLIPS[] = { "waiting", "o", "sad", "sleep", "think" };
+            static int ci = 0;
+            ci = (ci + 1) % (int)(sizeof(CLIPS) / sizeof(CLIPS[0]));
+            soul_expr_transient(&s_expr, CLIPS[ci], "egg", 1500, now_ms);
+            face_set_tip("换个脸~");
+        }
 
         /* mood slow variables (docs/12 §3.1): idle energy recovery + social decay */
         if (cfg->mood.enabled) {
@@ -270,6 +312,12 @@ static void soul_task(void *arg)
                 soul_mem_note(MEM_GAZED, now_ms);
                 soul_expr_transient(&s_expr, "o", "gazed", 800, now_ms);
                 face_set_tip(SHY_TIPS[esp_random() % (sizeof(SHY_TIPS) / sizeof(SHY_TIPS[0]))]);
+            } else if (s_ctx.state == SOUL_LIFTED) {           /* S8 picked up */
+                soul_expr_transient(&s_expr, "o", "lift", 1200, now_ms);
+                face_set_tip("哇——放我下来");
+            } else if (last_state == SOUL_LIFTED) {            /* S8 set back down */
+                soul_mem_note(MEM_LIFTED, now_ms);
+                face_set_tip("唔…吓死我了");
             }
             last_state = s_ctx.state;
         }

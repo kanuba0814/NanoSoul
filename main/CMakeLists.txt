@@ -22,6 +22,7 @@ idf_component_register(
         board_i2c0
         board_i2c1
         light
+        imu
         camera
         vision
         motion

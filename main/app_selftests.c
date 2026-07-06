@@ -14,6 +14,7 @@
 #include "board_i2c1.h"
 #include "bsp_pins.h"
 #include "camera.h"
+#include "imu.h"
 #include "light.h"
 #include "companion.h"
 #include "face.h"
@@ -170,6 +171,62 @@ static st_report_t check_light(void)
         return st_skip("no BH1750 @0x23");
     }
     return st_pass("lux %.0f", light_lux());
+}
+
+static st_report_t check_imu_probe(void)
+{
+    if (board_i2c1_probe(0x6A) || board_i2c1_probe(0x6B)) {
+        return st_pass("QMI8658 present");
+    }
+    return st_skip("no QMI8658 @0x6A/0x6B");
+}
+
+static st_report_t check_imu_sim(void)
+{
+    float rest[3]  = { 0, 0, 9.81f };
+    float spike[3] = { 0, 0, 20.0f };   /* jerk ~10 vs th 3 */
+    int64_t t = 100000;                 /* large base: past the tap refractory */
+
+    /* single tap: spike then quiet, confirmed after the double window */
+    imu_tap_state_t tp = {0};
+    imu_tap_feed(&tp, rest, 3.0f, t);  t += 10;
+    imu_tap_feed(&tp, spike, 3.0f, t); t += 10;   /* impulse -> pending */
+    imu_tap_feed(&tp, rest, 3.0f, t);  t += 10;   /* down-edge gated by refractory */
+    int single = 0;
+    for (int i = 0; i < 60; i++) {
+        single = imu_tap_feed(&tp, rest, 3.0f, t);
+        t += 10;
+        if (single) break;
+    }
+    if (single != 1) return st_fail("single=%d", single);
+
+    /* double tap: two spikes ~130ms apart (within 400ms window) */
+    imu_tap_state_t tp2 = {0};
+    t = 100000;
+    imu_tap_feed(&tp2, rest, 3.0f, t);  t += 10;
+    imu_tap_feed(&tp2, spike, 3.0f, t); t += 10;  /* tap1 */
+    imu_tap_feed(&tp2, rest, 3.0f, t);  t += 10;
+    for (int i = 0; i < 12; i++) { imu_tap_feed(&tp2, rest, 3.0f, t); t += 10; }
+    int dbl = imu_tap_feed(&tp2, spike, 3.0f, t);
+    if (dbl != 2) return st_fail("double=%d", dbl);
+
+    /* lift then place */
+    imu_lift_state_t lf = {0};
+    float airborne[3] = { 0, 0, 4.0f };   /* dev ~5.8 > 0.15g */
+    t = 100000;
+    int le = 0;
+    for (int i = 0; i < 50; i++) { le = imu_lift_feed(&lf, airborne, 0.15f, 300, 1500, t); t += 10; if (le) break; }
+    if (le != 1) return st_fail("LIFTED=%d", le);
+    int pe = 0;
+    for (int i = 0; i < 200; i++) { pe = imu_lift_feed(&lf, rest, 0.15f, 300, 1500, t); t += 10; if (pe) break; }
+    if (pe != -1) return st_fail("PLACED=%d", pe);
+
+    /* tilt */
+    float tilt[3] = { 0, 6.9f, 6.9f };    /* ~45° roll */
+    if (!imu_tilt_eval(tilt, 8)) return st_fail("tilt miss");
+    if (imu_tilt_eval(rest, 8))  return st_fail("flat flagged");
+
+    return st_pass("tap/double/lift/place/tilt ok");
 }
 
 /* ---------------- Phase C checks (motion IK + soul FSM, pure logic) ---------------- */
@@ -505,12 +562,14 @@ void app_selftests_register(void)
     selftest_register("face_detect", check_face_detect, 0);
     /* Interaction sensors (off-board I2C1) */
     selftest_register("light_read", check_light, 0);
+    selftest_register("imu_probe", check_imu_probe, 0);
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
     selftest_register("arbiter_sim", check_arbiter_sim, 0);
     selftest_register("soul_sim", check_soul_sim, 0);
     selftest_register("expr_sim", check_expr_sim, 0);
     selftest_register("fusion_sim", check_fusion_sim, 0);
+    selftest_register("imu_sim", check_imu_sim, 0);
     /* Phase D */
     selftest_register("wifi_connect", check_wifi, 0);
     selftest_register("sntp", check_sntp, 0);

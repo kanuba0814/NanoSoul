@@ -16,6 +16,7 @@
 #include "drv_motor.h"
 #include "face.h"
 #include "hud.h"
+#include "imu.h"
 #include "light.h"
 #include "motion.h"
 #include "netlink.h"
@@ -78,6 +79,7 @@ void app_face_run(bool run_selftest_loop)
      * unplugged (probe misses -> absent, no fault). */
     board_i2c1_init();
     light_init(board_i2c1_bus());
+    imu_init(board_i2c1_bus());
 
     /* Motion + decision. Motors are NOT wired in this build: motion.enabled is
      * false by default, so motion only computes+publishes duty (visible on the
