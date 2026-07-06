@@ -46,6 +46,7 @@ idf.py build      # 板外必过；commit 前跑
   - `M0: A/B=IO30/IO31` · `M1: IO28/IO29` · `M2: IO46/IO47`。确认 P4 PCNT 单元 ≥3 路，不够的用 GPIO ISR 兜底。
 - **电机堵转过流保护（硬需求）**：固件读 **INA219 电流 + 编码器不动** → 拉低 STBY 急停。实测电机堵转 400mA/个、3 个全堵 1.2A。
 - 引脚是杜邦接的、可改；改了**同步更新本节 + `docs/BOARD_MAPPING.md`**。flash/monitor 谁有板谁本地跑（板外纪律）。
+- **测试模式**：上电时 **IO48 短接 GND** → 进 TEST 模式（完整运行时 + 传感覆盖注入 + `motor_test` + USB-Serial-JTAG NDJSON 通道 + 浏览器测试上位机 `tools/testhost/`），开路 = 正常 FACE。协议/真值/用法见 [`docs/13_测试模式与上位机_v1.md`](docs/13_测试模式与上位机_v1.md)。TEST 模式下 USJ 用作协议口、日志走 UART0（`ESP_CONSOLE_SECONDARY_NONE`）。
 
 ## 载板 PCB
 
