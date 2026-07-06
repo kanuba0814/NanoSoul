@@ -254,9 +254,15 @@ static void handle_command(httpd_req_t *req, const char *json)
             const cJSON *vx = cJSON_GetObjectItemCaseSensitive(root, "vx");
             const cJSON *vy = cJSON_GetObjectItemCaseSensitive(root, "vy");
             const cJSON *wz = cJSON_GetObjectItemCaseSensitive(root, "wz");
-            motion_set_intent(cJSON_IsNumber(vx) ? vx->valuedouble : 0,
-                              cJSON_IsNumber(vy) ? vy->valuedouble : 0,
-                              cJSON_IsNumber(wz) ? wz->valuedouble : 0);
+            const cJSON *ttl = cJSON_GetObjectItemCaseSensitive(root, "ttl_ms");
+            uint32_t ttl_ms = cJSON_IsNumber(ttl) ? (uint32_t)ttl->valueint : 300;
+            if (ttl_ms < 100)  ttl_ms = 100;
+            if (ttl_ms > 2000) ttl_ms = 2000;
+            motion_request(MOTION_SRC_TELEOP,
+                           cJSON_IsNumber(vx) ? vx->valuedouble : 0,
+                           cJSON_IsNumber(vy) ? vy->valuedouble : 0,
+                           cJSON_IsNumber(wz) ? wz->valuedouble : 0,
+                           ttl_ms);
             send_ack(req, id, true, NULL);
         }
     } else if (strcmp(cmd, "get_snapshot") == 0) {

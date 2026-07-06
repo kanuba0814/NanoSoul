@@ -122,7 +122,12 @@ static void soul_task(void *arg)
 
         soul_eval(&s_ctx, &face, &cfg->behavior, SOUL_TICK_MS, now_ms);
 
-        motion_set_intent(s_ctx.vx, s_ctx.vy, s_ctx.wz);
+        if (s_ctx.state == SOUL_FAULT) {
+            /* Hold on the FAULT source so teleop can't move a faulted robot. */
+            motion_request(MOTION_SRC_FAULT, 0.0f, 0.0f, 0.0f, 250);
+        } else {
+            motion_set_intent(s_ctx.vx, s_ctx.vy, s_ctx.wz);
+        }
         telemetry_set_soul(s_ctx.state);
         apply_emotion(s_ctx.emotion, s_ctx.state == SOUL_FAULT || s_ctx.state == SOUL_GAZED);
 
