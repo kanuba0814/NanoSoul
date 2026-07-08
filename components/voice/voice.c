@@ -5,12 +5,15 @@
 
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "audio.h"
 #include "face.h"
 #include "llm.h"
+#include "netlink.h"
+#include "ns_config.h"
 #include "soul.h"
 #include "telemetry.h"
 
@@ -20,15 +23,26 @@ static const char *TAG = "voice";
 #define CHUNK_SAMPLES   (AUDIO_SAMPLE_RATE * CHUNK_MS / 1000)  /* 320 */
 #define WAKE_RMS        1500.0f   /* energy above this = voice present */
 #define WAKE_HOLD_MS    200       /* sustained loudness to wake */
-#define UTTER_MAX_MS    6000
+#define UTTER_MAX_MS    8000      /* docs/08: utterance cap <= 8s */
 #define SILENCE_END_MS  800       /* trailing silence ends the utterance */
+#define SILENCE_RMS     350.0f    /* below this = silence; well under speech
+                                     inter-word dips so pauses don't chop it */
 #define UTTER_MAX_SAMPLES (AUDIO_SAMPLE_RATE * UTTER_MAX_MS / 1000)
+/* Pre-roll: keep the last second of idle audio and prepend it to the utterance,
+ * so the words that TRIGGERED the wake are inside the recording. Without it a
+ * short phrase ("你好你好") burns itself on the 200ms wake hold and the record
+ * starts after the speech ended -> ASR hears silence. */
+#define PREROLL_CHUNKS  50        /* 1s */
+#define PREROLL_SAMPLES (PREROLL_CHUNKS * CHUNK_SAMPLES)
 
 static bool              s_ready;
 static volatile bool     s_force;
 static volatile float    s_last_rms;
 static int16_t          *s_chunk;
-static int16_t          *s_utter;   /* PSRAM utterance buffer */
+static int16_t          *s_utter;    /* PSRAM utterance buffer */
+static int16_t          *s_preroll;  /* PSRAM rolling ring of idle audio */
+static int               s_pre_w;    /* ring write index (chunks) */
+static int               s_pre_n;    /* valid chunks in ring */
 
 static float rms(const int16_t *pcm, size_t n)
 {
@@ -54,10 +68,36 @@ static bool wake_detected(void)
         s_force = false;
         return true;
     }
+    /* RX pacing probe: a 20ms chunk must arrive every ~20ms of wall time; a
+     * higher average means the mic stream runs slower than real time and
+     * utterances get stretched/decimated (the empty-ASR failure mode). A gap
+     * between calls (a converse ran) restarts the window so cloud round-trips
+     * don't pollute the average. */
+    static int64_t win_t0, last_ret;
+    static int     win_chunks;
+    int64_t t0 = esp_timer_get_time();
+    if (win_chunks == 0 || (last_ret && t0 - last_ret > 200000)) {
+        win_t0 = t0;
+        win_chunks = 0;
+    }
     float e = read_chunk();
+    last_ret = esp_timer_get_time();
+    if (++win_chunks >= 512) {   /* ~10s of audio */
+        int avg_ms = (int)((esp_timer_get_time() - win_t0) / 1000 / win_chunks);
+        if (avg_ms > 25) {
+            ESP_LOGW(TAG, "mic RX slow: %d ms/chunk (expect 20)", avg_ms);
+        }
+        win_chunks = 0;
+    }
     if (e < 0) {
         vTaskDelay(pdMS_TO_TICKS(50));
         return false;
+    }
+    /* feed the pre-roll ring (including the chunk that ends up triggering) */
+    memcpy(s_preroll + s_pre_w * CHUNK_SAMPLES, s_chunk, CHUNK_SAMPLES * sizeof(int16_t));
+    s_pre_w = (s_pre_w + 1) % PREROLL_CHUNKS;
+    if (s_pre_n < PREROLL_CHUNKS) {
+        s_pre_n++;
     }
     s_last_rms = e;
     /* Sudden loud noise -> LOUD event (docs/12), edge-triggered with hysteresis. */
@@ -83,14 +123,18 @@ static bool wake_detected(void)
     return false;
 }
 
-// Record until trailing silence or the cap; returns sample count.
+// Record until trailing silence or the cap; returns sample count. The utterance
+// starts with the pre-roll ring (oldest first), so the wake phrase itself is in.
 static size_t record_utterance(void)
 {
     size_t n = 0;
     int silence_ms = 0;
-    // seed with the chunk that triggered wake
-    memcpy(s_utter, s_chunk, CHUNK_SAMPLES * sizeof(int16_t));
-    n = CHUNK_SAMPLES;
+    for (int i = 0; i < s_pre_n; i++) {
+        int idx = (s_pre_w - s_pre_n + i + PREROLL_CHUNKS) % PREROLL_CHUNKS;
+        memcpy(s_utter + n, s_preroll + idx * CHUNK_SAMPLES, CHUNK_SAMPLES * sizeof(int16_t));
+        n += CHUNK_SAMPLES;
+    }
+    s_pre_n = 0;   /* consumed; refills during the next idle phase */
 
     while (n + CHUNK_SAMPLES <= UTTER_MAX_SAMPLES) {
         if (audio_record(s_chunk, CHUNK_SAMPLES) != ESP_OK) {
@@ -98,7 +142,7 @@ static size_t record_utterance(void)
         }
         memcpy(s_utter + n, s_chunk, CHUNK_SAMPLES * sizeof(int16_t));
         n += CHUNK_SAMPLES;
-        if (rms(s_chunk, CHUNK_SAMPLES) < WAKE_RMS * 0.5f) {
+        if (rms(s_chunk, CHUNK_SAMPLES) < SILENCE_RMS) {
             silence_ms += CHUNK_MS;
             if (silence_ms >= SILENCE_END_MS) {
                 break;
@@ -110,36 +154,70 @@ static size_t record_utterance(void)
     return n;
 }
 
+// Back to perception with a clean idle state (shared by every bail-out path).
+static void end_turn_idle(void)
+{
+    soul_set_session(SOUL_IDLE);
+    telemetry_set_voice("idle");
+}
+
 static void converse(void)
 {
     ESP_LOGI(TAG, "wake -> listening");
     soul_notify_wake();                 /* LISTEN */
     telemetry_set_voice("listen");
+    face_set_tip("(听)");               /* docs/12 S12: show we're listening */
 
+    int64_t rec_t0 = esp_timer_get_time();
     size_t n = record_utterance();
-    ESP_LOGI(TAG, "utterance %u ms", (unsigned)(n * 1000 / AUDIO_SAMPLE_RATE));
+    ESP_LOGI(TAG, "utterance %u ms (wall %d ms)",
+             (unsigned)(n * 1000 / AUDIO_SAMPLE_RATE),
+             (int)((esp_timer_get_time() - rec_t0) / 1000));
 
     soul_set_session(SOUL_THINK);
     telemetry_set_voice("think");
 
+    /* Offline: local cue instead of hanging on cloud timeouts (docs/08 acceptance). */
+    if (!netlink_is_up()) {
+        ESP_LOGW(TAG, "offline: skipping cloud turn");
+        face_set_tip("(没联网)");
+        audio_fail_tone();
+        end_turn_idle();
+        return;
+    }
+
     char text[256] = {0};
-    if (llm_stt(s_utter, n, AUDIO_SAMPLE_RATE, text, sizeof(text)) != ESP_OK || text[0] == '\0') {
+    esp_err_t stt_rc = llm_stt(s_utter, n, AUDIO_SAMPLE_RATE, text, sizeof(text));
+    if (stt_rc == ESP_OK && text[0] == '\0') {
+        /* Recognized silence — a false VAD wake (clap, ambient). Drop it without
+         * the failure cue so stray noise never nags the user. */
+        ESP_LOGI(TAG, "stt: no speech, ignoring");
+        end_turn_idle();
+        return;
+    }
+    if (stt_rc != ESP_OK) {
         ESP_LOGW(TAG, "stt failed");
-        soul_set_session(SOUL_IDLE);
-        telemetry_set_voice("idle");
+        face_set_tip("(没听清)");
+        audio_fail_tone();
+        end_turn_idle();
         return;
     }
     ESP_LOGI(TAG, "heard: %.60s", text);
 
-    char reply[512];
+    char reply[512] = {0};
     if (llm_chat(text, reply, sizeof(reply)) != ESP_OK) {
         soul_notify_fault("chat");
+        face_set_tip("(网络不通)");
+        audio_fail_tone();
+        soul_clear_fault();
+        end_turn_idle();
+        return;
     }
+    soul_clear_fault();
     face_set_tip(reply);
     ns_evt_text_t ev = {0};
     strlcpy(ev.text, reply, sizeof(ev.text));
     telemetry_post(NS_EVT_LLM_REPLY, &ev, sizeof(ev));
-    soul_clear_fault();
 
     /* speak */
     soul_set_session(SOUL_SPEAK);
@@ -149,10 +227,11 @@ static void converse(void)
     if (llm_tts(reply, AUDIO_SAMPLE_RATE, &pcm, &samples) == ESP_OK && pcm) {
         audio_play(pcm, samples);
         free(pcm);
+    } else {
+        audio_fail_tone();   /* reply text is already on the tip */
     }
 
-    soul_set_session(SOUL_IDLE);
-    telemetry_set_voice("idle");
+    end_turn_idle();
 }
 
 static void voice_task(void *arg)
@@ -176,9 +255,12 @@ esp_err_t voice_init(i2c_master_bus_handle_t i2c_bus)
         ESP_LOGE(TAG, "audio init failed: %s", esp_err_to_name(err));
         return err;
     }
+    audio_set_volume(ns_config_get()->audio.volume);
+    audio_boot_chime();   /* confirm the DAC + speaker path on boot (at config volume) */
     s_chunk = heap_caps_malloc(CHUNK_SAMPLES * sizeof(int16_t), MALLOC_CAP_SPIRAM);
     s_utter = heap_caps_malloc(UTTER_MAX_SAMPLES * sizeof(int16_t), MALLOC_CAP_SPIRAM);
-    if (!s_chunk || !s_utter) {
+    s_preroll = heap_caps_malloc(PREROLL_SAMPLES * sizeof(int16_t), MALLOC_CAP_SPIRAM);
+    if (!s_chunk || !s_utter || !s_preroll) {
         return ESP_ERR_NO_MEM;
     }
     s_ready = true;

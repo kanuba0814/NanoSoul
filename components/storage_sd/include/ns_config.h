@@ -24,25 +24,29 @@ typedef struct {
 } ns_wifi_cfg_t;
 
 typedef struct {
-    char provider[12];          /* "anthropic" | "openai" */
+    char provider[12];          /* "anthropic" | "openai" | "volc" */
     char base_url[NS_CFG_STR];
     char api_key[NS_CFG_STR];
-    char model[48];
+    char model[64];             /* room for e.g. doubao-seed-1-6-250615 / ep-... */
     int  max_tokens;
     char system_prompt[NS_CFG_PROMPT];
 } ns_chat_cfg_t;
 
 typedef struct {
+    char provider[12];          /* "openai" | "volc" */
     char base_url[NS_CFG_STR];
-    char api_key[NS_CFG_STR];
-    char model[32];
+    char api_key[NS_CFG_STR];   /* openai bearer / volc 方舟专属 API Key (X-Api-Key) */
+    char model[32];             /* openai model, or volc request model_name */
+    char resource_id[48];       /* volc X-Api-Resource-Id (ASR: volc.seedasr.sauc.duration) */
 } ns_stt_cfg_t;
 
 typedef struct {
+    char provider[12];          /* "openai" | "volc" */
     char base_url[NS_CFG_STR];
-    char api_key[NS_CFG_STR];
+    char api_key[NS_CFG_STR];   /* openai bearer / volc 方舟专属 API Key (X-Api-Key) */
     char model[32];
-    char voice[16];
+    char voice[48];             /* openai voice / volc speaker/voice_type (e.g. *_bigtts) */
+    char resource_id[48];       /* volc X-Api-Resource-Id (TTS: seed-tts-2.0) */
 } ns_tts_cfg_t;
 
 typedef struct {
@@ -110,6 +114,10 @@ typedef struct {
 } ns_companion_cfg_t;
 
 typedef struct {
+    int volume;            /* speaker output volume, 0-100 */
+} ns_audio_cfg_t;
+
+typedef struct {
     bool overlay;          /* draw debug HUD over the face */
     char log_level[8];
 } ns_debug_cfg_t;
@@ -128,6 +136,7 @@ typedef struct {
     ns_move_cfg_t      move;
     ns_motion_cfg_t    motion;
     ns_companion_cfg_t companion;
+    ns_audio_cfg_t     audio;
     ns_debug_cfg_t     debug;
     char               source[8]; /* "default" | "sd" */
 } ns_config_t;
