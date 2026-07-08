@@ -24,6 +24,8 @@
   "_stt_note": "语音识别用 doubao-seed-asr-2.0（单流 WebSocket 直连）。key 用【Agent Plan 专属 key】，与 TTS 同一把。resource_id 默认 volc.seedasr.sauc.duration、base_url 默认 openspeech.bytedance.com，均可省。",
   "stt":    { "provider": "volc", "api_key": "<填 Agent Plan 专属 Key>" },
 
+  "vision": { "rotate": 0 },
+
   "behavior": { "near_lo": 0.04, "near_hi": 0.18, "frontal_thresh": 0.7, "gaze_hold_ms": 1500, "gaze_cooldown_s": 30, "idle_scan": false, "autonomy": true, "autonomy_idle_s": 90 },
   "mood": { "enabled": true, "energy_init": 0.5, "social_init": 0.5, "social_tau_min": 10 },
   "pc": { "stale_s": 15, "respect_dnd": true, "quiet_work": true, "quiet_meeting": true, "invite_idle_s": 300, "invite_cooldown_min": 60 },

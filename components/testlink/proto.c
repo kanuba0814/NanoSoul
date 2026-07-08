@@ -17,6 +17,7 @@
 #include "simsense.h"
 #include "soul.h"
 #include "telemetry.h"
+#include "vision.h"
 #include "voice.h"
 
 /* ---- registered hooks ---- */
@@ -101,6 +102,10 @@ static bool inject_event(const char *name, const cJSON *root)
         telemetry_post(NS_EVT_FACE_PRESENT, NULL, 0);
     } else if (strcmp(name, "face_lost") == 0) {
         telemetry_post(NS_EVT_FACE_LOST, NULL, 0);
+    } else if (strcmp(name, "owner_seen") == 0) {
+        telemetry_post(NS_EVT_OWNER_SEEN, NULL, 0);
+    } else if (strcmp(name, "stranger_seen") == 0) {
+        telemetry_post(NS_EVT_STRANGER_SEEN, NULL, 0);
     } else if (strcmp(name, "gazed") == 0) {
         telemetry_post(NS_EVT_GAZED, NULL, 0);
     } else if (strcmp(name, "stall") == 0 || strcmp(name, "fault") == 0) {
@@ -210,6 +215,27 @@ void ns_proto_handle(const char *json, size_t len, ns_reply_fn reply, void *ctx)
     } else if (strcmp(cmd, "get_snapshot") == 0) {
         bool ok = s_snapshot_hook && s_snapshot_hook(ctx);
         send_ack(reply, ctx, id, ok, ok ? NULL : "ws only");
+    } else if (strcmp(cmd, "face_enroll") == 0) {
+        /* Arm one-shot enrollment: the next frontal close face lands in the DB
+         * (NS_EVT_FACE_ENROLLED reports completion). */
+        esp_err_t err = vision_enroll_arm();
+        send_ack(reply, ctx, id, err == ESP_OK, err == ESP_OK ? NULL : "recognizer off");
+    } else if (strcmp(cmd, "face_db") == 0) {
+        const cJSON *jop = cJSON_GetObjectItemCaseSensitive(root, "op");
+        const char *op = cJSON_IsString(jop) ? jop->valuestring : "count";
+        if (strcmp(op, "clear") == 0 && vision_face_clear() != ESP_OK) {
+            send_ack(reply, ctx, id, false, "clear failed");
+        } else {
+            int n = vision_face_count();
+            cJSON *r = cJSON_CreateObject();
+            cJSON_AddStringToObject(r, "type", "ack");
+            cJSON_AddNumberToObject(r, "id", id);
+            cJSON_AddBoolToObject(r, "ok", n >= 0);
+            cJSON_AddNumberToObject(r, "count", n);
+            char *s = cJSON_PrintUnformatted(r);
+            cJSON_Delete(r);
+            if (s) { reply(ctx, s); free(s); }
+        }
     } else if (strcmp(cmd, "estop") == 0) {
         soul_notify_fault("estop (companion)");
         send_ack(reply, ctx, id, true, NULL);

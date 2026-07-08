@@ -31,6 +31,16 @@ uint32_t  vision_detect_count(void);
 float     vision_fps(void);
 bool      vision_ready(void);
 
+/* --- owner recognition 认主 (HumanFaceRecognizer, feature DB on SD) --- */
+// Arm one-shot enrollment: the next frontal, close-enough face is enrolled and
+// NS_EVT_FACE_ENROLLED fires. INVALID_STATE if the recognizer is unavailable
+// (model file missing on SD).
+esp_err_t vision_enroll_arm(void);
+// Enrolled feature count; -1 = recognizer unavailable.
+int       vision_face_count(void);
+// Wipe the whole feature DB.
+esp_err_t vision_face_clear(void);
+
 #ifdef __cplusplus
 }
 #endif

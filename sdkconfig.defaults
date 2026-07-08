@@ -63,6 +63,12 @@ CONFIG_HUMAN_FACE_DETECT_MODEL_IN_FLASH_PARTITION=y
 CONFIG_FLASH_HUMAN_FACE_DETECT_MSRMNP_S8_V1=y
 CONFIG_HUMAN_FACE_DETECT_MSRMNP_S8_V1=y
 
+# —— 人脸识别特征模型 (认主): MFN s8 v1 1.27MB, app rodata 放不下 (仅剩 ~43KB),
+#    从 SD 卡加载 (/sdcard/model/p4/human_face_feat_mfn_s8_v1.espdl, 手工拷入;
+#    目录名 model (单数) 是现役 SD 卡上的既成事实, 别改回组件默认 models/p4) ——
+CONFIG_HUMAN_FACE_FEAT_MODEL_IN_SDCARD=y
+CONFIG_HUMAN_FACE_FEAT_MODEL_SDCARD_DIR="model/p4"
+
 # —— 云端 LLM TLS: 用内置证书 bundle (OpenAI/Anthropic 兼容端点) ——
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y

@@ -12,6 +12,7 @@
 #include "face.h"
 #include "gfx.h"
 #include "telemetry.h"
+#include "vision.h"
 
 static const char *TAG = "hud";
 
@@ -112,7 +113,10 @@ static void hud_task(void *arg)
         float render_fps = dt > 0 ? (frames - s_last_frames) / dt : 0.0f;
         s_last_frames = frames;
         s_last_us = now;
-        telemetry_set_fps(render_fps, t.fps_detect);
+        /* detect fps straight from vision — t.fps_detect would just read back
+         * whatever we last wrote (stale 0 forever). */
+        telemetry_set_fps(render_fps, vision_fps());
+        telemetry_get(&t);   /* re-read so this refresh shows the fps we just set */
 
         /* Translucent corner panel, grouped as PERCEIVE -> DECIDE(expected) ->
          * ACT(actual) so the expected decision output sits right next to what the
@@ -129,8 +133,14 @@ static void hud_task(void *arg)
         /* --- perceive (actual sensor) --- */
         snprintf(line[2], sizeof(line[2]), "SEE cam p%d x%+.2f y%+.2f",
                  t.face.present, t.face.cx, t.face.cy);
-        snprintf(line[3], sizeof(line[3]), "    dist a%.3f front fr%.2f",
-                 t.face.area_ratio, t.face.frontal_score);
+        char whobuf[20] = "";
+        if (t.face.known == 1) {
+            snprintf(whobuf, sizeof(whobuf), " ID%u s%.2f", t.face.rec_id, t.face.rec_sim);
+        } else if (t.face.known == 0) {
+            snprintf(whobuf, sizeof(whobuf), " who?");
+        }
+        snprintf(line[3], sizeof(line[3]), "    dist a%.3f fr%.2f%s",
+                 t.face.area_ratio, t.face.frontal_score, whobuf);
         /* --- decide (expected / computed output) --- */
         snprintf(line[4], sizeof(line[4]), "WANT v%+.2f %+.2f w%+.2f",
                  t.motion.vx, t.motion.vy, t.motion.wz);

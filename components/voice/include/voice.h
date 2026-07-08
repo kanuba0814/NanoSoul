@@ -31,6 +31,11 @@ bool      voice_ready(void);
 // Force a conversation turn now (companion/manual trigger, bypasses wake).
 esp_err_t voice_trigger(void);
 
+/* Speak a short canned phrase via cloud TTS at the next idle moment (queued,
+ * one at a time; silently dropped offline). For event reactions (认主问候),
+ * not conversation. */
+esp_err_t voice_say(const char *text);
+
 // Most recent mic-chunk RMS (for the mic_record selftest — the voice task owns
 // the codec, so checks read this instead of touching it concurrently).
 float voice_last_rms(void);
