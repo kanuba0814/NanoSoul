@@ -27,7 +27,8 @@ pcb/output/**/fp-info-cache
 *.bak
 *.tmp
 .DS_Store
-.~lock.*#          # LibreOffice 打开文档时的临时锁文件
+# LibreOffice 打开文档时的临时锁文件
+.~lock.*#
 
 # PCB 生成的临时/报告产物
 pcb/output/**/*.rpt
