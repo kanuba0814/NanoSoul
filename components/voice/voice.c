@@ -161,6 +161,36 @@ static void end_turn_idle(void)
     telemetry_set_voice("idle");
 }
 
+/* Wake-word gate. Returns the message to send to chat (text past the last wake
+ * word, leading separators trimmed), or NULL if the utterance isn't addressed
+ * to us. An empty wake word disables the gate. Within follow_window_s of the
+ * last reply the wake word isn't required, so a conversation flows naturally. */
+static int64_t s_follow_deadline;   /* us; 0 = closed */
+
+static const char *wake_gate(const char *text)
+{
+    const ns_audio_cfg_t *a = &ns_config_get()->audio;
+    if (a->wake_word[0] == '\0') {
+        return text;   /* gate disabled */
+    }
+    const char *after = NULL, *p = text;
+    size_t wl = strlen(a->wake_word);
+    while ((p = strstr(p, a->wake_word)) != NULL) {   /* past the LAST occurrence */
+        after = p + wl;
+        p += wl;
+    }
+    if (after) {
+        while (*after == ' ' || *after == ',' || *after == '\t') {
+            after++;   /* trim ASCII separators; Chinese punct is fine for the LLM */
+        }
+        return after;
+    }
+    if (s_follow_deadline && esp_timer_get_time() < s_follow_deadline) {
+        return text;   /* still in the follow-up window */
+    }
+    return NULL;       /* heard speech, but not for us */
+}
+
 static void converse(void)
 {
     ESP_LOGI(TAG, "wake -> listening");
@@ -204,8 +234,26 @@ static void converse(void)
     }
     ESP_LOGI(TAG, "heard: %.60s", text);
 
+    /* Wake-word gate: only respond if addressed (contains 唤醒词, or within the
+     * follow-up window). Not-addressed = silently back to idle, no cue. */
+    const char *msg = wake_gate(text);
+    if (!msg) {
+        ESP_LOGI(TAG, "not addressed (no wake word), ignoring");
+        end_turn_idle();
+        return;
+    }
+    if (msg[0] == '\0') {
+        /* Pure summon ("小王小王" with nothing after) — acknowledge and open the
+         * follow-up window so the user can just ask their question next. */
+        face_set_tip("在呢~");
+        s_follow_deadline = esp_timer_get_time()
+                          + (int64_t)ns_config_get()->audio.follow_window_s * 1000000;
+        end_turn_idle();
+        return;
+    }
+
     char reply[512] = {0};
-    if (llm_chat(text, reply, sizeof(reply)) != ESP_OK) {
+    if (llm_chat(msg, reply, sizeof(reply)) != ESP_OK) {
         soul_notify_fault("chat");
         face_set_tip("(网络不通)");
         audio_fail_tone();
@@ -231,6 +279,10 @@ static void converse(void)
         audio_fail_tone();   /* reply text is already on the tip */
     }
 
+    /* Reply done — keep the follow-up window open so the next turn needn't repeat
+     * the wake word (counts from end of speech). */
+    s_follow_deadline = esp_timer_get_time()
+                      + (int64_t)ns_config_get()->audio.follow_window_s * 1000000;
     end_turn_idle();
 }
 

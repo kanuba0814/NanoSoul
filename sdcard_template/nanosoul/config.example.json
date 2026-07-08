@@ -37,8 +37,8 @@
 
   "companion": { "enabled": true, "token": "自定一个token" },
 
-  "_audio_note": "喇叭输出音量 0-100（省略默认 70）。开机三音 chime 与 TTS 回复都按这个音量。",
-  "audio":  { "volume": 70 },
+  "_audio_note": "volume=喇叭音量 0-100（默认 70）。wake_word=唤醒词，识别文本含它才应答（默认「小王」；留空=听到任何话都答）。follow_window_s=应答后免唤醒词续聊的秒数（默认 8，0=每句都要唤醒词）。",
+  "audio":  { "volume": 70, "wake_word": "小王", "follow_window_s": 8 },
 
   "debug":  { "overlay": true, "log_level": "info" }
 }

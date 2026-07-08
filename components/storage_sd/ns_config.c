@@ -80,6 +80,8 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->companion.enabled = true;
 
     cfg->audio.volume = 70;
+    strcpy(cfg->audio.wake_word, "小王");   /* 唤醒词:识别文本含它才应答 */
+    cfg->audio.follow_window_s = 8;         /* 应答后 8s 内免唤醒词续聊 */
 
     cfg->debug.overlay = true;
     strcpy(cfg->debug.log_level, "info");
@@ -211,6 +213,8 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_int(o, "volume", &cfg->audio.volume);
         if (cfg->audio.volume < 0)   cfg->audio.volume = 0;
         if (cfg->audio.volume > 100) cfg->audio.volume = 100;
+        ov_str(o, "wake_word", cfg->audio.wake_word, sizeof(cfg->audio.wake_word));
+        ov_int(o, "follow_window_s", &cfg->audio.follow_window_s);
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "debug"))) {
         ov_bool(o, "overlay", &cfg->debug.overlay);
