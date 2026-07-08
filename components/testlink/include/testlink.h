@@ -39,10 +39,15 @@ typedef bool (*ns_snapshot_fn)(void *ctx);
 void ns_proto_set_snapshot_hook(ns_snapshot_fn fn);
 
 /* motor_test/motor_stop drive the H-bridges; drv_motor lives in main/, so main
- * registers these hooks. motor_test is gated to test mode (default off). */
+ * registers these hooks. motor_test is gated to test mode (default off).
+ * wheel_sp/pid_set drive the closed wheel-speed loop (docs/14); NULL or a false
+ * return acks "no closed loop". */
 typedef struct {
     bool (*test_run)(int m, int duty, int ms);  /* true=accepted; false=busy */
     void (*stop_all)(void);
+    bool (*wheel_sp)(const float sp_rpm[3], int ms); /* closed-loop step burst */
+    bool (*pid_set)(float kp, float ki, float kd);   /* live PI(D) retune */
+    bool (*odom_reset)(void);                        /* zero the odometry pose */
 } ns_motor_hooks_t;
 void ns_proto_set_motor_hooks(const ns_motor_hooks_t *h);
 void ns_proto_set_test_mode(bool on);

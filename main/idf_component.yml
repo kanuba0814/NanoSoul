@@ -5,3 +5,4 @@ dependencies:
     version: ">=5.5.0"
   espressif/esp_lcd_st7701: "^2.0.0"   # ST7701S MIPI-DSI 面板驱动
   lvgl/lvgl: "9.2.2"                    # 状态文字渲染
+  espressif/pid_ctrl: "^0.2.0"          # 官方 PID 块，轮速闭环用（docs/14）

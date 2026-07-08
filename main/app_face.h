@@ -16,9 +16,15 @@ extern "C" {
 // (never returns); otherwise return, leaving the runtime tasks running.
 void app_face_run(bool run_selftest_loop);
 
-// The motion→TB6612 apply bridge. Exposed so test mode can detach it during a
-// motor_test burst (drive a single wheel) and re-attach it afterward.
+// The motion→TB6612 apply bridge (raw duty, open loop). Exposed so test mode can
+// detach it during a motor_test burst (drive a single wheel) and re-attach it.
 void app_face_motor_apply(const int16_t duty[3]);
+
+// The bridge motion should currently use: wheel_ctrl_apply when the closed loop
+// is up (motion.calib.closed_loop), else the raw-duty bridge above. Test mode
+// re-attaches via this so it never bypasses an active closed loop.
+typedef void (*app_face_apply_fn)(const int16_t duty[3]);
+app_face_apply_fn app_face_motor_bridge(void);
 
 #ifdef __cplusplus
 }

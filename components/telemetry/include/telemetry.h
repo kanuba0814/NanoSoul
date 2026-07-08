@@ -113,6 +113,15 @@ typedef struct {
 } tel_encoder_t;
 
 typedef struct {
+    float sp[3];            /* wheel-speed loop setpoints, motor-axis rpm (0 = open loop) */
+} tel_wheel_t;
+
+typedef struct {
+    float x_mm, y_mm;       /* odom-frame pose integrated from wheel counts (docs/14) */
+    float th_rad;
+} tel_odom_t;
+
+typedef struct {
     char    activity[8];  /* "active"|"idle"|"locked"|"" (empty = never received) */
     int     idle_s;
     char    focus[8];     /* work/meeting/media/browse/comm/other/unknown */
@@ -127,6 +136,8 @@ typedef struct {
     tel_face_t    face;
     tel_motion_t  motion;
     tel_encoder_t enc;
+    tel_wheel_t   wheel;
+    tel_odom_t    odom;
     bool          current_present;
     float         current_a;
     bool          net_up;
@@ -152,6 +163,8 @@ void telemetry_set_emotion(const char *name);
 void telemetry_set_face(const tel_face_t *f);
 void telemetry_set_motion(const tel_motion_t *m);
 void telemetry_set_encoder(const tel_encoder_t *e);
+void telemetry_set_wheel_sp(const float sp[3]);
+void telemetry_set_odom(const tel_odom_t *o);
 void telemetry_set_current(bool present, float amps);
 void telemetry_set_net(bool up, const char *ip, int8_t rssi);
 void telemetry_set_llm(const char *s);

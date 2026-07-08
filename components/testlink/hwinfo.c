@@ -7,6 +7,7 @@
 
 #include "board_i2c0.h"
 #include "board_i2c1.h"
+#include "ns_config.h"
 
 /* Expected I2C1 slaves (no-PCB build). Present is decided by a fresh bus probe,
  * so hwinfo needs no dependency on the driver getters (which live in main/). */
@@ -96,6 +97,12 @@ char *ns_build_hwinfo_json(const char *mode)
     cJSON_AddNumberToObject(rng, "gear", 118);
     cJSON_AddNumberToObject(rng, "duty_max", 1023);
     cJSON_AddNumberToObject(rng, "stall_ma", 400);
+    /* 底盘校准真值（docs/14）：生效中的配置（代码默认或 SD 覆盖后） */
+    const ns_calib_cfg_t *cal = &ns_config_get()->motion.calib;
+    cJSON_AddBoolToObject(rng, "closed_loop", cal->closed_loop);
+    cJSON_AddNumberToObject(rng, "wheel_d_mm", cal->wheel_d_mm);
+    cJSON_AddNumberToObject(rng, "body_r_mm", cal->body_r_mm);
+    cJSON_AddNumberToObject(rng, "rpm_max", cal->rpm_max);
 
     char *s = cJSON_PrintUnformatted(r);
     cJSON_Delete(r);

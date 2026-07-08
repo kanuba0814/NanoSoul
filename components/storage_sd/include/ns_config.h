@@ -110,8 +110,20 @@ typedef struct {
 } ns_move_cfg_t;
 
 typedef struct {
+    bool  closed_loop;      /* PI wheel-speed loop (needs calibrated ks/kv); false = raw duty */
+    float wheel_d_mm;       /* effective omni wheel diameter (rolling-calibrated, docs/14) */
+    float body_r_mm;        /* wheel-center to robot-center radius (spin-calibrated)       */
+    float rpm_max;          /* motor-axis rpm mapped to a full-scale command               */
+    float ks[3];            /* per-wheel static-friction feedforward, duty counts          */
+    float kv[3];            /* per-wheel velocity feedforward, duty per motor-axis rpm     */
+    float pid_kp, pid_ki, pid_kd;  /* PI(D) trim on top of the feedforward                 */
+    float sp_deadband_pct;  /* |setpoint| below this % of rpm_max -> output 0 (anti-hunt)  */
+} ns_calib_cfg_t;
+
+typedef struct {
     bool enabled;          /* actually drive motors?      */
     int  max_duty_pct;     /* clamp on computed duty, 0-100 */
+    ns_calib_cfg_t calib;  /* chassis calibration + wheel-speed loop (docs/14) */
 } ns_motion_cfg_t;
 
 typedef struct {

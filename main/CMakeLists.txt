@@ -5,6 +5,7 @@ idf_component_register(
         "app_face.c"
         "app_testmode.c"
         "app_sense.c"
+        "app_wheelctrl.c"
         "drv_motor.c"
         "drv_encoder.c"
         "drv_ina219.c"

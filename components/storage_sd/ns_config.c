@@ -78,6 +78,20 @@ void ns_config_defaults(ns_config_t *cfg)
 
     cfg->motion.enabled = false;
     cfg->motion.max_duty_pct = 40;
+    /* 底盘校准默认值（docs/14）：闭环默认关，A2/A3 实测后回填并翻开。
+     * kv 初值 = 1023/rpm_max（假设 duty∝rpm 的名义斜率），ks 未标定为 0。 */
+    cfg->motion.calib.closed_loop = false;
+    cfg->motion.calib.wheel_d_mm = 70.0f;    /* Captain 口径轮中心直径，A3 滚动实测修正 */
+    cfg->motion.calib.body_r_mm = 56.0f;     /* 外壳 CAD 占位，A3 自旋实测修正 */
+    cfg->motion.calib.rpm_max = 15000.0f;    /* 电机轴：136rpm(输出轴,空载6V)×118≈16k，留裕量 */
+    for (int i = 0; i < 3; i++) {
+        cfg->motion.calib.ks[i] = 0.0f;
+        cfg->motion.calib.kv[i] = 1023.0f / 15000.0f;
+    }
+    cfg->motion.calib.pid_kp = 0.05f;   /* 一阶模型仿真：稳定~260ms/超调~15%/余差<1% */
+    cfg->motion.calib.pid_ki = 0.02f;
+    cfg->motion.calib.pid_kd = 0.0f;
+    cfg->motion.calib.sp_deadband_pct = 3.0f;
 
     cfg->companion.enabled = true;
 
@@ -122,6 +136,20 @@ static void ov_bool(const cJSON *obj, const char *key, bool *dst)
     const cJSON *it = cJSON_GetObjectItemCaseSensitive(obj, key);
     if (cJSON_IsBool(it)) {
         *dst = cJSON_IsTrue(it);
+    }
+}
+
+/* Overlay a 3-element float array; partial/short arrays leave dst untouched. */
+static void ov_f3(const cJSON *obj, const char *key, float dst[3])
+{
+    const cJSON *it = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsArray(it) && cJSON_GetArraySize(it) == 3) {
+        for (int i = 0; i < 3; i++) {
+            const cJSON *v = cJSON_GetArrayItem(it, i);
+            if (cJSON_IsNumber(v)) {
+                dst[i] = (float)v->valuedouble;
+            }
+        }
     }
 }
 
@@ -209,6 +237,22 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "motion"))) {
         ov_bool(o, "enabled", &cfg->motion.enabled);
         ov_int(o, "max_duty_pct", &cfg->motion.max_duty_pct);
+        const cJSON *c = cJSON_GetObjectItemCaseSensitive(o, "calib");
+        if (c) {
+            ov_bool(c, "closed_loop", &cfg->motion.calib.closed_loop);
+            ov_float(c, "wheel_d_mm", &cfg->motion.calib.wheel_d_mm);
+            ov_float(c, "body_r_mm", &cfg->motion.calib.body_r_mm);
+            ov_float(c, "rpm_max", &cfg->motion.calib.rpm_max);
+            ov_f3(c, "ks", cfg->motion.calib.ks);
+            ov_f3(c, "kv", cfg->motion.calib.kv);
+            ov_float(c, "sp_deadband_pct", &cfg->motion.calib.sp_deadband_pct);
+            const cJSON *p = cJSON_GetObjectItemCaseSensitive(c, "pid");
+            if (p) {
+                ov_float(p, "kp", &cfg->motion.calib.pid_kp);
+                ov_float(p, "ki", &cfg->motion.calib.pid_ki);
+                ov_float(p, "kd", &cfg->motion.calib.pid_kd);
+            }
+        }
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "companion"))) {
         ov_bool(o, "enabled", &cfg->companion.enabled);

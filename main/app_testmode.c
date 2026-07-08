@@ -11,6 +11,7 @@
 #include "freertos/task.h"
 
 #include "app_face.h"
+#include "app_wheelctrl.h"
 #include "drv_encoder.h"
 #include "drv_motor.h"
 #include "hud.h"
@@ -27,7 +28,7 @@ static const char *TAG = "testmode";
  * boot each wheel goes forward then reverse ~500ms at ~45% duty, logging the
  * encoder delta + RPM (direction/step check). Leave 0 for normal operation.
  * ⚠️ LIFT THE ROBOT before enabling — the wheels really turn. */
-#define NS_MOTOR_BRINGUP 0
+#define NS_MOTOR_BRINGUP 1
 
 #if NS_MOTOR_BRINGUP
 #define BRINGUP_DUTY (MOTOR_DUTY_MAX * 45 / 100)
@@ -72,39 +73,87 @@ static void motor_bringup_task(void *arg)
  * re-attached (if motion owns the wheels) when the burst ends. */
 
 static volatile bool s_burst_active;
-static volatile int  s_burst_motor;
+static volatile int  s_burst_motor;   /* <0 = wheel_sp burst (all wheels, closed loop) */
 static esp_timer_handle_t s_burst_timer;
 
 static void burst_end_cb(void *arg)
 {
     (void)arg;
-    motor_set(s_burst_motor, MOTOR_COAST, 0);
+    if (s_burst_motor >= 0) {
+        motor_set(s_burst_motor, MOTOR_COAST, 0);
+    }
+    /* wheel_sp burst: override 已自行到期归零（带斜坡滑停），这里只归还驱动权 */
     if (motion_enabled()) {
-        motion_set_apply(app_face_motor_apply);   /* hand the wheels back to motion */
+        motion_set_apply(app_face_motor_bridge());   /* hand the wheels back to motion */
     }
     s_burst_active = false;
 }
 
-static bool test_motor_run(int m, int duty, int ms)
+static bool burst_begin(int ms)
 {
     if (s_burst_active) {
         return false;   /* one at a time */
     }
     s_burst_active = true;
-    s_burst_motor = m;
     motion_set_apply(NULL);          /* take the wheels away from motion */
-    motors_enable(true);
-    motor_dir_t dir = duty > 0 ? MOTOR_FORWARD : (duty < 0 ? MOTOR_REVERSE : MOTOR_COAST);
-    motor_set(m, dir, abs(duty));
-
     if (!s_burst_timer) {
         esp_timer_create_args_t a = { .callback = burst_end_cb, .name = "motor_burst" };
         if (esp_timer_create(&a, &s_burst_timer) != ESP_OK) {
-            burst_end_cb(NULL);   /* no timer: stop now, treat as a very short pulse */
-            return true;
+            /* 没法限时就不开跑：还权拒绝（比"跑一小段"安全） */
+            if (motion_enabled()) {
+                motion_set_apply(app_face_motor_bridge());
+            }
+            s_burst_active = false;
+            return false;
         }
     }
     esp_timer_start_once(s_burst_timer, (uint64_t)ms * 1000);
+    return true;
+}
+
+static bool test_motor_run(int m, int duty, int ms)
+{
+    if (!burst_begin(ms)) {
+        return false;
+    }
+    s_burst_motor = m;
+    wheel_ctrl_halt();               /* 闭环任务放权，别跟手动脉冲打架 */
+    motors_enable(true);
+    motor_dir_t dir = duty > 0 ? MOTOR_FORWARD : (duty < 0 ? MOTOR_REVERSE : MOTOR_COAST);
+    motor_set(m, dir, abs(duty));
+    return true;
+}
+
+/* Closed-loop step for PID tuning: per-wheel rpm setpoints through wheelctrl. */
+static bool test_wheel_sp(const float sp_rpm[3], int ms)
+{
+    if (!wheel_ctrl_closed_loop()) {
+        return false;   /* closed loop not up (calib.closed_loop off) */
+    }
+    if (!burst_begin(ms)) {
+        return false;
+    }
+    s_burst_motor = -1;
+    motors_enable(true);
+    wheel_ctrl_override_sp(sp_rpm, (uint32_t)ms);
+    return true;
+}
+
+static bool test_pid_set(float kp, float ki, float kd)
+{
+    if (!wheel_ctrl_closed_loop()) {
+        return false;
+    }
+    wheel_ctrl_pid_set(kp, ki, kd);
+    return true;
+}
+
+static bool test_odom_reset(void)
+{
+    if (!wheel_ctrl_running()) {
+        return false;
+    }
+    wheel_ctrl_odom_reset();
     return true;
 }
 
@@ -113,10 +162,11 @@ static void test_motor_stop(void)
     if (s_burst_timer) {
         esp_timer_stop(s_burst_timer);
     }
+    wheel_ctrl_halt();
     motor_stop_all();
     motors_enable(false);            /* STBY low = hard cut */
     if (motion_enabled()) {
-        motion_set_apply(app_face_motor_apply);
+        motion_set_apply(app_face_motor_bridge());
     }
     s_burst_active = false;
 }
@@ -220,7 +270,18 @@ void app_test_run(void)
             ESP_LOGW(TAG, "motors_init failed; motor_test unavailable");
         }
     }
-    ns_motor_hooks_t hooks = { .test_run = test_motor_run, .stop_all = test_motor_stop };
+    /* wheelctrl 不该依赖 motion.enabled：TEST 模式校准要用它的测速/里程计，
+     * closed_loop 开着时 wheel_sp/pid_set 也要它。任务空转无害（无驱动权）。 */
+    if (!wheel_ctrl_running() && wheel_ctrl_start() != ESP_OK) {
+        ESP_LOGW(TAG, "wheel_ctrl start failed; wheel_sp/odom unavailable");
+    }
+    ns_motor_hooks_t hooks = {
+        .test_run = test_motor_run,
+        .stop_all = test_motor_stop,
+        .wheel_sp = test_wheel_sp,
+        .pid_set = test_pid_set,
+        .odom_reset = test_odom_reset,
+    };
     ns_proto_set_motor_hooks(&hooks);
 
     /* Wi-Fi-independent transport. */
