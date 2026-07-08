@@ -52,6 +52,9 @@ assets/emote/
 docs/report/*.docx
 docs/report/*.pdf
 
+# ---- 内部工作方法文档（作战手册/流程风险/外包需求规格）：保留本地、不入公开仓库 ----
+docs/_internal/
+
 # ---- 外壳 CAD：保留 .py/.scad/.md 源，忽略生成的 3D/渲染 ----
 enclosure/*.step
 enclosure/*.stl
