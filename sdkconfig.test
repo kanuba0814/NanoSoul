@@ -1,0 +1,5 @@
+# TEST 模式覆盖层：与 sdkconfig.defaults 叠加使用——
+#   idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.test" build
+# 作用：无 IO48 跳线也强制进 TEST 模式（testlink + motor_test + HUD，docs/13）。
+# 产品/演示构建不要带本文件（默认 FACE）。
+CONFIG_NANOSOUL_MODE_TEST=y
