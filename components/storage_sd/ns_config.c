@@ -28,6 +28,11 @@ void ns_config_defaults(ns_config_t *cfg)
     strcpy(cfg->stt.model, "whisper-1");
     strcpy(cfg->tts.model, "tts-1");
     strcpy(cfg->tts.voice, "alloy");
+    /* volc 方舟 Agent Plan defaults: harmless for openai (only read on
+     * provider="volc"); base_url is defaulted per-provider inside llm.c when
+     * left blank, so a volc user only writes provider + api_key + voice/model. */
+    strcpy(cfg->stt.resource_id, "volc.seedasr.sauc.duration");  /* seed-asr-2.0 (ASR 后补) */
+    strcpy(cfg->tts.resource_id, "seed-tts-2.0");
 
     cfg->behavior.near_lo = 0.04f;
     cfg->behavior.near_hi = 0.18f;
@@ -73,6 +78,8 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->motion.max_duty_pct = 40;
 
     cfg->companion.enabled = true;
+
+    cfg->audio.volume = 70;
 
     cfg->debug.overlay = true;
     strcpy(cfg->debug.log_level, "info");
@@ -131,15 +138,19 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_str(o, "system_prompt", cfg->chat.system_prompt, sizeof(cfg->chat.system_prompt));
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "stt"))) {
+        ov_str(o, "provider", cfg->stt.provider, sizeof(cfg->stt.provider));
         ov_str(o, "base_url", cfg->stt.base_url, sizeof(cfg->stt.base_url));
         ov_str(o, "api_key", cfg->stt.api_key, sizeof(cfg->stt.api_key));
         ov_str(o, "model", cfg->stt.model, sizeof(cfg->stt.model));
+        ov_str(o, "resource_id", cfg->stt.resource_id, sizeof(cfg->stt.resource_id));
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "tts"))) {
+        ov_str(o, "provider", cfg->tts.provider, sizeof(cfg->tts.provider));
         ov_str(o, "base_url", cfg->tts.base_url, sizeof(cfg->tts.base_url));
         ov_str(o, "api_key", cfg->tts.api_key, sizeof(cfg->tts.api_key));
         ov_str(o, "model", cfg->tts.model, sizeof(cfg->tts.model));
         ov_str(o, "voice", cfg->tts.voice, sizeof(cfg->tts.voice));
+        ov_str(o, "resource_id", cfg->tts.resource_id, sizeof(cfg->tts.resource_id));
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "behavior"))) {
         ov_float(o, "near_lo", &cfg->behavior.near_lo);
@@ -195,6 +206,11 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "companion"))) {
         ov_bool(o, "enabled", &cfg->companion.enabled);
         ov_str(o, "token", cfg->companion.token, sizeof(cfg->companion.token));
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "audio"))) {
+        ov_int(o, "volume", &cfg->audio.volume);
+        if (cfg->audio.volume < 0)   cfg->audio.volume = 0;
+        if (cfg->audio.volume > 100) cfg->audio.volume = 100;
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "debug"))) {
         ov_bool(o, "overlay", &cfg->debug.overlay);

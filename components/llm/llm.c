@@ -1,5 +1,6 @@
 #include "llm.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "cJSON.h"
@@ -7,14 +8,21 @@
 #include "esp_heap_caps.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
+#include "mbedtls/base64.h"
 
 #include "ns_config.h"
 #include "telemetry.h"
+#include "volc_asr.h"
 
 static const char *TAG = "llm";
 
 #define LLM_RESP_CAP   8192
 #define LLM_TIMEOUT_MS 20000
+/* volc TTS (方舟 Agent Plan /api/v3/plan/tts/unidirectional) returns the audio as
+ * a run of concatenated JSON objects (no reliable delimiter), each with a base64
+ * PCM chunk; we buffer the whole response then harvest+decode. A bounded (<=512B)
+ * reply is at most a few tens of seconds of 16k PCM -> ~1.7MB base64. Headroom. */
+#define TTS_RESP_CAP   (2 * 1024 * 1024)
 
 typedef struct {
     char *buf;
@@ -110,15 +118,32 @@ esp_err_t llm_chat(const char *user_msg, char *reply, size_t reply_cap)
         return ESP_ERR_INVALID_ARG;
     }
     const ns_chat_cfg_t *c = &ns_config_get()->chat;
-    if (c->api_key[0] == '\0' || c->base_url[0] == '\0') {
+    bool anthropic = (strcmp(c->provider, "anthropic") == 0);
+    bool volc = (strcmp(c->provider, "volc") == 0);
+    /* Ark is OpenAI-compatible: same body/parse as "openai", only the URL path
+     * differs, and base_url may be left blank (defaulted here). */
+    const char *base = c->base_url[0] ? c->base_url
+                                      : (volc ? "https://ark.cn-beijing.volces.com" : "");
+    if (c->api_key[0] == '\0' || base[0] == '\0') {
         strlcpy(reply, "(no cloud key configured)", reply_cap);
         return ESP_ERR_INVALID_STATE;
     }
-    bool anthropic = (strcmp(c->provider, "anthropic") == 0);
 
-    char url[192];
-    snprintf(url, sizeof(url), "%s%s", c->base_url,
-             anthropic ? "/v1/messages" : "/v1/chat/completions");
+    /* Method path per provider. volc base_url may already carry the full API
+     * prefix (Agent Plan chat = ".../api/plan/v3", pay-as-you-go = ".../api/v3")
+     * — then append only the method; a bare host gets the classic /api/v3. */
+    const char *path;
+    if (anthropic) {
+        path = "/v1/messages";
+    } else if (volc && strstr(base, "/api/")) {
+        path = "/chat/completions";
+    } else if (volc) {
+        path = "/api/v3/chat/completions";
+    } else {
+        path = "/v1/chat/completions";
+    }
+    char url[224];
+    snprintf(url, sizeof(url), "%s%s", base, path);
 
     char *body = build_body(c, user_msg, anthropic);
     if (!body) {
@@ -201,6 +226,11 @@ static void wav_header(uint8_t h[44], int rate, uint32_t data_len)
 esp_err_t llm_stt(const int16_t *pcm, size_t samples, int sample_rate, char *text, size_t text_cap)
 {
     const ns_stt_cfg_t *c = &ns_config_get()->stt;
+    if (strcmp(c->provider, "volc") == 0) {
+        /* 方舟 Agent Plan ASR (doubao-seed-asr-2.0): single-stream WebSocket,
+         * binary framed + gzip. text[0] is guaranteed empty on any failure. */
+        return volc_asr_recognize(c, pcm, samples, sample_rate, text, text_cap);
+    }
     if (c->base_url[0] == '\0' || c->api_key[0] == '\0') {
         return ESP_ERR_INVALID_STATE;
     }
@@ -265,9 +295,116 @@ esp_err_t llm_stt(const int16_t *pcm, size_t samples, int sample_rate, char *tex
     return ret;
 }
 
+/* 火山方舟 Agent Plan TTS — doubao-seed-tts-2.0, /api/v3/plan/tts/unidirectional.
+ * One POST; the response is a run of CONCATENATED JSON objects with no reliable
+ * delimiter, each {"code":n,"data":"<base64>",...}: code 0 chunks carry audio,
+ * 20000000 = done. We request format=pcm@rate, so each decoded chunk is raw
+ * s16le-mono PCM at out_rate — concatenate straight into audio_play's format, no
+ * container, no resample. Auth is the 方舟专属 API Key via the X-Api-Key header. */
+static esp_err_t tts_volc(const ns_tts_cfg_t *c, const char *text, int out_rate,
+                          int16_t **pcm_out, size_t *samples_out)
+{
+    if (c->api_key[0] == '\0') {
+        return ESP_ERR_INVALID_STATE;
+    }
+    cJSON *root = cJSON_CreateObject();
+    cJSON *rp = cJSON_AddObjectToObject(root, "req_params");
+    cJSON_AddStringToObject(rp, "text", text);
+    cJSON_AddStringToObject(rp, "speaker", c->voice);
+    cJSON *ap = cJSON_AddObjectToObject(rp, "audio_params");
+    cJSON_AddStringToObject(ap, "format", "pcm");        /* raw s16le mono, directly playable */
+    cJSON_AddNumberToObject(ap, "sample_rate", out_rate); /* 8000/16000/22050/24000/... */
+    char *body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+    if (!body) {
+        return ESP_ERR_NO_MEM;
+    }
+
+    resp_t resp = { .buf = heap_caps_malloc(TTS_RESP_CAP, MALLOC_CAP_SPIRAM),
+                    .len = 0, .cap = TTS_RESP_CAP };
+    if (!resp.buf) {
+        free(body);
+        return ESP_ERR_NO_MEM;
+    }
+    resp.buf[0] = '\0';
+
+    const char *host = c->base_url[0] ? c->base_url : "https://openspeech.bytedance.com";
+    char url[256];
+    /* doc path carries v3; the Agent-Plan route is also served at
+     * /api/plan/tts/unidirectional (no v3) if this ever 404s. */
+    snprintf(url, sizeof(url), "%s/api/v3/plan/tts/unidirectional", host);
+
+    esp_http_client_config_t cfg = {
+        .url = url, .method = HTTP_METHOD_POST, .event_handler = http_evt,
+        .user_data = &resp, .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = LLM_TIMEOUT_MS, .buffer_size = 4096, .buffer_size_tx = 2048,
+    };
+    esp_http_client_handle_t cli = esp_http_client_init(&cfg);
+    esp_http_client_set_header(cli, "Content-Type", "application/json");
+    esp_http_client_set_header(cli, "X-Api-Key", c->api_key);
+    esp_http_client_set_header(cli, "X-Api-Resource-Id",
+                               c->resource_id[0] ? c->resource_id : "seed-tts-2.0");
+    /* If auth ever fails with an opaque error, add the fixed constant
+     * X-Api-App-Key: aGjiRDfUWi (the verified plan endpoint works without it). */
+    esp_http_client_set_post_field(cli, body, strlen(body));
+    esp_err_t err = esp_http_client_perform(cli);
+    int status = esp_http_client_get_status_code(cli);
+    esp_http_client_cleanup(cli);
+    free(body);
+
+    if (err != ESP_OK || status < 200 || status >= 300) {
+        ESP_LOGE(TAG, "tts http err=%s status=%d: %.160s", esp_err_to_name(err), status, resp.buf);
+        free(resp.buf);
+        return ESP_FAIL;
+    }
+
+    /* Harvest every "data":"<base64>" chunk and decode into one PCM buffer. Each
+     * chunk is a complete, padded base64 blob; base64 has no '"', so the next
+     * quote ends it — robust to the missing delimiter between objects. Total
+     * decoded PCM is <= 3/4 of the response, a safe allocation bound. */
+    size_t pcm_cap = (size_t)resp.len * 3 / 4 + 16;
+    int16_t *pcm = heap_caps_malloc(pcm_cap, MALLOC_CAP_SPIRAM);
+    if (!pcm) {
+        free(resp.buf);
+        return ESP_ERR_NO_MEM;
+    }
+    size_t pcm_off = 0;   /* bytes written */
+    for (char *p = strstr(resp.buf, "\"data\":\""); p; p = strstr(p, "\"data\":\"")) {
+        p += 8;
+        char *end = strchr(p, '"');
+        if (!end) {
+            break;
+        }
+        size_t b64n = (size_t)(end - p);
+        if (b64n > 0 && pcm_off < pcm_cap) {
+            size_t olen = 0;
+            if (mbedtls_base64_decode((unsigned char *)pcm + pcm_off, pcm_cap - pcm_off,
+                                      &olen, (const unsigned char *)p, b64n) == 0) {
+                pcm_off += olen;
+            }
+        }
+        p = end + 1;
+    }
+
+    if (pcm_off == 0) {
+        ESP_LOGE(TAG, "tts: no audio chunks: %.200s", resp.buf);
+        free(resp.buf);
+        free(pcm);
+        return ESP_FAIL;
+    }
+    free(resp.buf);
+    *pcm_out = pcm;
+    *samples_out = pcm_off / sizeof(int16_t);
+    ESP_LOGI(TAG, "tts volc %u samples @%dHz", (unsigned)*samples_out, out_rate);
+    return ESP_OK;
+}
+
 esp_err_t llm_tts(const char *text, int out_rate, int16_t **pcm_out, size_t *samples_out)
 {
     const ns_tts_cfg_t *c = &ns_config_get()->tts;
+    if (strcmp(c->provider, "volc") == 0) {
+        return tts_volc(c, text, out_rate, pcm_out, samples_out);
+    }
     if (c->base_url[0] == '\0' || c->api_key[0] == '\0') {
         return ESP_ERR_INVALID_STATE;
     }
