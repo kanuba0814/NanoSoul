@@ -1,5 +1,6 @@
 #include "companion.h"
 
+#include <ctype.h>
 #include <string.h>
 
 #include "esp_http_server.h"
@@ -98,6 +99,26 @@ static bool ws_snapshot(void *ctx)
     return false;
 }
 
+/* In-place percent-decode of a query value (%XX). Query keys/values come back
+ * still URL-encoded, so a token with non-ASCII or reserved chars must be decoded
+ * before comparing (a raw non-ASCII token in the request line is rejected by the
+ * HTTP parser, so clients must percent-encode it). */
+static void url_decode(char *s)
+{
+    char *o = s;
+    for (char *p = s; *p; p++) {
+        if (p[0] == '%' && isxdigit((unsigned char)p[1]) && isxdigit((unsigned char)p[2])) {
+            int hi = p[1] <= '9' ? p[1] - '0' : (tolower((unsigned char)p[1]) - 'a' + 10);
+            int lo = p[2] <= '9' ? p[2] - '0' : (tolower((unsigned char)p[2]) - 'a' + 10);
+            *o++ = (char)((hi << 4) | lo);
+            p += 2;
+        } else {
+            *o++ = *p;
+        }
+    }
+    *o = '\0';
+}
+
 /* -------- WS URI handler -------- */
 static esp_err_t ws_handler(httpd_req_t *req)
 {
@@ -111,6 +132,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
             if (q && httpd_req_get_url_query_str(req, q, qlen) == ESP_OK) {
                 char tok[64] = {0};
                 if (httpd_query_key_value(q, "token", tok, sizeof(tok)) == ESP_OK) {
+                    url_decode(tok);
                     ok = strcmp(tok, s_token) == 0;
                 }
             }

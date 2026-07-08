@@ -17,6 +17,7 @@
 #include "simsense.h"
 #include "soul.h"
 #include "telemetry.h"
+#include "voice.h"
 
 /* ---- registered hooks ---- */
 static ns_snapshot_fn  s_snapshot_hook;
@@ -95,6 +96,7 @@ static bool inject_event(const char *name, const cJSON *root)
         telemetry_post(NS_EVT_WHEEL_MOVED, NULL, 0);
     } else if (strcmp(name, "wake") == 0) {
         telemetry_post(NS_EVT_WAKE, NULL, 0);
+        voice_trigger();   /* drive a real record -> ASR -> chat -> TTS turn (docs/13) */
     } else if (strcmp(name, "face_present") == 0) {
         telemetry_post(NS_EVT_FACE_PRESENT, NULL, 0);
     } else if (strcmp(name, "face_lost") == 0) {

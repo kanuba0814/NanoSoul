@@ -18,6 +18,7 @@ idf_component_register(
         selftest
         imu
         light
+        voice
         board_i2c0
         board_i2c1
         json
