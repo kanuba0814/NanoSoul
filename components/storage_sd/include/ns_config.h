@@ -114,7 +114,11 @@ typedef struct {
 } ns_companion_cfg_t;
 
 typedef struct {
-    int volume;            /* speaker output volume, 0-100 */
+    int  volume;              /* speaker output volume, 0-100 */
+    char wake_word[24];       /* respond only to utterances containing this
+                                 (UTF-8, e.g. "小王"); empty = respond to any speech */
+    int  follow_window_s;     /* after a reply, keep answering without the wake
+                                 word for this long (0 = always require it) */
 } ns_audio_cfg_t;
 
 typedef struct {
