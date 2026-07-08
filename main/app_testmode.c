@@ -11,6 +11,7 @@
 #include "freertos/task.h"
 
 #include "app_face.h"
+#include "drv_encoder.h"
 #include "drv_motor.h"
 #include "hud.h"
 #include "motion.h"
@@ -21,6 +22,49 @@
 #include "testlink.h"
 
 static const char *TAG = "testmode";
+
+/* Set to 1 to run a one-shot motor bring-up sweep on TEST-mode boot: 4s after
+ * boot each wheel goes forward then reverse ~500ms at ~45% duty, logging the
+ * encoder delta + RPM (direction/step check). Leave 0 for normal operation.
+ * ⚠️ LIFT THE ROBOT before enabling — the wheels really turn. */
+#define NS_MOTOR_BRINGUP 0
+
+#if NS_MOTOR_BRINGUP
+#define BRINGUP_DUTY (MOTOR_DUTY_MAX * 45 / 100)
+/* Self-contained: does its own motor+encoder init so the sweep runs even if the
+ * display-dependent boot tail (debugui) hangs on a flaky LCD/touch ribbon. */
+static void motor_bringup_task(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(6000));   /* let boot settle + give time to lift the robot */
+    ESP_LOGW(TAG, "==== MOTOR BRINGUP: 抬起机器人! 每轮 fwd/rev 各 500ms @45%% ====");
+    encoders_init();                   /* idempotent-safe; ok if already up */
+    if (motors_init() != ESP_OK) {
+        ESP_LOGE(TAG, "motor bringup: motors_init failed");
+        vTaskDelete(NULL);
+        return;
+    }
+    motors_enable(true);
+    for (int m = 0; m < MOTOR_COUNT; m++) {
+        for (int rev = 0; rev < 2; rev++) {
+            motor_dir_t dir = rev ? MOTOR_REVERSE : MOTOR_FORWARD;
+            int c0 = encoder_count(m);
+            motor_set(m, dir, BRINGUP_DUTY);
+            vTaskDelay(pdMS_TO_TICKS(500));
+            float rpm = encoder_rpm(m);
+            motor_set(m, MOTOR_COAST, 0);
+            int dc = encoder_count(m) - c0;
+            ESP_LOGW(TAG, "  M%d %-3s: Δenc=%+d  rpm=%+.0f  %s", m, rev ? "REV" : "FWD",
+                     dc, rpm, dc == 0 ? "!! 不动(线/桥/STBY?)" : "ok");
+            vTaskDelay(pdMS_TO_TICKS(400));
+        }
+    }
+    motor_stop_all();
+    motors_enable(false);
+    ESP_LOGW(TAG, "==== MOTOR BRINGUP done, motors disabled ====");
+    vTaskDelete(NULL);
+}
+#endif
 
 /* ---------------- motor_test one-shot burst ---------------- */
 /* Drives a single wheel open-loop for a bounded time. The motion apply bridge is
@@ -155,6 +199,12 @@ void app_test_run(void)
     ESP_LOGW(TAG, "entering TEST mode (docs/13)");
     dump_sdcard();
     ns_proto_set_test_mode(true);
+
+#if NS_MOTOR_BRINGUP
+    /* Start BEFORE app_face_run so the wheel sweep runs independent of the
+     * display-dependent boot tail (survives a flaky LCD/touch ribbon). */
+    xTaskCreatePinnedToCore(motor_bringup_task, "mbringup", 3072, NULL, 4, NULL, 0);
+#endif
 
     /* Full FACE runtime: soul runs, companion WS up, all sensors live. Injected
      * overrides therefore drive the real decision path. */
