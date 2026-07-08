@@ -49,6 +49,13 @@ esp_err_t touch_init(i2c_master_bus_handle_t bus)
     uint8_t chip = 0, vend = 0;
     ft_read(FT_REG_CHIPID, &chip, 1);
     ft_read(FT_REG_VENDID, &vend, 1);
+    if (chip == 0x00 && vend == 0x00) {
+        /* 排线不稳时控制器 ACK 但寄存器读全 0，TD_STATUS 会持续吐垃圾触点 →
+         * 幻影长按 → 误触发屏幕急停(FAULT)。真 FT6x36 签名恒非零；全 0 按
+         * 不可靠处理，宁可无触摸（急停仍有 motor_stop 命令与电池开关兜底）。 */
+        ESP_LOGW(TAG, "FT6x36 signature all-zero (flaky ribbon?) — touch disabled");
+        return ESP_ERR_INVALID_RESPONSE;
+    }
     s_ready = true;
     ESP_LOGI(TAG, "FT6x36 up: chip_id=0x%02x vend_id=0x%02x", chip, vend);
     return ESP_OK;
