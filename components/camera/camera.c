@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "driver/i2c_master.h"
 #include "driver/jpeg_encode.h"
 #include "driver/ppa.h"
 #include "esp_check.h"
@@ -199,6 +200,17 @@ esp_err_t camera_init(i2c_master_bus_handle_t i2c_bus)
         return ESP_OK;
     }
     ESP_RETURN_ON_FALSE(i2c_bus, ESP_ERR_INVALID_ARG, TAG, "no i2c bus");
+
+    /* Probe the OV5647 (SCCB @0x36) before ANY camera bring-up. If it's absent,
+     * skip the CSI/ISP init entirely: bringing up the MIPI-CSI clocks draws a
+     * large current spike that can brown out a marginal USB supply (screen-on ->
+     * reset loop), and there's no sensor to capture from anyway. The caller gates
+     * camera_start()/vision on this return, so the board boots on cleanly. */
+    if (i2c_master_probe(i2c_bus, 0x36, 50) != ESP_OK) {
+        ESP_LOGW(TAG, "OV5647 not detected @0x36 — camera disabled (skip CSI init)");
+        return ESP_ERR_NOT_FOUND;
+    }
+
     ESP_RETURN_ON_ERROR(init_ppa(), TAG, "ppa");
 
     if (!s_video_ready) {

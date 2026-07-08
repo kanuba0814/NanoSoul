@@ -1,5 +1,7 @@
 #include "app_testmode.h"
 
+#include <dirent.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "esp_event.h"
@@ -117,9 +119,41 @@ static void banner_task(void *arg)
 }
 
 /* ---------------- entry ---------------- */
+/* One-shot boot diagnostic: list /sdcard (two levels) so config-path mistakes
+ * are visible on the console when the SD is inside the board. */
+static void dump_sdcard(void)
+{
+    ESP_LOGW(TAG, "==== SD /sdcard listing ====");
+    DIR *d = opendir("/sdcard");
+    if (!d) {
+        ESP_LOGW(TAG, "  opendir(/sdcard) failed — card not mounted");
+        return;
+    }
+    struct dirent *e;
+    while ((e = readdir(d)) != NULL) {
+        bool dir = (e->d_type == DT_DIR);
+        ESP_LOGW(TAG, "  /sdcard/%s%s", e->d_name, dir ? "/" : "");
+        if (dir) {
+            char sub[300];   /* "/sdcard/" + up to 255-byte name + NUL */
+            snprintf(sub, sizeof(sub), "/sdcard/%s", e->d_name);
+            DIR *d2 = opendir(sub);
+            if (d2) {
+                struct dirent *e2;
+                while ((e2 = readdir(d2)) != NULL) {
+                    ESP_LOGW(TAG, "      %s/%s", sub, e2->d_name);
+                }
+                closedir(d2);
+            }
+        }
+    }
+    closedir(d);
+    ESP_LOGW(TAG, "==== end SD listing ====");
+}
+
 void app_test_run(void)
 {
     ESP_LOGW(TAG, "entering TEST mode (docs/13)");
+    dump_sdcard();
     ns_proto_set_test_mode(true);
 
     /* Full FACE runtime: soul runs, companion WS up, all sensors live. Injected
