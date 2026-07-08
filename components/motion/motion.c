@@ -12,8 +12,10 @@
 static const char *TAG = "motion";
 
 /* Wheel mounting angles around the body (deg), CCW from +x (forward).
- * 120° apart. Confirm the M0/M1/M2 -> angle assignment against the chassis. */
-static const float WHEEL_ANGLE_DEG[3] = { 0.0f, 120.0f, 240.0f };
+ * 120° apart. Confirm the M0/M1/M2 -> angle assignment against the chassis.
+ * Shared with odom.c (FK must stay the exact inverse of this IK). */
+const float MOTION_WHEEL_ANGLE_DEG[3] = { 0.0f, 120.0f, 240.0f };
+#define WHEEL_ANGLE_DEG MOTION_WHEEL_ANGLE_DEG
 
 static int              s_max_duty_pct = 40;
 static volatile bool    s_enabled;

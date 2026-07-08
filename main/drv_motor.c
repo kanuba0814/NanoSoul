@@ -72,12 +72,20 @@ esp_err_t motors_init(void)
     return ESP_OK;
 }
 
+static volatile bool s_enabled;
+
 void motors_enable(bool en)
 {
     // 两片 STBY 都拉（IO51 会被写两次，无害）
     for (int i = 0; i < MOTOR_COUNT; i++) {
         gpio_set_level(s_motors[i].stby, en ? 1 : 0);
     }
+    s_enabled = en;
+}
+
+bool motors_enabled(void)
+{
+    return s_enabled;
 }
 
 void motor_set(int idx, motor_dir_t dir, int duty)

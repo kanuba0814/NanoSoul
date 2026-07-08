@@ -11,6 +11,8 @@
 // 故 encoder_rpm() 是【电机轴 RPM】；输出轴 RPM = 电机轴RPM ÷ 减速比。
 // 要输出轴每圈计数：手转输出轴整一圈读 ΔENC 反校准。
 #define ENC_COUNTS_PER_REV 28
+// GA12-N20 减速比（BOM 实物）。输出轴一圈 = 28×118 = 3304 计数（里程换算用）。
+#define ENC_GEAR_RATIO 118
 
 esp_err_t encoders_init(void);
 

@@ -26,10 +26,13 @@ static int build_sense(char *buf, size_t cap, uint32_t seq)
     telemetry_get(&t);
     int cur_ma = t.current_present ? (int)(t.current_a * 1000.0f) : 0;
 
+    /* sp = 轮速环设定值(电机轴rpm，开环全0)；odom = 里程计位姿。docs/14 增量字段，
+     * 旧上位机按前向兼容铁律忽略。 */
     return snprintf(buf, cap,
         "{\"v\":1,\"type\":\"sense\",\"ts\":%lld,\"seq\":%lu,"
         "\"accel\":[%.3f,%.3f,%.3f],\"gyro\":null,\"lux\":%.1f,\"cur_ma\":%d,"
         "\"enc\":[[%ld,%.1f],[%ld,%.1f],[%ld,%.1f]],\"duty\":[%d,%d,%d],"
+        "\"sp\":[%.0f,%.0f,%.0f],\"odom\":[%.1f,%.1f,%.4f],"
         "\"lifted\":%s,\"tilted\":%s,\"ovr\":%lu}",
         (long long)(esp_timer_get_time() / 1000), (unsigned long)seq,
         a[0], a[1], a[2], light_lux(), cur_ma,
@@ -37,6 +40,8 @@ static int build_sense(char *buf, size_t cap, uint32_t seq)
         (long)t.enc.count[1], t.enc.rpm[1],
         (long)t.enc.count[2], t.enc.rpm[2],
         t.motion.duty[0], t.motion.duty[1], t.motion.duty[2],
+        t.wheel.sp[0], t.wheel.sp[1], t.wheel.sp[2],
+        t.odom.x_mm, t.odom.y_mm, t.odom.th_rad,
         imu_lifted() ? "true" : "false",
         imu_tilted() ? "true" : "false",
         (unsigned long)override_mask());

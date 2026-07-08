@@ -13,6 +13,7 @@
 #include <time.h>
 
 #include "app_sense.h"
+#include "app_wheelctrl.h"
 #include "board_i2c0.h"
 #include "board_i2c1.h"
 #include "bsp_pins.h"
@@ -30,6 +31,7 @@
 #include "motion.h"
 #include "netlink.h"
 #include "ns_config.h"
+#include "odom.h"
 #include "sd_storage.h"
 #include "selftest.h"
 #include "simsense.h"
@@ -264,6 +266,157 @@ static st_report_t check_motion_ik(void)
         return st_fail("rot[%d,%d,%d]", rot[0], rot[1], rot[2]);
     }
     return st_pass("fwd[%d,%d,%d] rot[%d]", fwd[0], fwd[1], fwd[2], rot[0]);
+}
+
+/* IK→FK 互逆（docs/14）：不饱和的意图经 motion_ik 再 motion_fk 应还原。
+ * FK 以 body_r=1 调用时 wz 口径与 IK 的无量纲约定一致。 */
+static st_report_t check_fk_roundtrip(void)
+{
+    const float cases[][3] = {
+        { 0.3f, 0.0f, 0.0f }, { 0.0f, 0.3f, 0.0f }, { 0.0f, 0.0f, 0.4f },
+        { 0.2f, -0.15f, 0.1f }, { -0.25f, 0.1f, -0.2f },
+    };
+    for (size_t k = 0; k < sizeof(cases) / sizeof(cases[0]); k++) {
+        int16_t duty[3];
+        motion_ik(cases[k][0], cases[k][1], cases[k][2], 100, duty);
+        float w[3] = { duty[0] / 1023.0f, duty[1] / 1023.0f, duty[2] / 1023.0f };
+        float out[3];
+        motion_fk(w, 1.0f, out);
+        for (int i = 0; i < 3; i++) {
+            if (fabsf(out[i] - cases[k][i]) > 0.01f) {
+                return st_fail("case%u ax%d: %.3f != %.3f", (unsigned)k, i,
+                               out[i], cases[k][i]);
+            }
+        }
+    }
+    return st_pass("%u intents ik->fk ok", (unsigned)(sizeof(cases) / sizeof(cases[0])));
+}
+
+/* 合成计数走正方形回原点 + 原地整圈 θ=2π。计数用浮点累计、整数增量下发
+ * （消除逐步取整漂移，只留 ≤1 计数的端点误差）。 */
+static st_report_t check_odom_sim(void)
+{
+    const odom_geom_t g = { .wheel_r_mm = 35.0f, .body_r_mm = 56.0f,
+                            .counts_per_rev = 3304.0f };
+    const float mm_per_count = 2.0f * (float)M_PI * g.wheel_r_mm / g.counts_per_rev;
+
+    odom_pose_t p;
+    odom_reset(&p);
+    float acc[3] = { 0 };       /* 每轮浮点计数累计 */
+    int   emitted[3] = { 0 };
+
+    /* 正方形：前 200mm → 左 200mm → 后 200mm → 右 200mm，每边 100 步 */
+    const float legs[][2] = { { 200, 0 }, { 0, 200 }, { -200, 0 }, { 0, -200 } };
+    for (int l = 0; l < 4; l++) {
+        for (int s = 0; s < 100; s++) {
+            int32_t dc[3];
+            for (int i = 0; i < 3; i++) {
+                float a = MOTION_WHEEL_ANGLE_DEG[i] * (float)M_PI / 180.0f;
+                float v_mm = (-sinf(a) * legs[l][0] + cosf(a) * legs[l][1]) / 100.0f;
+                acc[i] += v_mm / mm_per_count;
+                int tot = (int)lroundf(acc[i]);
+                dc[i] = tot - emitted[i];
+                emitted[i] = tot;
+            }
+            odom_step(&p, dc, &g);
+        }
+    }
+    if (fabsf(p.x_mm) > 5.0f || fabsf(p.y_mm) > 5.0f || fabsf(p.th_rad) > 0.01f) {
+        return st_fail("square end (%.1f,%.1f,%.3f)", p.x_mm, p.y_mm, p.th_rad);
+    }
+
+    /* 原地一整圈：每轮弧长 = 2πR，均分 100 步 */
+    odom_reset(&p);
+    float turn_counts = 2.0f * (float)M_PI * g.body_r_mm / mm_per_count;
+    for (int s = 0; s < 100; s++) {
+        int32_t dc[3];
+        for (int i = 0; i < 3; i++) {
+            dc[i] = (int32_t)lroundf(turn_counts * (s + 1) / 100.0f)
+                    - (int32_t)lroundf(turn_counts * s / 100.0f);
+        }
+        odom_step(&p, dc, &g);
+    }
+    if (fabsf(p.th_rad - 2.0f * (float)M_PI) > 0.05f ||
+        fabsf(p.x_mm) > 5.0f || fabsf(p.y_mm) > 5.0f) {
+        return st_fail("spin end (%.1f,%.1f,%.3f)", p.x_mm, p.y_mm, p.th_rad);
+    }
+    return st_pass("square+spin closure ok (%.2fmm, %.4frad)", p.x_mm,
+                   p.th_rad - 2.0f * (float)M_PI);
+}
+
+/* 闭环单轮 sim：一阶电机模型（τ=100ms），前馈故意欠 10% 让 PI 补；
+ * 验证收敛、超调、堵转→复位后积分不残留。 */
+static st_report_t check_wheelctrl_sim(void)
+{
+    const float RPM_FS = 16000.0f;               /* 模型：满 duty 稳态转速 */
+    const float K_MODEL = RPM_FS / 1023.0f;
+    const float TAU = 0.1f, DT = 0.02f;
+
+    wc_gains_t g = {
+        .ks = 0.0f,
+        .kv = 1023.0f / RPM_FS * 0.9f,           /* 欠 10%：稳态余差交给积分 */
+        .deadband_rpm = 450.0f,
+        .meas_alpha = 0.4f,
+        .ramp_rpm_per_s = 150000.0f,             /* 满量程 ~100ms */
+    };
+    wc_state_t st;
+    if (wc_state_init(&st, &g, 0.05f, 0.02f, 0.0f) != ESP_OK) {
+        return st_fail("pid block alloc");
+    }
+
+    float rpm = 0.0f, duty = 0.0f, peak = 0.0f;
+    const float SP = 6000.0f;
+    for (int t = 0; t < 50; t++) {               /* 1s @50Hz */
+        duty = wc_step(&st, &g, SP, rpm, DT);
+        rpm += (duty * K_MODEL - rpm) * (DT / TAU);
+        if (rpm > peak) peak = rpm;
+    }
+    float err_pct = fabsf(rpm - SP) / SP * 100.0f;
+    if (err_pct > 5.0f) {
+        wc_state_deinit(&st);
+        return st_fail("converge %.0frpm (%.1f%% off)", rpm, err_pct);
+    }
+    if (peak > SP * 1.2f) {
+        wc_state_deinit(&st);
+        return st_fail("overshoot %.0frpm", peak);
+    }
+
+    /* 堵转 0.5s：轮不动，积分顶上去 */
+    for (int t = 0; t < 25; t++) {
+        duty = wc_step(&st, &g, SP, 0.0f, DT);
+    }
+    if (duty < 500.0f) {
+        wc_state_deinit(&st);
+        return st_fail("stall push %.0f", duty);
+    }
+    /* STBY 拉低（急停）→ wc_reset；恢复后干净起步，无积分残留冲击 */
+    wc_reset(&st);
+    float first = wc_step(&st, &g, SP, 0.0f, DT);
+    if (fabsf(first) > 600.0f) {                 /* 斜坡+比例的合理首拍，不该带满积分 */
+        wc_state_deinit(&st);
+        return st_fail("dirty restart %.0f", first);
+    }
+    rpm = 0.0f;
+    peak = 0.0f;
+    for (int t = 0; t < 50; t++) {
+        duty = wc_step(&st, &g, SP, rpm, DT);
+        rpm += (duty * K_MODEL - rpm) * (DT / TAU);
+        if (rpm > peak) peak = rpm;
+    }
+    bool reconverged = fabsf(rpm - SP) / SP < 0.05f && peak < SP * 1.2f;
+
+    /* 死区：目标低于阈值 → 输出恒 0 */
+    wc_reset(&st);
+    bool db_ok = true;
+    for (int t = 0; t < 10; t++) {
+        if (wc_step(&st, &g, 200.0f, 0.0f, DT) != 0.0f) {
+            db_ok = false;
+        }
+    }
+    wc_state_deinit(&st);
+    if (!reconverged) return st_fail("post-stall reconverge");
+    if (!db_ok)       return st_fail("deadband leak");
+    return st_pass("converge/stall/restart/deadband ok (%.1f%%)", err_pct);
 }
 
 static st_report_t check_arbiter_sim(void)
@@ -729,6 +882,9 @@ void app_selftests_register(void)
     selftest_register("encoder_pulse", check_encoder_pulse, SELFTEST_FLAG_MANUAL);
     /* Phase C (pure logic — always run) */
     selftest_register("motion_ik", check_motion_ik, 0);
+    selftest_register("fk_roundtrip", check_fk_roundtrip, 0);
+    selftest_register("odom_sim", check_odom_sim, 0);
+    selftest_register("wheelctrl_sim", check_wheelctrl_sim, 0);
     selftest_register("arbiter_sim", check_arbiter_sim, 0);
     selftest_register("soul_sim", check_soul_sim, 0);
     selftest_register("expr_sim", check_expr_sim, 0);

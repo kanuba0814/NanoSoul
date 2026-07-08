@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "app_sense.h"
+#include "app_wheelctrl.h"
 
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -68,6 +69,11 @@ void app_face_motor_apply(const int16_t duty[3])
     }
 }
 
+app_face_apply_fn app_face_motor_bridge(void)
+{
+    return wheel_ctrl_closed_loop() ? wheel_ctrl_apply : app_face_motor_apply;
+}
+
 void app_face_run(bool run_selftest_loop)
 {
     const ns_config_t *cfg = ns_config_get();
@@ -122,7 +128,11 @@ void app_face_run(bool run_selftest_loop)
     if (cfg->motion.enabled) {
         if (motors_init() == ESP_OK) {
             motors_enable(true);
-            motion_set_apply(app_face_motor_apply);
+            /* 开环配置下 wheelctrl 也启动：只做测速+里程计，不碰电机 */
+            if (wheel_ctrl_start() != ESP_OK) {
+                ESP_LOGW(TAG, "wheel_ctrl start failed; raw duty, no odom");
+            }
+            motion_set_apply(app_face_motor_bridge());
         } else {
             ESP_LOGW(TAG, "motors_init failed; staying compute-only");
         }

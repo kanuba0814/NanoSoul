@@ -22,6 +22,9 @@ esp_err_t motors_init(void);
 // 共用 STBY：true=使能，false=急停（拉低，三路输出全关）。
 void motors_enable(bool en);
 
+// 最近一次 motors_enable 的电平（闭环用：STBY 低时冻结积分器）。
+bool motors_enabled(void);
+
 // 设第 idx(0..2) 路方向 + 占空（0..MOTOR_DUTY_MAX，越界自动夹）。
 void motor_set(int idx, motor_dir_t dir, int duty);
 

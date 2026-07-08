@@ -22,6 +22,9 @@ extern "C" {
 /* Must match drv_motor.h MOTOR_DUTY_MAX (LEDC 10-bit). */
 #define MOTION_DUTY_MAX 1023
 
+/* Wheel mounting angles (deg, CCW from +x forward), shared by IK and odom FK. */
+extern const float MOTION_WHEEL_ANGLE_DEG[3];
+
 typedef void (*motion_apply_fn)(const int16_t duty[3]);
 
 /* Intent sources, highest priority first. The lowest-numbered source with an

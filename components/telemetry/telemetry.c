@@ -113,6 +113,26 @@ void telemetry_set_encoder(const tel_encoder_t *e)
     unlock();
 }
 
+void telemetry_set_wheel_sp(const float sp[3])
+{
+    if (!sp) {
+        return;
+    }
+    lock();
+    memcpy(s_snap.wheel.sp, sp, sizeof(s_snap.wheel.sp));
+    unlock();
+}
+
+void telemetry_set_odom(const tel_odom_t *o)
+{
+    if (!o) {
+        return;
+    }
+    lock();
+    s_snap.odom = *o;
+    unlock();
+}
+
 void telemetry_set_current(bool present, float amps)
 {
     lock();

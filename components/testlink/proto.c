@@ -329,6 +329,65 @@ void ns_proto_handle(const char *json, size_t len, ns_reply_fn reply, void *ctx)
             s_motor.stop_all();
         }
         send_ack(reply, ctx, id, true, NULL);
+    } else if (strcmp(cmd, "wheel_sp") == 0) {
+        /* 闭环阶跃（docs/14 PID 整定）：{"type":"wheel_sp","sp":[rpm×3],"ms":100..5000} */
+        if (!s_test_mode) {
+            send_ack(reply, ctx, id, false, "test mode only");
+        } else if (!s_motor.wheel_sp) {
+            send_ack(reply, ctx, id, false, "no motors");
+        } else {
+            tel_snapshot_t t;
+            telemetry_get(&t);
+            if (t.soul == SOUL_FAULT) {
+                send_ack(reply, ctx, id, false, "fault");
+            } else {
+                const cJSON *jsp = cJSON_GetObjectItemCaseSensitive(root, "sp");
+                const cJSON *jms = cJSON_GetObjectItemCaseSensitive(root, "ms");
+                float sp[3] = { 0 };
+                bool good = cJSON_IsArray(jsp) && cJSON_GetArraySize(jsp) == 3;
+                for (int i = 0; good && i < 3; i++) {
+                    const cJSON *v = cJSON_GetArrayItem(jsp, i);
+                    if (cJSON_IsNumber(v)) {
+                        sp[i] = (float)v->valuedouble;
+                    } else {
+                        good = false;
+                    }
+                }
+                int ms = cJSON_IsNumber(jms) ? clampi(jms->valueint, 100, 5000) : 500;
+                if (!good) {
+                    send_ack(reply, ctx, id, false, "bad sp");
+                } else {
+                    bool ok = s_motor.wheel_sp(sp, ms);
+                    send_ack(reply, ctx, id, ok, ok ? NULL : "busy or open-loop");
+                }
+            }
+        }
+    } else if (strcmp(cmd, "pid_set") == 0) {
+        /* 在线改 PI 增益：{"type":"pid_set","kp":..,"ki":..,"kd":..}（不落盘，重启回配置值） */
+        if (!s_test_mode) {
+            send_ack(reply, ctx, id, false, "test mode only");
+        } else if (!s_motor.pid_set) {
+            send_ack(reply, ctx, id, false, "no motors");
+        } else {
+            const cJSON *jp = cJSON_GetObjectItemCaseSensitive(root, "kp");
+            const cJSON *ji = cJSON_GetObjectItemCaseSensitive(root, "ki");
+            const cJSON *jd = cJSON_GetObjectItemCaseSensitive(root, "kd");
+            if (!cJSON_IsNumber(jp) || !cJSON_IsNumber(ji) || !cJSON_IsNumber(jd)) {
+                send_ack(reply, ctx, id, false, "bad gains");
+            } else {
+                bool ok = s_motor.pid_set((float)jp->valuedouble, (float)ji->valuedouble,
+                                          (float)jd->valuedouble);
+                send_ack(reply, ctx, id, ok, ok ? NULL : "open-loop");
+            }
+        }
+    } else if (strcmp(cmd, "odom_reset") == 0) {
+        /* 里程计清零（docs/14 校准 A3 / 位移预算结算起点）：{"type":"odom_reset"} */
+        if (!s_test_mode) {
+            send_ack(reply, ctx, id, false, "test mode only");
+        } else {
+            bool ok = s_motor.odom_reset && s_motor.odom_reset();
+            send_ack(reply, ctx, id, ok, ok ? NULL : "no odom");
+        }
     } else if (strcmp(cmd, "sense_rate") == 0) {
         const cJSON *jhz = cJSON_GetObjectItemCaseSensitive(root, "hz");
         int hz = cJSON_IsNumber(jhz) ? clampi(jhz->valueint, 0, 50) : 0;
