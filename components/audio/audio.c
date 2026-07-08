@@ -1,12 +1,18 @@
 #include "audio.h"
 #include "bsp_pins.h"
 
+#include <math.h>
+#include <stdlib.h>
+
 #include "driver/gpio.h"
 #include "driver/i2s_std.h"
 #include "esp_check.h"
 #include "esp_codec_dev.h"
 #include "esp_codec_dev_defaults.h"
 #include "esp_log.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char *TAG = "audio";
 
@@ -17,6 +23,9 @@ static esp_codec_dev_handle_t s_codec;
 static bool                   s_ready;
 static int                    s_vol = 70;
 
+/* Full-duplex I2S (record + play) on one port, per the esp-bsp
+ * esp32_p4_function_ev_board audio init: tx+rx from one i2s_new_channel call,
+ * same std config on both, enable both. MONO 16-bit Philips @16 kHz. */
 static esp_err_t i2s_init(void)
 {
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(BSP_I2S_PORT, I2S_ROLE_MASTER);
@@ -56,7 +65,15 @@ esp_err_t audio_init(i2c_master_bus_handle_t i2c_bus)
 
     ESP_RETURN_ON_ERROR(i2s_init(), TAG, "i2s");
 
-    audio_codec_i2c_cfg_t i2c_cfg = { .port = BSP_I2C0_PORT, .addr = BSP_ES8311_ADDR, .bus_handle = i2c_bus };
+    /* esp_codec_dev's I2C ctrl wants the 8-bit (shifted) address and does
+     * addr>>1 on the wire. Pass ES8311_CODEC_DEFAULT_ADDR (0x30 = 0x18<<1), NOT
+     * the 7-bit 0x18 — passing 0x18 makes it talk to 0x0C -> NAK -> the
+     * "I2C_If: Fail to write to dev 18" flood. (Verified against esp-bsp.) */
+    audio_codec_i2c_cfg_t i2c_cfg = {
+        .port = BSP_I2C0_PORT,
+        .addr = ES8311_CODEC_DEFAULT_ADDR,
+        .bus_handle = i2c_bus,
+    };
     const audio_codec_ctrl_if_t *ctrl_if = audio_codec_new_i2c_ctrl(&i2c_cfg);
     ESP_RETURN_ON_FALSE(ctrl_if, ESP_FAIL, TAG, "i2c ctrl");
 
@@ -71,7 +88,11 @@ esp_err_t audio_init(i2c_master_bus_handle_t i2c_bus)
         .gpio_if = gpio_if,
         .codec_mode = ESP_CODEC_DEV_WORK_MODE_BOTH,   /* record + play */
         .pa_pin = GPIO_NUM_NC,                        /* PA driven manually around play */
+        .pa_reverted = false,
+        .master_mode = false,
         .use_mclk = true,
+        .invert_mclk = false,
+        .invert_sclk = false,
         .hw_gain = { .pa_voltage = 5.0, .codec_dac_voltage = 3.3 },
         .mclk_div = 256,
     };
@@ -104,13 +125,68 @@ esp_err_t audio_init(i2c_master_bus_handle_t i2c_bus)
 
 bool audio_ready(void) { return s_ready; }
 
+/* Synthesize `count` short tones (attack/release envelope) and play them through
+ * the ES8311 DAC, driving the PA enable around the whole run. Shared by the boot
+ * chime and the failure cue. */
+static esp_err_t play_notes(const int *hz, int count, int amp, int ms)
+{
+    const int rate = AUDIO_SAMPLE_RATE;
+    const int n = rate * ms / 1000;
+    int16_t *buf = malloc(n * sizeof(int16_t));
+    if (!buf) {
+        return ESP_ERR_NO_MEM;
+    }
+    gpio_set_level(BSP_PA_CTRL, 1);
+    vTaskDelay(pdMS_TO_TICKS(5));            /* let the PA settle before the first sample */
+    for (int t = 0; t < count; t++) {
+        for (int i = 0; i < n; i++) {
+            float env = i < n / 8 ? (float)i / (n / 8) : (n - i) / (float)(n - n / 8);
+            buf[i] = (int16_t)((float)amp * env * sinf(2.0f * 3.14159265f * hz[t] * i / rate));
+        }
+        esp_codec_dev_write(s_codec, buf, n * sizeof(int16_t));
+    }
+    gpio_set_level(BSP_PA_CTRL, 0);
+    free(buf);
+    return ESP_OK;
+}
+
+/* Short three-note boot chime — confirms the ES8311 DAC + NS4150B speaker path. */
+esp_err_t audio_boot_chime(void)
+{
+    if (!s_ready) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    const int hz[3] = { 784, 988, 1319 };   /* G5 B5 E6 */
+    esp_err_t err = play_notes(hz, 3, 7000, 150);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "boot chime played");
+    }
+    return err;
+}
+
+/* Two descending tones — the audible "something went wrong" cue (no network,
+ * STT/chat/TTS failure), so a wake never dies silently (docs/08 acceptance). */
+esp_err_t audio_fail_tone(void)
+{
+    if (!s_ready) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    const int hz[2] = { 660, 440 };   /* E5 -> A4, a gentle down-step */
+    return play_notes(hz, 2, 5000, 120);
+}
+
 esp_err_t audio_play(const int16_t *pcm, size_t samples)
 {
     if (!s_ready) {
         return ESP_ERR_INVALID_STATE;
     }
     gpio_set_level(BSP_PA_CTRL, 1);
+    int64_t t0 = esp_timer_get_time();
     int ret = esp_codec_dev_write(s_codec, (void *)pcm, samples * sizeof(int16_t));
+    /* wall << audio duration means the write path dropped data (PA pop, no sound) */
+    ESP_LOGI(TAG, "play %u ms: ret=%d wall=%d ms",
+             (unsigned)(samples * 1000 / AUDIO_SAMPLE_RATE), ret,
+             (int)((esp_timer_get_time() - t0) / 1000));
     gpio_set_level(BSP_PA_CTRL, 0);
     return ret == ESP_CODEC_DEV_OK ? ESP_OK : ESP_FAIL;
 }
