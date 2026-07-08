@@ -9,9 +9,23 @@ CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
-# —— C6 WiFi (esp_hosted SDIO): 传输 mempool 放 PSRAM，否则内部 DMA RAM 放不下
-#    (num_blocks×MAX_SDIO_BUFFER_SIZE > 256KB 内部 SRAM -> 开机 mempool no mem 崩溃) ——
-CONFIG_ESP_HOSTED_MEMPOOL_PREFER_SPIRAM=y
+# —— SD 卡 FATFS：开长文件名 (LFN)，否则 /sdcard/nanosoul/config.json 这类长名
+#    只以 8.3 别名 (CONFIG~1.JSO) 存在，fopen 长名直接失败、配置读不到 ——
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_FATFS_MAX_LFN=255
+
+# —— C6 WiFi (esp_hosted SDIO): 传输 mempool 必须留在内部 RAM ——
+# 曾开 MEMPOOL_PREFER_SPIRAM 治开机 OOM，实测是坑：SDIO 缓冲在 PSRAM 时，TLS 一来
+# (DSI 帧缓存+XIP+gzip 同抢 PSRAM 带宽) DMA/cache 一致性出错，长度寄存器读出 0x666
+# 之类垃圾 -> "Unrecoverable host sdio state" -> esp_hosted 整板重启。
+# OOM 改用砍队列深度解决 (20+20 -> 10+10，省 ~30KB 内部 RAM，语音链带宽够用)。
+CONFIG_ESP_HOSTED_MEMPOOL_PREFER_SPIRAM=n
+CONFIG_ESP_HOSTED_SDIO_TX_Q_SIZE=10
+CONFIG_ESP_HOSTED_SDIO_RX_Q_SIZE=10
+
+# SDIO RX 保持默认 STREAMING：板载 C6 slave (2.12.9) 跑 streaming，host 配 packet
+# 模式会在 transport 初始化直接 assert("SDIO mode mismatch")。此前怀疑 streaming
+# 流控 bug (esp-hosted-mcu #184) 是误导——真凶是上面的 PSRAM mempool。
 
 # 日志
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
@@ -55,6 +69,10 @@ CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
 
 # —— 上位机 WebSocket (esp_http_server) ——
 CONFIG_HTTPD_WS_SUPPORT=y
+
+# —— WS 客户端握手缓冲 (tcp_transport): 火山 openspeech 握手响应头 >1KB
+#    (一串 x-tt-* 追踪头), 默认 1024 直接 "Header size exceeded buffer size" ——
+CONFIG_WS_BUFFER_SIZE=4096
 
 # —— Console ——
 # Free the USB-Serial-JTAG peripheral for the testlink NDJSON channel (docs/13);

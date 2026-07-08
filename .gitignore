@@ -54,3 +54,11 @@ enclosure/model/.preview/
 
 # ---- 根目录散落的 DRC 报告 ----
 /NanoSoul-drc.rpt
+
+# 真实凭证配置（本地调试/SD 卡母本），绝不入库
+sdcard_template/nanosoul/config.json
+config/config.json
+
+# clangd 本地索引缓存
+.cache/
+.clangd
