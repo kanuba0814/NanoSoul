@@ -196,6 +196,11 @@ static const char *SHY_TIPS[] = {
     "别一直盯着看啦", "我会害羞的", "看什么看~", "唔…被发现了",
 };
 
+/* 认主 greeting variants, picked at random when OWNER_SEEN fires. */
+static const char *OWNER_TIPS[] = {
+    "主人！", "主人你回来啦", "是你呀~", "嘿嘿 主人",
+};
+
 /* ---- event latch: the event-loop task latches interaction events; the soul
  * task drains them into soul_inputs_t each tick. Simple flags/counters, so a
  * benign one-tick race is fine (no lock). ---- */
@@ -208,6 +213,9 @@ static volatile struct {
     bool touch_long_pending;
     bool wheel_pending;
     bool loud_pending;
+    bool owner_pending;      /* 认主: enrolled face recognized this episode */
+    bool stranger_pending;   /* 认主: face concluded unenrolled */
+    bool enrolled_pending;   /* 认主: enrollment just completed */
 } s_latch;
 
 static tel_pc_t   s_pc;               /* last PC state from companion */
@@ -245,6 +253,9 @@ static void soul_evt_handler(void *a, esp_event_base_t base, int32_t id, void *d
     }
     case NS_EVT_WHEEL_MOVED: s_latch.wheel_pending = true; break;
     case NS_EVT_LOUD:        s_latch.loud_pending = true;  break;
+    case NS_EVT_OWNER_SEEN:    s_latch.owner_pending = true;    break;
+    case NS_EVT_STRANGER_SEEN: s_latch.stranger_pending = true; break;
+    case NS_EVT_FACE_ENROLLED: s_latch.enrolled_pending = true; break;
     default: break;
     }
 }
@@ -319,6 +330,26 @@ static void soul_task(void *arg)
         }
         if (in.loud) {                             /* startled by a sudden noise */
             soul_expr_transient(&s_expr, "o", "loud", 800, now_ms);
+        }
+
+        /* 认主 reactions (events posted by vision, once per presence episode).
+         * Expression + tip only — no motion; the state machine keeps driving. */
+        bool owner_seen = s_latch.owner_pending;       s_latch.owner_pending = false;
+        bool stranger_seen = s_latch.stranger_pending; s_latch.stranger_pending = false;
+        bool enrolled = s_latch.enrolled_pending;      s_latch.enrolled_pending = false;
+        if (enrolled) {
+            soul_expr_transient(&s_expr, "o", "enroll", 1500, now_ms);
+            face_set_tip("记住你啦！");
+            s_social += 0.1f;
+            if (s_social > 1.0f) s_social = 1.0f;
+        } else if (owner_seen) {
+            soul_expr_transient(&s_expr, "o", "owner", 1500, now_ms);
+            face_set_tip(OWNER_TIPS[esp_random() % (sizeof(OWNER_TIPS) / sizeof(OWNER_TIPS[0]))]);
+            s_social += 0.1f;
+            if (s_social > 1.0f) s_social = 1.0f;
+        } else if (stranger_seen) {
+            soul_expr_transient(&s_expr, "think", "stranger", 1500, now_ms);
+            face_set_tip("你是谁呀？");
         }
         if (in.wheel_moved) {                      /* S9: pushed by hand -> curious/play */
             static int     wheel_run;

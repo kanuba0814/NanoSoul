@@ -34,6 +34,8 @@ void ns_config_defaults(ns_config_t *cfg)
     strcpy(cfg->stt.resource_id, "volc.seedasr.sauc.duration");  /* seed-asr-2.0 (ASR 后补) */
     strcpy(cfg->tts.resource_id, "seed-tts-2.0");
 
+    cfg->vision.rotate = 270; /* 实测: 模块横装, CCW 270° 后画面正 (2026-07-09 真人快照标定) */
+
     cfg->behavior.near_lo = 0.04f;
     cfg->behavior.near_hi = 0.18f;
     cfg->behavior.frontal_thresh = 0.70f;
@@ -153,6 +155,9 @@ static void apply_json(const cJSON *root, ns_config_t *cfg)
         ov_str(o, "model", cfg->tts.model, sizeof(cfg->tts.model));
         ov_str(o, "voice", cfg->tts.voice, sizeof(cfg->tts.voice));
         ov_str(o, "resource_id", cfg->tts.resource_id, sizeof(cfg->tts.resource_id));
+    }
+    if ((o = cJSON_GetObjectItemCaseSensitive(root, "vision"))) {
+        ov_int(o, "rotate", &cfg->vision.rotate);
     }
     if ((o = cJSON_GetObjectItemCaseSensitive(root, "behavior"))) {
         ov_float(o, "near_lo", &cfg->behavior.near_lo);

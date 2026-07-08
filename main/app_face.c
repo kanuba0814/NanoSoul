@@ -7,6 +7,7 @@
 
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -31,6 +32,30 @@
 #include "voice.h"
 
 static const char *TAG = "app_face";
+
+/* 认主 spoken greetings: bridge vision's owner events to canned TTS here at the
+ * app layer (soul↔voice would be a circular component dep). Cooldown keeps the
+ * greeting from re-firing every presence episode when detection is choppy. */
+static void owner_voice_bridge(void *arg, esp_event_base_t base, int32_t id, void *data)
+{
+    (void)arg; (void)base; (void)data;
+    static int64_t s_last_greet_us;
+    int64_t now = esp_timer_get_time();
+    switch ((ns_event_id_t)id) {
+    case NS_EVT_FACE_ENROLLED:
+        voice_say("记住你啦，主人！");
+        s_last_greet_us = now;
+        break;
+    case NS_EVT_OWNER_SEEN:
+        if (now - s_last_greet_us > 60LL * 1000 * 1000) {
+            voice_say("主人！你回来啦");
+            s_last_greet_us = now;
+        }
+        break;
+    default:
+        break;
+    }
+}
 
 // Bridge motion's signed per-wheel duty to the TB6612 driver. Only ever called
 // when motion is enabled (wheels wired); motion stays free of drv_motor itself.
@@ -65,9 +90,11 @@ void app_face_run(bool run_selftest_loop)
     ESP_LOGI(TAG, "internal heap free after face: %u KB",
              (unsigned)(heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024));
 
-    /* Vision: board I2C0 -> OV5647 camera -> local face detection. Camera is a
-     * ready subsystem; a failure logs and continues (the face still runs). */
+    /* Vision: board I2C0 -> OV5647 camera -> local face detection + owner
+     * recognition. Camera is a ready subsystem; a failure logs and continues
+     * (the face still runs). */
     if (board_i2c0_init() == ESP_OK) {
+        camera_set_rotation(cfg->vision.rotate);   /* physical mount correction */
         if (camera_init(board_i2c0_bus()) == ESP_OK) {
             camera_start();
             if (vision_init() == ESP_OK) {
@@ -113,6 +140,10 @@ void app_face_run(bool run_selftest_loop)
      * record path is unverified on this board; a failure just disables voice. */
     if (board_i2c0_bus() && voice_init(board_i2c0_bus()) == ESP_OK) {
         voice_start();
+        esp_event_handler_instance_register(NANOSOUL_EVENT, NS_EVT_OWNER_SEEN,
+                                            owner_voice_bridge, NULL, NULL);
+        esp_event_handler_instance_register(NANOSOUL_EVENT, NS_EVT_FACE_ENROLLED,
+                                            owner_voice_bridge, NULL, NULL);
     } else {
         ESP_LOGW(TAG, "voice init skipped/failed");
     }

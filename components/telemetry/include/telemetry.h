@@ -41,6 +41,10 @@ typedef enum {
     NS_EVT_WHEEL_MOVED,         /* wheel pushed by hand  */
     NS_EVT_STALL,               /* data: ns_evt_text_t   */
     NS_EVT_LOUD,                /* sudden loud noise     */
+    /* --- owner recognition 认主 (once per presence episode) --- */
+    NS_EVT_OWNER_SEEN,          /* enrolled face recognized;  data: none */
+    NS_EVT_STRANGER_SEEN,       /* face concluded unenrolled; data: none */
+    NS_EVT_FACE_ENROLLED,       /* enroll done; data: ns_evt_text_t (id)  */
 } ns_event_id_t;
 
 typedef enum {
@@ -90,6 +94,10 @@ typedef struct {
     float    area_ratio;    /* bbox area / frame area, 0..1               */
     float    frontal_score; /* 0..1, higher = more frontal               */
     uint32_t ts_ms;
+    /* owner recognition 认主 (sticky for the presence episode) */
+    int8_t   known;         /* -1 no verdict yet, 0 stranger, 1 enrolled  */
+    uint16_t rec_id;        /* enrolled feature id when known == 1        */
+    float    rec_sim;       /* similarity of the last recognize           */
 } tel_face_t;
 
 typedef struct {

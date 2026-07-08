@@ -38,7 +38,10 @@ static int                 s_fd = -1;
 static cam_mmap_buf_t      s_bufs[CAMERA_BUF_COUNT];
 static uint32_t            s_width, s_height;
 static size_t              s_frame_size;
-static uint16_t           *s_det_buf;       /* PPA output, CAMERA_DET_W x _H */
+static uint16_t           *s_det_buf;       /* PPA output, s_det_w x s_det_h */
+static int                 s_rot;           /* physical mount correction, deg CCW */
+static int                 s_det_w = CAMERA_DET_W;
+static int                 s_det_h = CAMERA_DET_H;
 static TaskHandle_t        s_stream_task;
 static volatile bool       s_streaming;
 static bool                s_video_ready;
@@ -67,9 +70,20 @@ static esp_err_t init_ppa(void)
     return ppa_register_client(&cfg, &s_ppa);
 }
 
-/* Downscale the full sensor frame (no crop) into s_det_buf. */
+/* Downscale (and mount-correct rotate) the full sensor frame into s_det_buf.
+ * PPA SRM: with 90/270 the output block dims are the transposed scaled input
+ * (rotated_w = scale_y*in_h, rotated_h = scale_x*in_w), so the scale factors
+ * map input axes to the PRE-rotation size. */
 static esp_err_t scale_full(const uint8_t *src)
 {
+    ppa_srm_rotation_angle_t angle =
+        s_rot == 90  ? PPA_SRM_ROTATION_ANGLE_90 :
+        s_rot == 180 ? PPA_SRM_ROTATION_ANGLE_180 :
+        s_rot == 270 ? PPA_SRM_ROTATION_ANGLE_270 : PPA_SRM_ROTATION_ANGLE_0;
+    bool swap = (s_rot == 90 || s_rot == 270);
+    float sx = (float)(swap ? s_det_h : s_det_w) / (float)s_width;
+    float sy = (float)(swap ? s_det_w : s_det_h) / (float)s_height;
+
     ppa_srm_oper_config_t cfg = {
         .in = {
             .buffer = src,
@@ -83,22 +97,22 @@ static esp_err_t scale_full(const uint8_t *src)
         },
         .out = {
             .buffer = s_det_buf,
-            .buffer_size = CAMERA_DET_W * CAMERA_DET_H * sizeof(uint16_t),
-            .pic_w = CAMERA_DET_W,
-            .pic_h = CAMERA_DET_H,
+            .buffer_size = CAMERA_DET_PX * sizeof(uint16_t),
+            .pic_w = s_det_w,
+            .pic_h = s_det_h,
             .srm_cm = PPA_SRM_COLOR_MODE_RGB565,
         },
-        .rotation_angle = PPA_SRM_ROTATION_ANGLE_0,
-        .scale_x = (float)CAMERA_DET_W / (float)s_width,
-        .scale_y = (float)CAMERA_DET_H / (float)s_height,
+        .rotation_angle = angle,
+        .scale_x = sx,
+        .scale_y = sy,
         .mode = PPA_TRANS_MODE_BLOCKING,
     };
     esp_err_t err = ppa_do_scale_rotate_mirror(s_ppa, &cfg);
     if (err != ESP_OK) {
         static int n;
         if (n++ < 3) {
-            ESP_LOGW(TAG, "PPA scale %ux%u->%dx%d failed: %s",
-                     (unsigned)s_width, (unsigned)s_height, CAMERA_DET_W, CAMERA_DET_H,
+            ESP_LOGW(TAG, "PPA scale %ux%u->%dx%d rot%d failed: %s",
+                     (unsigned)s_width, (unsigned)s_height, s_det_w, s_det_h, s_rot,
                      esp_err_to_name(err));
         }
     }
@@ -133,7 +147,7 @@ static void stream_task(void *arg)
                     ESP_LOGI(TAG, "first frame OK (%u bytes)", (unsigned)used);
                 }
                 if (s_cb) {
-                    s_cb(s_det_buf, CAMERA_DET_W, CAMERA_DET_H, s_cb_ctx);
+                    s_cb(s_det_buf, s_det_w, s_det_h, s_cb_ctx);
                 }
             } else if (skip++ < 3) {
                 ESP_LOGW(TAG, "frame skipped: used=%u need=%u", (unsigned)used, (unsigned)s_frame_size);
@@ -188,8 +202,8 @@ static esp_err_t open_video_device(void)
 
     /* PPA output buffer must be aligned to the cache line size (128B on P4 with
      * an L2 128-byte line) — both addr and size — or ppa_do_scale returns
-     * INVALID_ARG. CAMERA_DET_W*H*2 = 288000 is 128-aligned; force 128 on addr. */
-    s_det_buf = heap_caps_aligned_calloc(128, CAMERA_DET_W * CAMERA_DET_H, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+     * INVALID_ARG. CAMERA_DET_PX*2 = 288000 is 128-aligned; force 128 on addr. */
+    s_det_buf = heap_caps_aligned_calloc(128, CAMERA_DET_PX, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
     ESP_RETURN_ON_FALSE(s_det_buf, ESP_ERR_NO_MEM, TAG, "det buf");
     return ESP_OK;
 }
@@ -232,8 +246,29 @@ esp_err_t camera_init(i2c_master_bus_handle_t i2c_bus)
     if (err != ESP_OK) {
         return err;
     }
-    ESP_LOGI(TAG, "OV5647 path ready (det %dx%d)", CAMERA_DET_W, CAMERA_DET_H);
+    ESP_LOGI(TAG, "OV5647 path ready (det %dx%d rot%d)", s_det_w, s_det_h, s_rot);
     return ESP_OK;
+}
+
+esp_err_t camera_set_rotation(int deg)
+{
+    if (deg != 0 && deg != 90 && deg != 180 && deg != 270) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (s_streaming) {
+        return ESP_ERR_INVALID_STATE;   /* set before start; not hot-swappable */
+    }
+    s_rot = deg;
+    bool swap = (deg == 90 || deg == 270);
+    s_det_w = swap ? CAMERA_DET_H : CAMERA_DET_W;
+    s_det_h = swap ? CAMERA_DET_W : CAMERA_DET_H;
+    return ESP_OK;
+}
+
+void camera_det_wh(int *w, int *h)
+{
+    if (w) *w = s_det_w;
+    if (h) *h = s_det_h;
 }
 
 esp_err_t camera_start(void)
@@ -283,7 +318,7 @@ esp_err_t camera_copy_latest(uint16_t *dst, size_t dst_px)
     if (!s_det_buf || !dst) {
         return ESP_ERR_INVALID_STATE;
     }
-    size_t n = (size_t)CAMERA_DET_W * CAMERA_DET_H;
+    size_t n = CAMERA_DET_PX;
     if (dst_px < n) {
         n = dst_px;
     }
@@ -302,7 +337,7 @@ esp_err_t camera_snapshot_jpeg(uint8_t **out, size_t *out_len)
     if (!s_det_buf || !out || !out_len) {
         return ESP_ERR_INVALID_STATE;
     }
-    size_t raw_size = (size_t)CAMERA_DET_W * CAMERA_DET_H * sizeof(uint16_t);
+    size_t raw_size = (size_t)CAMERA_DET_PX * sizeof(uint16_t);
 
     jpeg_encoder_handle_t enc = NULL;
     jpeg_encode_engine_cfg_t eng = { .timeout_ms = 300 };
@@ -323,8 +358,8 @@ esp_err_t camera_snapshot_jpeg(uint8_t **out, size_t *out_len)
     memcpy(raw, s_det_buf, raw_size);   /* small buffer; minor tear is cosmetic */
 
     jpeg_encode_cfg_t ecfg = {
-        .width = CAMERA_DET_W,
-        .height = CAMERA_DET_H,
+        .width = s_det_w,
+        .height = s_det_h,
         .src_type = JPEG_ENCODE_IN_FORMAT_RGB565,
         .sub_sample = JPEG_DOWN_SAMPLING_YUV422,
         .image_quality = 80,

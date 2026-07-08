@@ -20,12 +20,23 @@
 extern "C" {
 #endif
 
-/* Detector-input frame size. Aspect matches the ~0.625 sensor portrait so the
- * face model sees an undistorted image. */
-#define CAMERA_DET_W 300
-#define CAMERA_DET_H 480
+/* Detector-input frame size for an UPRIGHT (0°/180°) sensor mount. Aspect
+ * matches the ~0.625 sensor portrait so the face model sees an undistorted
+ * image. With a 90°/270° mount the detector frame is the transpose (480x300);
+ * same pixel count either way — size buffers with CAMERA_DET_PX and use
+ * camera_det_wh() / the callback's w/h for geometry. */
+#define CAMERA_DET_W  300
+#define CAMERA_DET_H  480
+#define CAMERA_DET_PX (CAMERA_DET_W * CAMERA_DET_H)
 
 typedef void (*camera_frame_cb_t)(const uint16_t *rgb565, int w, int h, void *ctx);
+
+/* Physical mount correction, applied in the PPA pass. Call BEFORE camera_start()
+ * (typically right before camera_init). deg ∈ {0, 90, 180, 270}; anything else
+ * is rejected. 90/270 transpose the detector frame to 480x300. */
+esp_err_t camera_set_rotation(int deg);
+/* Detector frame dims after the rotation setting (w,h). */
+void      camera_det_wh(int *w, int *h);
 
 esp_err_t camera_init(i2c_master_bus_handle_t i2c_bus);
 esp_err_t camera_start(void);
@@ -39,8 +50,8 @@ uint32_t  camera_frame_count(void);
 // companion snapshot command.
 esp_err_t camera_snapshot_jpeg(uint8_t **out, size_t *out_len);
 
-// Copy the latest detector frame (CAMERA_DET_W x CAMERA_DET_H RGB565) into a
-// caller buffer for on-screen preview. Copies up to dst_px pixels. A minor tear
+// Copy the latest detector frame (camera_det_wh() dims, RGB565) into a caller
+// buffer for on-screen preview. Copies up to dst_px pixels. A minor tear
 // against the capture task is cosmetic.
 esp_err_t camera_copy_latest(uint16_t *dst, size_t dst_px);
 

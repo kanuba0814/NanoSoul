@@ -12,6 +12,7 @@ idf_component_register(
         soul
         motion
         face
+        vision
         hud
         dialog
         storage_sd

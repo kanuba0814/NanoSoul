@@ -286,11 +286,35 @@ static void converse(void)
     end_turn_idle();
 }
 
+/* ---- one-shot canned speech (event reactions, e.g. 认主问候) ---- */
+static char          s_say_text[160];
+static volatile bool s_say_pending;
+
+static void speak_pending(void)
+{
+    s_say_pending = false;
+    if (!netlink_is_up()) {
+        return;                     /* TTS is cloud-only; skip silently offline */
+    }
+    soul_set_session(SOUL_SPEAK);
+    telemetry_set_voice("speak");
+    int16_t *pcm = NULL;
+    size_t samples = 0;
+    if (llm_tts(s_say_text, AUDIO_SAMPLE_RATE, &pcm, &samples) == ESP_OK && pcm) {
+        audio_play(pcm, samples);
+        free(pcm);
+    }
+    end_turn_idle();
+}
+
 static void voice_task(void *arg)
 {
     (void)arg;
     ESP_LOGI(TAG, "listening for wake (energy VAD)");
     for (;;) {
+        if (s_say_pending) {
+            speak_pending();
+        }
         if (wake_detected()) {
             converse();
         }
@@ -340,3 +364,16 @@ esp_err_t voice_trigger(void)
 }
 
 float voice_last_rms(void) { return s_last_rms; }
+
+esp_err_t voice_say(const char *text)
+{
+    if (!s_ready || !text || !text[0]) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    if (s_say_pending) {
+        return ESP_ERR_INVALID_STATE;   /* one at a time */
+    }
+    strlcpy(s_say_text, text, sizeof(s_say_text));
+    s_say_pending = true;
+    return ESP_OK;
+}

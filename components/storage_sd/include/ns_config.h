@@ -50,6 +50,12 @@ typedef struct {
 } ns_tts_cfg_t;
 
 typedef struct {
+    int rotate;            /* camera mount correction, deg: 0/90/180/270.
+                              Default = the measured physical mount; SD can
+                              override after a re-mount without a reflash. */
+} ns_vision_cfg_t;
+
+typedef struct {
     float near_lo;         /* bbox area ratio below which we APPROACH  */
     float near_hi;         /* bbox area ratio above which we RETREAT   */
     float frontal_thresh;  /* frontal_score above which counts as gaze */
@@ -131,6 +137,7 @@ typedef struct {
     ns_chat_cfg_t      chat;
     ns_stt_cfg_t       stt;
     ns_tts_cfg_t       tts;
+    ns_vision_cfg_t    vision;
     ns_behavior_cfg_t  behavior;
     ns_mood_cfg_t      mood;
     ns_pc_cfg_t        pc;

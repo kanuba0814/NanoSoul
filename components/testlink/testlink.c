@@ -89,6 +89,11 @@ char *ns_build_state_json(void)
     cJSON_AddNumberToObject(face, "cy", t.face.cy);
     cJSON_AddNumberToObject(face, "area", t.face.area_ratio);
     cJSON_AddNumberToObject(face, "frontal", t.face.frontal_score);
+    cJSON_AddNumberToObject(face, "known", t.face.known);   /* -1 no verdict / 0 stranger / 1 owner */
+    if (t.face.known == 1) {
+        cJSON_AddNumberToObject(face, "id", t.face.rec_id);
+        cJSON_AddNumberToObject(face, "sim", t.face.rec_sim);
+    }
 
     cJSON *mo = cJSON_AddObjectToObject(r, "motion");
     cJSON *intent = cJSON_AddArrayToObject(mo, "intent");
@@ -188,6 +193,15 @@ static void on_ns_event(void *arg, esp_event_base_t base, int32_t id, void *data
     case NS_EVT_FACE_LOST:    emit_event("face_lost", NULL); break;
     case NS_EVT_GAZED:        emit_event("gazed", NULL); break;
     case NS_EVT_WAKE:         emit_event("wake", NULL); break;
+    case NS_EVT_OWNER_SEEN:    emit_event("owner_seen", NULL); break;
+    case NS_EVT_STRANGER_SEEN: emit_event("stranger_seen", NULL); break;
+    case NS_EVT_FACE_ENROLLED: {
+        ns_evt_text_t *e = data;
+        cJSON *d = cJSON_CreateObject();
+        cJSON_AddStringToObject(d, "text", e ? e->text : "");
+        emit_event("face_enrolled", d);
+        break;
+    }
     case NS_EVT_LLM_REPLY: {
         ns_evt_text_t *e = data;
         cJSON *d = cJSON_CreateObject();
