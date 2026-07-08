@@ -32,6 +32,12 @@ esp_err_t audio_play(const int16_t *pcm, size_t samples);
 // Blocking capture of `samples` int16 mono samples from the mic.
 esp_err_t audio_record(int16_t *pcm, size_t samples);
 
+// Short three-note chime — plays on boot to confirm the DAC + speaker path.
+esp_err_t audio_boot_chime(void);
+
+// Two descending tones — audible cue that a voice turn failed (no net / STT / TTS).
+esp_err_t audio_fail_tone(void);
+
 void      audio_set_volume(int pct);
 
 #ifdef __cplusplus
