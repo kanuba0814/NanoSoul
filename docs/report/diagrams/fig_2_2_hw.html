@@ -1,0 +1,53 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide">
+  <div class="fig-title">硬件系统总线拓扑（当前实物：洞洞板焊接版）</div>
+  <div class="fig-sub">以 ESP32-P4 开发板为核心，板载高速外设（相机/屏/音频）走专用接口，外接传感器共享 I²C1；引脚为 <span class="mono">main/</span> 固件真值，与载板 PCB 版本按 <span class="mono">docs/BOARD_MAPPING.md</span> 双列管理</div>
+
+  <div class="row" style="align-items:stretch">
+    <!-- 左：板载高速外设 -->
+    <div class="band violet" style="flex:1">
+      <span class="lbl">板载高速外设（开发板集成）</span>
+      <div class="col">
+        <div class="node violet"><div class="h">摄像头 OV5647</div><div class="d">MIPI-CSI 2-lane · SCCB 0x36<br>800×1280 RAW → ISP</div></div>
+        <div class="node violet"><div class="h">显示屏 ST7701S</div><div class="d">MIPI-DSI 1-lane 700Mbps<br>480×640 竖屏</div></div>
+        <div class="node violet"><div class="h">音频 ES8311 + NS4150B</div><div class="d">I²S 全双工 16k/16bit · PA_EN=IO53<br>codec I²C0 0x18</div></div>
+        <div class="node violet"><div class="h">SD 卡（SDSPI）</div><div class="d">CLK43/MOSI44/MISO39/CS42</div></div>
+      </div>
+    </div>
+
+    <div class="arrow">↔</div>
+
+    <!-- 中：P4 核心 -->
+    <div class="col center" style="flex:1.15">
+      <div class="node" style="border-width:3px;width:100%;text-align:center">
+        <div class="h" style="font-size:21px;color:var(--blue)">ESP32-P4-WIFI6 开发板</div>
+        <div class="d" style="font-size:13.5px">RISC-V 双核 400MHz · 32MB PSRAM · 16MB Flash<br>55 GPIO · MIPI-CSI/DSI · PPA · 2D-DMA · H.264</div>
+      </div>
+      <div class="arrow v" style="height:26px">↕</div>
+      <div class="node slate" style="width:100%;text-align:center"><div class="h">板载 ESP32-C6（WiFi6）</div><div class="d">esp_hosted / SDIO · 2.4GHz</div></div>
+      <div class="pill">电脑 USB 供 3V3 逻辑</div>
+      <div class="pill">I²C0 板载 SDA7/SCL8</div>
+    </div>
+
+    <div class="arrow">↔</div>
+
+    <!-- 右：外接 I²C1 传感 + 电机 -->
+    <div class="col" style="flex:1.05">
+      <div class="band teal">
+        <span class="lbl">I²C1 外接传感网络（SDA20/SCL21 · 100kHz）</span>
+        <div class="col">
+          <div class="node teal"><div class="h">QMI8658 IMU · 0x6A</div><div class="d">碰撞/抬起/倾斜 · INT=IO23</div></div>
+          <div class="node teal"><div class="h">BH1750 光照 · 0x23</div><div class="d">暗光→睡眠迟滞</div></div>
+          <div class="node teal"><div class="h">INA219 电流 · 0x40</div><div class="d">0.1Ω shunt · 堵转判定</div></div>
+          <div class="node plain"><div class="h" style="color:var(--sub)">MAX17048 电量 · 0x36</div><div class="d">硬件在位，固件预留</div></div>
+        </div>
+      </div>
+      <div class="band rose">
+        <span class="lbl">运动执行</span>
+        <div class="node rose"><div class="h">TB6612FNG ×2 → 3×N20 全向轮</div><div class="d">LEDC 20kHz PWM · STBY 分置 IO51/IO52<br>PCNT ×3 正交编码器回采（28 CPR）</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note"><b>接口分工：</b>高速影像/显示走 MIPI 专用通道与 PPA 硬件加速，不占 GPIO；4 个 I²C1 从机地址互不冲突、单总线挂载；三电机 PWM/方向/编码 共占用约 15 个 GPIO，STBY 拉低即全桥急停。</div>
+</div></body></html>

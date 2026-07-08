@@ -1,0 +1,30 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide">
+  <div class="fig-title">视觉认主链路（端侧检测 + 识别，全本地推理）</div>
+  <div class="fig-sub">采集 → 硬件旋转/降采样 → ESP-DL 人脸检测 → 门控节流 → 特征识别比对 → 事件 → 表情/问候；断网可运行，人脸数据不出设备</div>
+
+  <div class="row center" style="flex-wrap:nowrap;gap:8px">
+    <div class="step teal on"><div class="t">相机采集</div><div class="s">OV5647 MIPI-CSI<br>800×1280</div></div>
+    <div class="arrow">→</div>
+    <div class="step teal"><div class="t">PPA 硬件处理</div><div class="s">降采样 300×480<br>旋转 rot270</div></div>
+    <div class="arrow">→</div>
+    <div class="step on"><div class="t">人脸检测</div><div class="s">ESP-DL MSRMNP<br>阈值 0.25 · 8fps</div></div>
+    <div class="arrow">→</div>
+    <div class="step on"><div class="t">门控节流</div><div class="s">在场 800ms 防抖<br>复检间隔 1.5s</div></div>
+    <div class="arrow">→</div>
+    <div class="step violet on"><div class="t">特征识别</div><div class="s">MFN 特征网络<br>SD 加载 · 比对特征库</div></div>
+  </div>
+
+  <div class="row center" style="margin:16px 0"><div class="arrow v" style="height:18px">↓</div></div>
+
+  <div class="row" style="gap:16px">
+    <div class="node violet grow"><div class="h">认出主人 OWNER_SEEN</div><div class="d">主人问候表情 + 字幕 + TTS 语音问候（60s 冷却）　实测 sim=0.81</div></div>
+    <div class="node grow"><div class="h">陌生人 STRANGER_SEEN</div><div class="d">连续 2 次未命中才判定 · "你是谁呀？" + think 表情</div></div>
+    <div class="node teal grow"><div class="h">录入 FACE_ENROLLED</div><div class="d">上位机下发 face_enroll → 下一张合格脸落库 → "记住你啦！"</div></div>
+  </div>
+
+  <div class="row" style="gap:16px;margin-top:14px">
+    <div class="node slate grow"><div class="h">模型与特征库全部在 SD 卡</div><div class="d">MFN 特征模型 1.27MB 从 <span class="mono">/sdcard/model/p4</span> 加载（应用固件零膨胀，缺模型优雅降级只关识别）；特征库 <span class="mono">face.db</span> 持久化，断电重启认主保持</div></div>
+    <div class="node plain grow"><div class="h">稳健性设计</div><div class="d">检测阈值 0.25 补偿夜间高增益漏检；同一在场周期内 sticky 保持主人判定；仅送最大单张脸规避上游多脸比较器缺陷</div></div>
+  </div>
+</div></body></html>

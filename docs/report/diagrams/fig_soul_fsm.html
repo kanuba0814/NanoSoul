@@ -1,0 +1,71 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css">
+<style>
+.st{border:2px solid var(--blue);background:var(--blue-bg);border-radius:10px;padding:9px 13px;text-align:center;min-width:118px}
+.st .n{font-weight:800;font-size:16px} .st .e{font-size:12px;color:var(--slate);margin-top:2px}
+.st.teal{border-color:var(--teal);background:var(--teal-bg)}
+.st.violet{border-color:var(--violet);background:var(--violet-bg)}
+.st.rose{border-color:var(--rose);background:var(--rose-bg)}
+.st.hub{border-width:3px;min-width:150px}
+.trig{font-size:12.5px;color:var(--sub);font-weight:600;text-align:center;padding:0 4px}
+</style></head>
+<body><div class="fig wide">
+  <div class="fig-title">决策核心 soul 状态机（11 态 · 10Hz · 全本地）</div>
+  <div class="fig-sub">每周期读入「人脸位置/大小/正脸分 + IMU + 光照 + 电流 + PC 状态」，输出目标状态 → 运动指令 + 表情；反射与故障可抢占任何状态</div>
+
+  <div class="row" style="align-items:stretch;gap:20px">
+
+    <!-- 环境/待机 -->
+    <div class="band teal" style="flex:.9">
+      <span class="lbl">待机 / 环境</span>
+      <div class="col center" style="gap:22px;height:100%;justify-content:center">
+        <div class="st teal"><div class="n">IDLE</div><div class="e">无人 · 微扫视</div></div>
+        <div class="trig">暗光 ↓↑ 光亮</div>
+        <div class="st teal"><div class="n">DOZE</div><div class="e">睡眠表情</div></div>
+      </div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="trig">检测<br>到主人</div><div class="arrow">→</div></div>
+
+    <!-- 主动陪伴（核心） -->
+    <div class="band" style="flex:1.5;border-color:var(--blue);border-style:solid">
+      <span class="lbl">主动陪伴（核心决策，基于距离与凝视）</span>
+      <div class="col center" style="gap:14px">
+        <div class="row center" style="gap:18px;width:100%">
+          <div class="col center"><div class="st"><div class="n">APPROACH</div><div class="e">太远→靠近</div></div><div class="trig" style="margin-top:6px">面积&lt;近阈</div></div>
+          <div class="st hub"><div class="n">ENGAGE</div><div class="e">陪伴对视 · 朝脸转向</div></div>
+          <div class="col center"><div class="st"><div class="n">RETREAT</div><div class="e">太近→退后</div></div><div class="trig" style="margin-top:6px">面积&gt;近阈</div></div>
+        </div>
+        <div class="arrow v" style="height:14px">↓</div>
+        <div class="col center">
+          <div class="trig">正脸凝视持续 → 害羞退避（冷却后复位）</div>
+          <div class="st"><div class="n">GAZED</div><div class="e">被盯久了 · 退避</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="trig">唤醒<br>词命中</div><div class="arrow">→</div></div>
+
+    <!-- 语音会话 -->
+    <div class="band violet" style="flex:.85">
+      <span class="lbl">语音会话</span>
+      <div class="col center" style="gap:8px;height:100%;justify-content:center">
+        <div class="st violet"><div class="n">LISTEN</div><div class="e">录音</div></div>
+        <div class="arrow v" style="height:12px">↓</div>
+        <div class="st violet"><div class="n">THINK</div><div class="e">识别+对话</div></div>
+        <div class="arrow v" style="height:12px">↓</div>
+        <div class="st violet"><div class="n">SPEAK</div><div class="e">合成播放</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 反射/保护 抢占带 -->
+  <div class="band rose" style="margin-top:18px">
+    <span class="lbl">反射 / 保护（最高优先级，可抢占上述任何状态）</span>
+    <div class="row center" style="gap:40px">
+      <div class="row center" style="gap:14px"><div class="st rose"><div class="n">LIFTED</div><div class="e">被抬起 · 冻结轮子</div></div><div class="trig">IMU：|加速度−1g|&gt;0.15g 持续 300ms</div></div>
+      <div class="row center" style="gap:14px"><div class="st rose"><div class="n">FAULT</div><div class="e">堵转急停 · sad 表情</div></div><div class="trig">电流&gt;350mA 且编码器不动 200ms → 拉低 STBY</div></div>
+    </div>
+  </div>
+
+  <div class="note"><b>状态 → 表情映射：</b>APPROACH/ENGAGE/IDLE→waiting；RETREAT/GAZED/LIFTED→o（惊讶）；DOZE→sleep；THINK→think；FAULT→sad。表情走「故障 &gt; 瞬态 &gt; 覆盖 &gt; 基线」三层仲裁；碰撞/触摸/抬起等瞬态叠加字幕 tip（如"呀"、"放我下来"）。</div>
+</div></body></html>

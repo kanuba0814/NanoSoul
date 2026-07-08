@@ -1,0 +1,57 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide">
+  <div class="fig-title">软件分层架构与任务/双核调度</div>
+  <div class="fig-sub">ESP-IDF v5.5.2 组件化（约 26 个一方组件）；模块间不直接互调，经 telemetry 共享快照（读）与事件总线（写）解耦</div>
+
+  <div class="row" style="align-items:stretch">
+    <!-- 左：分层栈 -->
+    <div class="col" style="flex:1.35">
+      <div class="node slate"><div class="h">入口层　nanosoul_main</div><div class="d">四模式分派 FACE / SELFTEST / TEST / TESTPANEL · IO48-GND 跳线强制 TEST</div></div>
+      <div class="arrow v" style="height:16px">↓</div>
+      <div class="node"><div class="h">装配层　app_face / app_testmode</div><div class="d">按依赖顺序拉起子系统 + 事件桥接（认主→TTS、motion→电机）</div></div>
+      <div class="arrow v" style="height:16px">↓</div>
+      <div class="node" style="border-width:3px"><div class="h" style="color:var(--blue)">决策层　soul（唯一决策中枢）</div><div class="d">10Hz 状态机 + 三层表情仲裁 + 运动基元库</div></div>
+      <div class="row" style="margin:14px 0">
+        <div class="node teal grow"><div class="h">感知层</div><div class="d">vision · imu · light · app_sense</div></div>
+        <div class="node violet grow"><div class="h">执行层</div><div class="d">motion→drv_motor · face · voice</div></div>
+      </div>
+      <div class="row">
+        <div class="node amber grow"><div class="h">云链路层</div><div class="d">netlink → llm(chat/stt/tts) · volc_asr · dialog</div></div>
+        <div class="node slate grow"><div class="h">上位机层</div><div class="d">companion(WS) + testlink(串口) 共享 proto</div></div>
+      </div>
+      <div class="arrow v" style="height:16px">↓</div>
+      <div class="node plain"><div class="h">共享底座　telemetry（快照+事件总线）· simsense（覆盖注入）· ns_config · selftest</div></div>
+    </div>
+
+    <div style="width:22px"></div>
+
+    <!-- 右：双核 + 分区 -->
+    <div class="col" style="flex:1">
+      <div class="band" style="border-color:var(--blue);border-style:solid">
+        <span class="lbl">FreeRTOS 任务 / 双核分工</span>
+        <table class="spec">
+          <tr><th>任务</th><th>核</th><th>优先级 / 周期</th></tr>
+          <tr><td>表情渲染 gfx</td><td>1</td><td>7 · 30fps</td></tr>
+          <tr><td>相机采集 cam</td><td>1</td><td>5</td></tr>
+          <tr><td>视觉检测+认主</td><td>0</td><td>4 · 8fps</td></tr>
+          <tr><td>决策 soul</td><td>0</td><td>5 · 10Hz</td></tr>
+          <tr><td>语音 voice</td><td>0</td><td>5</td></tr>
+          <tr><td>IMU / sense</td><td>0</td><td>4 · 100/10Hz</td></tr>
+          <tr><td>上位机心跳</td><td>0</td><td>3 · 1Hz</td></tr>
+        </table>
+        <div class="note" style="margin-top:8px">核 1 专注重负载图形与相机采集，核 0 承载决策/感知/网络/上位机——渲染与控制隔离。</div>
+      </div>
+      <div class="band slate">
+        <span class="lbl">Flash 分区（16MB · A/B OTA）</span>
+        <div>
+          <span class="pill">ota_0 / ota_1 各 5MB</span>
+          <span class="pill">emote_gen 1.5MB</span>
+          <span class="pill">human_face_det 1MB</span>
+          <span class="pill">srmodel 3MB</span>
+          <span class="pill">storage FAT 256K</span>
+        </div>
+        <div class="note" style="margin-top:8px">应用固件实测 ≈3.9MB，5MB 分区余量约 25%。</div>
+      </div>
+    </div>
+  </div>
+</div></body></html>

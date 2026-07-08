@@ -1,0 +1,46 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide">
+  <div class="fig-title">运动控制：全向逆运动学 · 五级仲裁 · 堵转保护</div>
+  <div class="fig-sub">多个行为源竞争三轮，经优先级租约仲裁出唯一速度指令；执行侧持续用电流+编码器闭环守护堵转</div>
+
+  <div class="row" style="align-items:stretch;gap:18px">
+    <!-- 仲裁 -->
+    <div class="band" style="flex:1.25;border-color:var(--blue);border-style:solid">
+      <span class="lbl">运动源优先级仲裁（带 TTL 租约，100ms 过期）</span>
+      <div class="col" style="gap:9px">
+        <div class="node rose"><div class="h">① REFLEX　被抬起→冻结轮子</div></div>
+        <div class="node rose"><div class="h">② FAULT　堵转急停</div></div>
+        <div class="node"><div class="h">③ TELEOP　上位机遥控</div></div>
+        <div class="node"><div class="h">④ MICRO　微动作（呼吸/wiggle）</div></div>
+        <div class="node teal"><div class="h">⑤ BEHAVIOR　陪伴行为（靠近/退后/转向）</div></div>
+      </div>
+      <div class="trig" style="text-align:left;margin-top:8px;color:var(--sub)">上优先级抢占下优先级；无高优先级时执行陪伴行为</div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="arrow">→</div><div class="flowlabel">vx, vy, wz</div></div>
+
+    <!-- IK + 执行 -->
+    <div class="col" style="flex:1">
+      <div class="node" style="border-width:3px"><div class="h" style="color:var(--blue)">三全向轮逆运动学 IK</div><div class="d">轮角 0°/120°/240°，(vx,vy,wz) → 三轮占空比；峰值归一化防饱和，占空比钳位 40%</div></div>
+      <div class="arrow v" style="height:16px">↓</div>
+      <div class="node violet"><div class="h">TB6612×2 · LEDC 20kHz 10-bit</div><div class="d">每轮 PWM+IN1+IN2；STBY 分置 IO51/IO52</div></div>
+      <div class="arrow v" style="height:16px">↓</div>
+      <div class="node teal"><div class="h">PCNT ×3 正交编码器回采</div><div class="d">28 CPR 电机轴 · 100ms 窗 + EMA 测速/里程</div></div>
+    </div>
+  </div>
+
+  <!-- 堵转保护 FSM -->
+  <div class="band rose" style="margin-top:18px">
+    <span class="lbl">电机堵转过流保护（硬需求 · 闭环守护）</span>
+    <div class="row center" style="gap:10px;flex-wrap:nowrap">
+      <div class="step teal on"><div class="t">采样</div><div class="s">INA219 电流<br>+ 编码器转速</div></div>
+      <div class="arrow">→</div>
+      <div class="step rose"><div class="t">判定堵转</div><div class="s">电流&gt;350mA 且<br>duty&gt;30% 且 |rpm|&lt;5</div></div>
+      <div class="arrow">→</div>
+      <div class="step rose on"><div class="t">急停</div><div class="s">持续 200ms →<br>拉低 STBY + FAULT</div></div>
+      <div class="arrow">→</div>
+      <div class="step on"><div class="t">试探恢复</div><div class="s">3 次重试（3s 间隔）<br>仍堵则锁定</div></div>
+    </div>
+    <div class="note" style="margin-top:8px">实测单电机堵转电流约 400mA；抬起→冻结轮子 ≤50ms、堵转→急停 ≤250ms（设计目标）。</div>
+  </div>
+</div></body></html>

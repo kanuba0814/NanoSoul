@@ -46,6 +46,10 @@ assets/emote/
 # ---- 个人本地 Claude 配置（.claude/skills 与 settings.json 仍可提交） ----
 .claude/settings.local.json
 
+# ---- 竞赛作品报告：保留 build_report.py/figures/diagrams/模板源，忽略脚本重跑生成的成品 ----
+docs/report/*.docx
+docs/report/*.pdf
+
 # ---- 外壳 CAD：保留 .py/.scad/.md 源，忽略生成的 3D/渲染 ----
 enclosure/*.step
 enclosure/*.stl

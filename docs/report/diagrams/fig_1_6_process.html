@@ -1,0 +1,89 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css">
+<style>
+.stage{border:2px solid var(--blue);border-radius:14px;padding:16px 16px 18px;position:relative;background:#fcfdff;margin-bottom:6px}
+.stage>.lbl{position:absolute;top:-13px;left:18px;background:var(--paper);padding:0 10px;font-weight:800;font-size:15.5px;color:var(--blue)}
+.stage.slate{border-color:var(--slate)} .stage.slate>.lbl{color:var(--slate)}
+.stage.plain{border-color:var(--line)} .stage.plain>.lbl{color:var(--ink)}
+.stage.conv{border-color:var(--violet)} .stage.conv>.lbl{color:var(--violet)}
+.lanehdr{display:block;width:fit-content;font-weight:800;font-size:14px;color:#fff;padding:4px 16px;border-radius:8px;margin:8px 0 3px}
+.lanehdr.hw{background:var(--amber)} .lanehdr.sw{background:var(--teal)}
+.lane{display:flex;align-items:center;gap:8px;padding:2px 2px}
+.lstep{flex:1;border:2px solid var(--line);border-radius:9px;padding:8px 10px;text-align:center;background:#fff}
+.lstep .t{font-weight:800;font-size:14.5px} .lstep .s{font-size:12px;color:var(--slate);margin-top:2px}
+.lstep.hw{border-color:var(--amber);background:var(--amber-bg)}
+.lstep.sw{border-color:var(--teal);background:var(--teal-bg)}
+.a{color:var(--blue-mid);font-weight:800;font-size:20px;flex:0 0 auto}
+.sync{text-align:center;font-size:13px;color:var(--amber);font-weight:700;margin:2px 0}
+.carrow{text-align:center;color:var(--blue-mid);font-weight:800;font-size:20px;margin:2px 0}
+.snode{flex:1;border:2px solid var(--violet);background:var(--violet-bg);border-radius:9px;padding:9px 12px;text-align:center}
+.snode .t{font-weight:800;font-size:15px} .snode .s{font-size:12px;color:var(--slate);margin-top:2px}
+</style></head>
+<body><div class="fig wide">
+  <div class="fig-title">设计流程与团队协作（软硬分离 · 并行开发）</div>
+  <div class="fig-sub">硬件线与软件线以「接口真值源」为契约解耦、并行推进，在上板联合调试处收敛为整机闭环；秉持「复用优先、关键逻辑自研、全程人工复核」的工程原则</div>
+
+  <!-- 阶段一 共识 -->
+  <div class="stage">
+    <span class="lbl">阶段一　需求与架构共识（全队）</span>
+    <div class="row">
+      <div class="node grow"><div class="h">需求定义</div><div class="d">桌面陪伴 · 端侧边缘 AI · 断网可演示</div></div>
+      <div class="a" style="display:flex;align-items:center">→</div>
+      <div class="node grow"><div class="h">系统架构</div><div class="d">感知—决策—表达/运动分层 · 云端不进决策回路</div></div>
+      <div class="a" style="display:flex;align-items:center">→</div>
+      <div class="node grow"><div class="h">软硬分工</div><div class="d">硬件线 ∥ 软件线，明确各自交付物与边界</div></div>
+    </div>
+  </div>
+  <div class="carrow">↓　拆解出跨线接口　↓</div>
+
+  <!-- 阶段二 接口契约 -->
+  <div class="stage slate">
+    <span class="lbl">阶段二　接口契约（软硬解耦的关键 · 单一真值源）</span>
+    <div class="row">
+      <div class="node slate grow"><div class="h">引脚映射</div><div class="d">BOARD_MAPPING.md · 洞洞板/载板双列</div></div>
+      <div class="node slate grow"><div class="h">总线与通信协议</div><div class="d">I²C 地址 · NDJSON / WebSocket 协议真值源</div></div>
+      <div class="node slate grow"><div class="h">数据结构约定</div><div class="d">遥测快照 · 事件枚举 · 配置 config.json</div></div>
+    </div>
+  </div>
+  <div class="carrow">↓　两线按契约并行、互不阻塞　↓</div>
+
+  <!-- 阶段三 并行开发 -->
+  <div class="stage plain">
+    <span class="lbl">阶段三　并行开发（两线按契约并行、互不阻塞）</span>
+    <div class="lanehdr hw">硬件线</div>
+    <div class="lane">
+      <div class="lstep hw"><div class="t">器件选型</div><div class="s">P4 主控 · 电机/传感/电源</div></div>
+      <div class="a">→</div>
+      <div class="lstep hw"><div class="t">原理图</div><div class="s">circuit-synth 代码化</div></div>
+      <div class="a">→</div>
+      <div class="lstep hw"><div class="t">PCB 四层布线</div><div class="s">KiCad + Freerouting · DRC 清零</div></div>
+      <div class="a">→</div>
+      <div class="lstep hw"><div class="t">洞洞板焊接实物</div><div class="s">layout.py 自动核查</div></div>
+    </div>
+    <div class="sync">↕　接口变更即双向同步（更新 BOARD_MAPPING / 协议真值源，另一线随即对齐）　↕</div>
+    <div class="lanehdr sw">软件线</div>
+    <div class="lane">
+      <div class="lstep sw"><div class="t">固件架构分层</div><div class="s">约 26 组件 · 事件总线解耦</div></div>
+      <div class="a">→</div>
+      <div class="lstep sw"><div class="t">驱动 / 组件</div><div class="s">Phase 0–F 增量</div></div>
+      <div class="a">→</div>
+      <div class="lstep sw"><div class="t">本地算法</div><div class="s">视觉认主 · 决策 · 语音</div></div>
+      <div class="a">→</div>
+      <div class="lstep sw"><div class="t">测试体系 + 上位机</div><div class="s">覆盖注入 · 浏览器测试台</div></div>
+    </div>
+  </div>
+  <div class="carrow">↓　两线收敛　↓</div>
+
+  <!-- 阶段四 联合调试与集成 -->
+  <div class="stage conv">
+    <span class="lbl">阶段四　联合调试 · 系统集成 · 验收（全队）</span>
+    <div class="row" style="align-items:stretch">
+      <div class="snode"><div class="t">上板 bring-up</div><div class="s">硬件供电/信号 × 软件自检矩阵<br>13 PASS 逐项对表</div></div>
+      <div class="a" style="display:flex;align-items:center">→</div>
+      <div class="snode"><div class="t">系统集成实测</div><div class="s">语音对话 · 视觉认主 · 运动决策<br>整机闭环联调</div></div>
+      <div class="a" style="display:flex;align-items:center">→</div>
+      <div class="snode"><div class="t">断网演示验收</div><div class="s">本地感知—决策闭环<br>现场断网照常运行</div></div>
+    </div>
+  </div>
+
+  <div class="note"><b>协作机制：</b>以 git 分支管理并行工作；接口真值源单一化，任一改动同步双线；<b>测试上位机作为软硬联调的统一界面</b>（软件注入刺激、硬件回读反应）；各线程以 AI 辅助提效，原理图/布线/电平/上电顺序等关键项一律人工复核。</div>
+</div></body></html>

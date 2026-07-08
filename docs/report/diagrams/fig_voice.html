@@ -1,0 +1,29 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide">
+  <div class="fig-title">语音对话链路（唤醒 → 识别 → 对话 → 合成 → 播放）</div>
+  <div class="fig-sub">两段式唤醒（能量 VAD + 文本级唤醒词门）避免误触发；离线自动降级、空文本静默丢弃；云端仅在联网时参与</div>
+
+  <div class="row center" style="flex-wrap:nowrap;gap:8px;margin-bottom:6px">
+    <div class="step teal on"><div class="t">① 能量 VAD</div><div class="s">RMS&gt;1500<br>持续 200ms</div></div>
+    <div class="arrow">→</div>
+    <div class="step teal"><div class="t">② 预卷+录音</div><div class="s">1s 预卷环<br>≤8s / 尾静 800ms</div></div>
+    <div class="arrow">→</div>
+    <div class="step amber"><div class="t">③ ASR 识别</div><div class="s">seed-asr-2.0<br>WSS 流式</div></div>
+    <div class="arrow">→</div>
+    <div class="step on"><div class="t">④ 唤醒词门</div><div class="s">文本含"小王"?<br>取其后内容</div></div>
+    <div class="arrow">→</div>
+    <div class="step amber"><div class="t">⑤ LLM 对话</div><div class="s">火山方舟 Ark<br>max_tokens 512</div></div>
+    <div class="arrow">→</div>
+    <div class="step amber"><div class="t">⑥ TTS 合成</div><div class="s">seed-tts-2.0<br>PCM 直出</div></div>
+    <div class="arrow">→</div>
+    <div class="step violet on"><div class="t">⑦ 播放</div><div class="s">PA 使能<br>期间不读麦</div></div>
+  </div>
+
+  <div class="row" style="gap:16px;margin-top:20px">
+    <div class="node teal grow"><div class="h">唤醒词文本门（自研）</div><div class="d">识别文本含唤醒词「小王」才应答，取最后一次出现之后的文本发给对话；纯召唤（后无内容）→ 回「在呢~」并打开续聊窗</div></div>
+    <div class="node grow"><div class="h">免唤醒续聊窗 8s</div><div class="d">应答/召唤后 8 秒内无需再说唤醒词，可直接续问，贴近自然对话</div></div>
+    <div class="node rose grow"><div class="h">降级与防误触</div><div class="d">离线：跳过云回合、放兜底提示音；空文本（误唤醒）：静默丢弃；播放期间不读麦，防声学回授</div></div>
+  </div>
+
+  <div class="note"><b>音频通道：</b>ES8311 codec + NS4150B 功放，I²S 全双工 16kHz/16bit/mono。<b>ASR 协议：</b>WSS 单流二进制分帧自实现（<span class="mono">volc_asr.c</span>：4 字节大端头、200ms/6400B 音频帧、gzip 采用 RFC1951 stored 块规避端侧压缩库问题）。<b>升级路径：</b>ESP-SR WakeNet9 声学唤醒（srmodel 3MB 分区已预留）。</div>
+</div></body></html>
