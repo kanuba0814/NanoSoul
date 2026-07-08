@@ -13,12 +13,15 @@
 
 #include "driver/i2c_master.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include "lvgl.h"
 
+#include "board_i2c0.h"
 #include "board_i2c1.h"
+#include "camera.h"
 #include "display.h"
 #include "drv_encoder.h"
 #include "drv_ina219.h"
@@ -157,6 +160,13 @@ static bool  s_lifted;
 static float s_lux;
 static char  s_scan_buf[80] = "I2C1: (scanning...)";
 
+// —— 相机 (OV5647 MIPI-CSI via esp_video)：探到=在线，帧数在涨=在流 ——
+static bool     s_cam_present;               // OV5647 探到 + CSI/V4L2 起来
+static uint32_t s_cam_frames;                // 最新累计帧
+static float    s_cam_fps;                   // ~1s 窗口帧率
+static int      s_cam_w, s_cam_h;            // 传感器采集分辨率
+static char     s_cam_note[48] = "CAM: (init...)";  // 探不到/失败时的原因
+
 static volatile int  s_active = -1;         // 当前驱动的电机，-1=idle
 static volatile char s_state[8]  = "idle";
 static volatile bool s_abort;
@@ -166,7 +176,7 @@ static QueueHandle_t s_drive_q;
 
 // LVGL 对象
 static lv_obj_t *lbl_drive, *lbl_mot[MOTOR_COUNT], *lbl_cur, *lbl_imu, *lbl_lux,
-                *lbl_scan, *lbl_hint;
+                *lbl_cam, *lbl_scan, *lbl_hint;
 
 // ———————————————————————————————————————————————————————————————
 // I²C1 扫描
@@ -195,6 +205,8 @@ static void sampler_task(void *arg)
 {
     (void)arg;
     bool scanned = false;
+    int64_t cam_t0 = 0;          // fps 窗口起点 (us)
+    uint32_t cam_f0 = 0;         // 窗口起点帧数
     for (;;) {
         for (int i = 0; i < MOTOR_COUNT; i++) {
             s_cnt[i] = encoder_count(i);
@@ -214,6 +226,19 @@ static void sampler_task(void *arg)
         }
         if (s_lux_present) {
             s_lux = bh1750_read_lux(s_lux);
+        }
+        if (s_cam_present) {
+            uint32_t f = camera_frame_count();
+            s_cam_frames = f;
+            int64_t now = esp_timer_get_time();
+            if (cam_t0 == 0) {
+                cam_t0 = now;
+                cam_f0 = f;
+            } else if (now - cam_t0 >= 1000000) {   // 每 ~1s 结算一次帧率
+                s_cam_fps = (float)(f - cam_f0) * 1e6f / (float)(now - cam_t0);
+                cam_t0 = now;
+                cam_f0 = f;
+            }
         }
         if (!scanned || s_scan_req) {
             do_i2c1_scan();
@@ -337,6 +362,14 @@ static void ui_tick(lv_timer_t *t)
     }
     lv_label_set_text(lbl_lux, buf);
 
+    if (s_cam_present) {
+        snprintf(buf, sizeof buf, "CAM: %dx%d %dfps f=%u", s_cam_w, s_cam_h,
+                 (int)lroundf(s_cam_fps), (unsigned)s_cam_frames);
+    } else {
+        snprintf(buf, sizeof buf, "%s", s_cam_note);
+    }
+    lv_label_set_text(lbl_cam, buf);
+
     lv_label_set_text(lbl_scan, s_scan_buf);
 
     if (active >= 0) {
@@ -401,7 +434,8 @@ static void build_ui(void)
     lbl_cur    = mklabel(scr, 296, &lv_font_montserrat_28, 0xFFFFFF);
     lbl_imu    = mklabel(scr, 350, &lv_font_montserrat_20, 0x80D0FF);
     lbl_lux    = mklabel(scr, 384, &lv_font_montserrat_20, 0x80D0FF);
-    lbl_scan   = mklabel(scr, 424, &lv_font_montserrat_20, 0xA0A0A0);
+    lbl_cam    = mklabel(scr, 424, &lv_font_montserrat_20, 0x80FFC0);
+    lbl_scan   = mklabel(scr, 458, &lv_font_montserrat_20, 0xA0A0A0);
     lbl_hint   = mklabel(scr, 560, &lv_font_montserrat_28, 0x80FF80);
 
     lv_label_set_text(lbl_drive, "DRIVE: idle");
@@ -411,6 +445,7 @@ static void build_ui(void)
     lv_label_set_text(lbl_cur, "CUR: --");
     lv_label_set_text(lbl_imu, "IMU: --");
     lv_label_set_text(lbl_lux, "LUX: --");
+    lv_label_set_text(lbl_cam, s_cam_note);
     lv_label_set_text(lbl_scan, s_scan_buf);
     lv_label_set_text(lbl_hint, "HINT: tap M0/M1/M2 · STOP=急停");
 
@@ -427,6 +462,26 @@ esp_err_t test_app_start(void)
     ina219_init(bus);          // 探不到不致命
     imu_probe_init(bus);
     bh1750_probe_init(bus);
+
+    // 相机 (OV5647 SCCB 在 board I²C0)：探不到/失败都不致命，只在屏上标原因。
+    // camera_init 会先探 0x36，探不到直接返回 NOT_FOUND（不碰 CSI，避免浪涌）。
+    esp_err_t cerr = camera_init(board_i2c0_bus());
+    if (cerr == ESP_OK) {
+        camera_sensor_wh(&s_cam_w, &s_cam_h);
+        if (camera_start() == ESP_OK) {
+            s_cam_present = true;
+            ESP_LOGI(TAG, "camera streaming %dx%d", s_cam_w, s_cam_h);
+        } else {
+            snprintf(s_cam_note, sizeof s_cam_note, "CAM: streamon fail");
+            ESP_LOGE(TAG, "camera_start failed");
+        }
+    } else if (cerr == ESP_ERR_NOT_FOUND) {
+        snprintf(s_cam_note, sizeof s_cam_note, "CAM: not found @0x36 (SCCB)");
+        ESP_LOGW(TAG, "OV5647 未探到 —— 相机离线");
+    } else {
+        snprintf(s_cam_note, sizeof s_cam_note, "CAM: CSI fail %s", esp_err_to_name(cerr));
+        ESP_LOGE(TAG, "camera_init: %s", esp_err_to_name(cerr));
+    }
 
     s_drive_q = xQueueCreate(4, sizeof(int));
     if (!s_drive_q) return ESP_ERR_NO_MEM;
