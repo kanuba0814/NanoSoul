@@ -20,7 +20,7 @@ NanoSoul/
 ├── sdcard_template/      SD 卡配置模板（真实密钥只在卡上，不进仓库）
 ├── perfboard/            洞洞板焊接版（7×9cm，layout.py 单一真值源）
 ├── pcb/                  载板 PCB：circuit-synth（代码优先）→ KiCad 10
-├── enclosure/            外壳（史莱姆形，cadquery 参数化 → STEP/STL）
+├── enclosure/            外壳（~~史莱姆形，cadquery 参数化 → STEP/STL~~ solidworks 2024重新手绘）
 └── .vscode/              编辑器任务（默认板外可跑，不含 flash/monitor）
 ```
 
