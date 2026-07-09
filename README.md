@@ -56,4 +56,4 @@ pcb/scripts/generate.fish     # 生成 pcb/output/NanoSoul.kicad_*
 
 ## 外壳（`enclosure/`）
 
-史莱姆形（底径 Ø160 × 高 93mm，前脸 20° 后仰 facet 嵌屏，三全向轮 120° 布置、一后两前）。cadquery 参数化建模（`enclosure/model/`）→ STEP/STL。⚠️ 当前模型基于旧 92×92 载板，需按 62×72 板重对齐——见 `enclosure/DESIGN.md`。
+史莱姆形（趴在桌上、仰头看人），**SolidWorks 2024 手绘建模**。源文件 = [`enclosure/models/`](enclosure/models/)（`*.SLDPRT` 零件 + `装配体.SLDASM`），可打印件导出在 `enclosure/models/stls/`（STL / 3mf）。
