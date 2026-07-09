@@ -1,0 +1,76 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide" id="cap">
+  <div class="fig-title">NanoSoul 系统整体框图</div>
+  <div class="fig-sub">感知 → 决策 → 表达/运动 全链路在 ESP32-P4 本地闭环；云端仅承担深度对话，不进入实时决策回路（断网可运行）</div>
+
+  <!-- 云端 -->
+  <div class="band amber" style="margin-bottom:8px">
+    <span class="lbl">云端服务（火山引擎，经 HTTPS/WSS，非实时决策）</span>
+    <div class="row">
+      <div class="node amber grow"><div class="h">语音识别 ASR</div><div class="d">doubao-seed-asr-2.0 · WSS 流式</div></div>
+      <div class="node amber grow"><div class="h">大模型对话 LLM</div><div class="d">火山方舟 Ark / 兼容 Anthropic·OpenAI</div></div>
+      <div class="node amber grow"><div class="h">语音合成 TTS</div><div class="d">doubao-seed-tts-2.0 · PCM 直出</div></div>
+    </div>
+  </div>
+  <div class="row center" style="gap:12px;margin:2px 0 8px">
+    <div class="flowlabel" style="color:var(--amber)">▲ 仅在联网时上行文本 / 下行语音　▼</div>
+    <div style="flex:1;border-top:2px dashed var(--amber)"></div>
+    <span class="tag amber">网络边界 · 断网降级</span>
+    <div style="flex:1;border-top:2px dashed var(--amber)"></div>
+  </div>
+
+  <!-- 端侧 -->
+  <div class="band" style="border-color:var(--blue);border-style:solid">
+    <span class="lbl">端侧计算核心：ESP32-P4（RISC-V 双核 400MHz + 32MB PSRAM）· 板载 C6 WiFi6</span>
+    <div class="row" style="align-items:stretch">
+
+      <!-- 感知域 -->
+      <div class="band teal" style="flex:1.05">
+        <span class="lbl">感知域</span>
+        <div class="col">
+          <div class="node teal"><div class="h">视觉　OV5647 → PPA → ESP-DL</div><div class="d">人脸检测 + 认主识别　8 fps 全本地</div></div>
+          <div class="node teal"><div class="h">运动姿态　QMI8658 IMU</div><div class="d">碰撞 / 抬起 / 倾斜　软件检测</div></div>
+          <div class="node teal"><div class="h">环境 & 电机　BH1750 / INA219 / 编码器</div><div class="d">暗光→睡眠 · 电流+转速→堵转判定</div></div>
+        </div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <!-- 决策核心 -->
+      <div class="col center" style="flex:1">
+        <div class="node" style="border-width:3px;text-align:center;width:100%">
+          <div class="h" style="font-size:20px;color:var(--blue)">决策核心　soul</div>
+          <div class="d" style="font-size:14px">9+2 状态机 · 10 Hz<br>全本地自主决策<br><b>唯一决策中枢</b></div>
+        </div>
+        <div class="flowlabel">经 telemetry 共享快照读入<br>经事件总线接收离散事件</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <!-- 执行域 -->
+      <div class="band violet" style="flex:1.05">
+        <span class="lbl">表达 / 运动域</span>
+        <div class="col">
+          <div class="node violet"><div class="h">表情脸　ST7701 480×640</div><div class="d">esp_emote_gen_player · 640×480@30fps</div></div>
+          <div class="node violet"><div class="h">语音　ES8311 + NS4150B</div><div class="d">唤醒词门 + 续聊窗 · 全双工</div></div>
+          <div class="node violet"><div class="h">运动　IK → TB6612×2 → 三全向轮</div><div class="d">五级仲裁 + 堵转急停 · 编码器回采</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 共享底座 -->
+    <div class="row" style="margin-top:16px;gap:14px">
+      <div class="node slate grow"><div class="h">telemetry　共享状态快照 + 事件总线</div><div class="d">NANOSOUL_EVENT · 模块解耦、不直接互调</div></div>
+      <div class="node slate grow"><div class="h">storage　SD 卡</div><div class="d">config.json / 认主特征库 / 识别模型</div></div>
+      <div class="node slate grow"><div class="h">netlink / companion　WiFi + 上位机</div><div class="d">SNTP · mDNS · WebSocket 遥测</div></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="k"><span class="sw" style="border-color:var(--teal);background:var(--teal-bg)"></span>感知</span>
+    <span class="k"><span class="sw" style="border-color:var(--blue);background:var(--blue-bg)"></span>决策核心</span>
+    <span class="k"><span class="sw" style="border-color:var(--violet);background:var(--violet-bg)"></span>表达/运动</span>
+    <span class="k"><span class="sw" style="border-color:var(--slate);background:var(--slate-bg)"></span>共享底座</span>
+    <span class="k"><span class="sw" style="border-color:var(--amber);background:var(--amber-bg)"></span>云端（非决策回路）</span>
+  </div>
+</div></body></html>

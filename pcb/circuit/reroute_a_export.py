@@ -14,11 +14,13 @@ P = "/home/gxxl/NanoSoul/pcb/output/NanoSoul/NanoSoul.kicad_pcb"
 DSN = "/home/gxxl/NanoSoul/pcb/output/NanoSoul/NanoSoul.dsn"
 b = pcbnew.LoadBoard(P)
 
+# 坑 #1：GetDrawings 在 b.Remove 后偶发不可迭代 → 在任何增删前先物化
+drawings = list(b.GetDrawings())
 for t in list(b.GetTracks()):
     b.Remove(t)
 
-# 一遍过 GetDrawings()（避免 b.Add 后再次迭代）：删外框旧段 + 挖孔 RECT 外扩 CUT
-for d in list(b.GetDrawings()):
+# 删外框旧段 + 挖孔 RECT 外扩 CUT（用已物化列表）
+for d in drawings:
     if d.GetLayer() != pcbnew.Edge_Cuts or d.GetClass() != "PCB_SHAPE":
         continue
     if d.GetShape() == pcbnew.SHAPE_T_SEGMENT:

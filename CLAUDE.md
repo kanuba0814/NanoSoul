@@ -2,13 +2,13 @@
 
 本文件是 Claude 在本仓库工作的约定。**`docs/` 是项目标准**，本文件只补「怎么干活」，不复述 docs；冲突以 `docs/` 为准。
 
-## 团队语气（红线）
+## 协作口吻
 
-队友是**平等的合作者**，不是新员工。文档、注释、commit、PR 一律**不用**「新人入门 / onboarding / 第一个 PR / 上手教程」这类措辞。写给同行看，别写成培训材料。
+文档、注释、commit、PR 都写给同行看，用平实的工程语气，不用「新人入门 / onboarding / 上手教程」这类培训措辞。
 
-## 开发铁律（来自 docs/03）
+## 开发取向：复用优先
 
-每写一行前过三级过滤：**能用现成不写 → 能 AI 不手搓 → 才轮到手搓**。乐鑫官方/官方背书且支持 P4 的现成件优先；现成没有的先 AI 出、人复核；只有「现成没有 + AI 不可靠 + 关系成败」才亲手写。
+优先复用乐鑫官方/官方背书且支持 P4 的成熟组件；现成没有的先由 AI 产出、人工复核；自研精力集中在本地感知决策等差异化内核。
 
 ## 板外纪律（重要）
 
@@ -40,12 +40,14 @@ idf.py build      # 板外必过；commit 前跑
 - **I²C1 总线**（`SDA=IO20 / SCL=IO21`，挂 4 个从机，地址互不冲突；长线/多挂跑 100kHz + 2.2k 上拉）：
   - IMU **QMI8658**（`0x6A/0x6B`，`INT=IO23`）——走 I²C（实物模块无 CS 脚）；用 SensorLib/社区驱动；碰撞=Tap、抬起=Wake-on-Motion 片上事件出中断。
   - 环境光 **BH1750**（`0x23`）、电流 **INA219**（`0x40`，读电机电流做堵转判定）、电量 **MAX17048**（`0x36`，VLogic 接 3V3）。
-- **电机 ×3（2×TB6612FNG）**：PWM 用 **LEDC 或 MCPWM，~20kHz**；每电机 PWM+IN1+IN2，两片共用 **`STBY=IO52`**（拉低=急停）。
+- **电机 ×3（2×TB6612FNG）**：PWM 用 **LEDC，20kHz**（现实现 `main/drv_motor.c`）；每电机 PWM+IN1+IN2；两片 STBY **分置：M0/M1 桥=`IO51`、M2 桥=`IO52`**（实物杜邦没并到一起，固件同拉同放，拉低=急停）。
   - `M0: PWM=IO2 IN1=IO3 IN2=IO4` · `M1: IO5/IO24/IO25` · `M2: IO26/IO27/IO32`。真值表见 docs。
-- **编码器 ×3（PCNT 正交解码）**：A/B 是**集电极开漏 → 必须启用上拉**（`gpio_pullup_en` / PCNT 通道 pull-up，拉到 **3V3**）；`7PPR×118 = 826/相`，正交 ×4 = **3304 计数/圈**。
+- **编码器 ×3（PCNT 正交解码）**：A/B 是**集电极开漏 → 必须启用上拉**（`gpio_pullup_en` / PCNT 通道 pull-up，拉到 **3V3**）；固件按**电机轴**口径计数 `ENC_COUNTS_PER_REV=28`（7PPR×4，`main/drv_encoder.h`）；输出轴一圈 = 28×118 = **3304**（仅换算里程用，别混口径）。
   - `M0: A/B=IO30/IO31` · `M1: IO28/IO29` · `M2: IO46/IO47`。确认 P4 PCNT 单元 ≥3 路，不够的用 GPIO ISR 兜底。
 - **电机堵转过流保护（硬需求）**：固件读 **INA219 电流 + 编码器不动** → 拉低 STBY 急停。实测电机堵转 400mA/个、3 个全堵 1.2A。
+- **轮速闭环 + 里程计**：`main/app_wheelctrl.c`（前馈+PI，官方 pid_ctrl）+ `components/motion/odom.c`；校准流程/参数真值 = [`docs/14_底盘校准与闭环_v1.md`](docs/14_底盘校准与闭环_v1.md)，`motion.calib.closed_loop=false` 一键回开环。
 - 引脚是杜邦接的、可改；改了**同步更新本节 + `docs/BOARD_MAPPING.md`**。flash/monitor 谁有板谁本地跑（板外纪律）。
+- **测试模式**：上电时 **IO48 短接 GND** → 进 TEST 模式（完整运行时 + 传感覆盖注入 + `motor_test` + USB-Serial-JTAG NDJSON 通道 + 浏览器测试上位机 `tools/testhost/`），开路 = 正常 FACE。协议/真值/用法见 [`docs/13_测试模式与上位机_v1.md`](docs/13_测试模式与上位机_v1.md)。TEST 模式下 USJ 用作协议口、日志走 UART0（`ESP_CONSOLE_SECONDARY_NONE`）。
 
 ## 载板 PCB
 

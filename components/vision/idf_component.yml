@@ -1,0 +1,8 @@
+dependencies:
+  idf:
+    version: ">=5.5"
+  espressif/human_face_detect:
+    version: "^0.5.0"
+  # human_face_recognition 不走注册表: 已发布的 0.3.2 归档钉死 human_face_detect
+  # ~0.4.1, 与上面锁定的 0.5.0 无解. 改为 vendor 进 components/human_face_recognition
+  # (esp-dl repo @ f43b41f, 即 detect 0.5.0 的发布 commit, API 与本地 esp-dl 3.3.0 对齐).

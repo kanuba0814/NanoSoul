@@ -1,0 +1,44 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig">
+  <div class="fig-title">供电与共地拓扑（双电源 · 单点星地）</div>
+  <div class="fig-sub">逻辑与电机分两套电源轨、必须共地；地回流走宽短母排干线并单点星接，避免大电流在细线上压降拖垮桥电压</div>
+
+  <div class="row" style="align-items:stretch;gap:26px">
+    <!-- 逻辑轨 -->
+    <div class="band" style="flex:1;border-color:var(--blue);border-style:solid">
+      <span class="lbl">逻辑电源轨（USB）</span>
+      <div class="col center">
+        <div class="node"><div class="h">电脑 USB 5V</div></div>
+        <div class="arrow v">↓</div>
+        <div class="node"><div class="h">开发板板载 LDO</div><div class="d">3V3 逻辑 + GPIO</div></div>
+        <div class="arrow v">↓</div>
+        <div class="node plain"><div class="h">3V3 竖脊</div><div class="d">I²C 模块 VCC · 编码器 VCC<br>（编码器只接 3V3，禁接电机轨）</div></div>
+      </div>
+    </div>
+
+    <!-- 电机轨 -->
+    <div class="band rose" style="flex:1.15">
+      <span class="lbl">电机电源轨（电池）</span>
+      <div class="col center">
+        <div class="node rose"><div class="h">1S LiPo 3.7V</div><div class="d">TP4056 充电（充电时单独取下）</div></div>
+        <div class="arrow v">↓</div>
+        <div class="node rose"><div class="h">XL6009 升压 → 5.9V</div><div class="d">空载先校准电压再接入</div></div>
+        <div class="arrow v">↓</div>
+        <div class="node rose"><div class="h">INA219 串测总电流</div><div class="d">0.1Ω shunt → 堵转输入</div></div>
+        <div class="arrow v">↓</div>
+        <div class="node rose"><div class="h">红轨 +5.9V（粗母排）</div><div class="d">仅供 TB6612 VM · 每桥 100µF+0.1µF 去耦</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 星地 -->
+  <div class="row center" style="margin-top:8px">
+    <div class="arrow v">↓</div>
+  </div>
+  <div class="node slate" style="text-align:center;border-width:3px">
+    <div class="h" style="font-size:18px">★ 单点星地锚点（XL6009 OUT−）</div>
+    <div class="d">两套电源在此单点汇合共地；背面裸镀锡铜线做 GND 网格 + 底干线双股加粗，桥地经短锡桥就近回流</div>
+  </div>
+
+  <div class="note"><b>实测踩坑与解决：</b>初版地回流走细跳线，电机一转，桥 VM 从 6.1V 塌到 1.3V（安培级电流在细线上压降约 5V）。改为宽短母排干线 + 单点星地后，带载 VM 稳定 ≥5.5V、桥地对星地≈0V。<b>电机堵转保护：</b>INA219 电流>350mA 且编码器不动持续 200ms → 拉低 STBY 急停（见运动控制小节）。</div>
+</div></body></html>

@@ -1,16 +1,37 @@
 # NanoSoul test 分支默认配置（目标由 idf.py set-target esp32p4 写入 sdkconfig）
 CONFIG_IDF_TARGET="esp32p4"
 
-# Flash 8MB（开发板 ≥16MB；A/B 双分区需 ≥4MB）
-CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+# Flash 16MB（开发板板载 ≥16MB；整机固件 gfx+esp-dl+esp-sr+hosted 都要进 app）
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
 
 # 自定义分区（A/B OTA）
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
+# —— SD 卡 FATFS：开长文件名 (LFN)，否则 /sdcard/nanosoul/config.json 这类长名
+#    只以 8.3 别名 (CONFIG~1.JSO) 存在，fopen 长名直接失败、配置读不到 ——
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_FATFS_MAX_LFN=255
+
+# —— C6 WiFi (esp_hosted SDIO): 传输 mempool 必须留在内部 RAM ——
+# 曾开 MEMPOOL_PREFER_SPIRAM 治开机 OOM，实测是坑：SDIO 缓冲在 PSRAM 时，TLS 一来
+# (DSI 帧缓存+XIP+gzip 同抢 PSRAM 带宽) DMA/cache 一致性出错，长度寄存器读出 0x666
+# 之类垃圾 -> "Unrecoverable host sdio state" -> esp_hosted 整板重启。
+# OOM 改用砍队列深度解决 (20+20 -> 10+10，省 ~30KB 内部 RAM，语音链带宽够用)。
+CONFIG_ESP_HOSTED_MEMPOOL_PREFER_SPIRAM=n
+CONFIG_ESP_HOSTED_SDIO_TX_Q_SIZE=10
+CONFIG_ESP_HOSTED_SDIO_RX_Q_SIZE=10
+
+# SDIO RX 保持默认 STREAMING：板载 C6 slave (2.12.9) 跑 streaming，host 配 packet
+# 模式会在 transport 初始化直接 assert("SDIO mode mismatch")。此前怀疑 streaming
+# 流控 bug (esp-hosted-mcu #184) 是误导——真凶是上面的 PSRAM mempool。
+
 # 日志
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# 优化为体积 (-Os): 全栈 gfx+esp-dl+esp-sr+hosted+tls 同仓, 省 flash
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
 
 # 主任务栈（点屏 + 起任务）
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
@@ -25,9 +46,50 @@ CONFIG_CACHE_L2_CACHE_LINE_128B=y
 # esp_lcd MIPI-DSI 需要
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 
+# —— 相机 (esp_video MIPI-CSI): CSI ISR 走 cache-safe, 避免偶发 0x102 崩溃 ——
+CONFIG_CAM_CTLR_MIPI_CSI_ISR_CACHE_SAFE=y
+# OV5647 传感器驱动 (不开则 esp_video 无驱动 -> /dev/video0 不注册 -> open 失败)
+CONFIG_CAMERA_OV5647=y
+CONFIG_CAMERA_OV5647_AUTO_DETECT=y
+CONFIG_CAMERA_OV5647_AUTO_DETECT_MIPI_INTERFACE_SENSOR=y
+CONFIG_CAMERA_OV5647_MIPI_RAW8_800x1280_50FPS=y
+
+# —— 内部 RAM 吃紧 (gfx+wifi+esp-dl 同仓): 小于 4KB 才强制内部, 其余进 PSRAM ——
+# (否则字形 mask_buf 等小分配抢光 256KB 内部 SRAM -> "no mem for mask_buf")
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=4096
+
+# —— 人脸检测模型: MSRMNP s8 v1, 放 human_face_det flash 分区 ——
+CONFIG_HUMAN_FACE_DETECT_MODEL_IN_FLASH_PARTITION=y
+CONFIG_FLASH_HUMAN_FACE_DETECT_MSRMNP_S8_V1=y
+CONFIG_HUMAN_FACE_DETECT_MSRMNP_S8_V1=y
+
+# —— 人脸识别特征模型 (认主): MFN s8 v1 1.27MB, app rodata 放不下 (仅剩 ~43KB),
+#    从 SD 卡加载 (/sdcard/model/p4/human_face_feat_mfn_s8_v1.espdl, 手工拷入;
+#    目录名 model (单数) 是现役 SD 卡上的既成事实, 别改回组件默认 models/p4) ——
+CONFIG_HUMAN_FACE_FEAT_MODEL_IN_SDCARD=y
+CONFIG_HUMAN_FACE_FEAT_MODEL_SDCARD_DIR="model/p4"
+
+# —— 云端 LLM TLS: 用内置证书 bundle (OpenAI/Anthropic 兼容端点) ——
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
+
+# —— 上位机 WebSocket (esp_http_server) ——
+CONFIG_HTTPD_WS_SUPPORT=y
+
+# —— WS 客户端握手缓冲 (tcp_transport): 火山 openspeech 握手响应头 >1KB
+#    (一串 x-tt-* 追踪头), 默认 1024 直接 "Header size exceeded buffer size" ——
+CONFIG_WS_BUFFER_SIZE=4096
+
+# —— Console ——
+# Free the USB-Serial-JTAG peripheral for the testlink NDJSON channel (docs/13);
+# logs stay on UART0. TEST mode installs its own USJ driver, which conflicts with
+# a secondary console on the same peripheral.
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
 # —— LVGL ——
 CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_USE_BUILTIN_MALLOC=y
 CONFIG_LV_MEM_SIZE_KILOBYTES=128
+CONFIG_LV_FONT_MONTSERRAT_20=y
 CONFIG_LV_FONT_MONTSERRAT_28=y
 CONFIG_LV_FONT_MONTSERRAT_48=y

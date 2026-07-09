@@ -1,0 +1,44 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css"></head>
+<body><div class="fig wide">
+  <div class="fig-title">整机可测试性架构：生产者边界覆盖注入</div>
+  <div class="fig-sub">覆盖值注入到各传感生产者边界，之后走真实检测器 → 事件总线 → 决策 → 表情/电机全链路——测的是真核心代码对刺激的真实反应，而非旁路仿真</div>
+
+  <div class="row" style="align-items:stretch;gap:16px">
+    <!-- 上位机 -->
+    <div class="band slate" style="flex:.85">
+      <span class="lbl">测试上位机（零依赖）</span>
+      <div class="col">
+        <div class="node slate"><div class="h">浏览器测试台</div><div class="d">单文件 HTML · WebSocket + WebSerial 双通道</div></div>
+        <div class="node slate"><div class="h">命令行孪生 ns_probe</div><div class="d">无依赖 · 脚本化全流程 pass/fail</div></div>
+      </div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="flowlabel">NDJSON<br>协议</div><div class="arrow">→</div></div>
+
+    <!-- 注入 -->
+    <div class="col" style="flex:1.05">
+      <div class="node"><div class="h">testlink 协议核心 proto</div><div class="d">19 条命令 · USB-Serial-JTAG / WS 复用</div></div>
+      <div class="arrow v" style="height:14px">↓</div>
+      <div class="node amber"><div class="h">simsense 覆盖注入层</div><div class="d">通道 lux / accel / gyro / current / enc / face（带 TTL）</div></div>
+      <div class="arrow v" style="height:14px">↓ 在生产者边界覆盖原始读数</div>
+      <div class="node teal"><div class="h">真实传感生产者</div><div class="d">imu.c · light.c · vision · app_sense</div></div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="flowlabel">真实<br>检测器</div><div class="arrow">→</div></div>
+
+    <!-- 真实链路 -->
+    <div class="col" style="flex:1">
+      <div class="node teal"><div class="h">真实事件</div><div class="d">如注入加速度 → 产生真实 tap；注入电流 → 触发真实堵转</div></div>
+      <div class="arrow v" style="height:14px">↓</div>
+      <div class="node" style="border-width:3px"><div class="h" style="color:var(--blue)">soul 决策</div></div>
+      <div class="arrow v" style="height:14px">↓</div>
+      <div class="node violet"><div class="h">表情 / 电机 / 语音</div><div class="d">回读遥测验证反应</div></div>
+    </div>
+  </div>
+
+  <div class="row" style="gap:16px;margin-top:16px">
+    <div class="node plain grow"><div class="h">硬件自检矩阵</div><div class="d">SELFTEST 注册 32 项（含 motion/soul/expr/stall 纯逻辑仿真）；首轮上板 13 PASS / 4 SKIP / 1 FAIL</div></div>
+    <div class="node plain grow"><div class="h">进入方式</div><div class="d">上电时 IO48 短接 GND → TEST 模式（协议口走 USB-Serial-JTAG，日志走 UART0）</div></div>
+    <div class="node plain grow"><div class="h">刺激覆盖</div><div class="d">motor_test 单轮点动（参数夹限、FAULT 拒绝）· inject_event（tap/lifted/dark/wake…，wake 触发真实语音回合）</div></div>
+  </div>
+</div></body></html>

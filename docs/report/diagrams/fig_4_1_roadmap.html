@@ -1,0 +1,55 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><link rel="stylesheet" href="_style.css">
+<style>
+.newtag{display:inline-block;font-size:11.5px;font-weight:800;padding:1px 7px;border-radius:6px;
+  background:var(--amber);color:#fff;margin-left:6px;vertical-align:middle}
+.opttag{background:var(--slate)}
+.node.new{border-color:var(--amber);background:var(--amber-bg)}
+.node.opt{border-style:dashed;border-color:var(--slate);background:#f3f6f9}
+.hwbox{border:2px solid var(--amber);background:var(--amber-bg);border-radius:12px;padding:12px 16px}
+</style></head>
+<body><div class="fig wide">
+  <div class="fig-title">未来扩展：多模态定向跟随与情绪共情架构</div>
+  <div class="fig-sub">在现有端侧闭环上叠加声源定位、声纹、表情识别与传感融合；<b style="color:var(--amber)">橙色为新增</b>、<b style="color:var(--slate)">灰色虚线为可选</b>，其余复用现有链路</div>
+
+  <div class="row" style="align-items:stretch">
+    <!-- 感知输入 -->
+    <div class="band teal" style="flex:1.25">
+      <span class="lbl">感知输入</span>
+      <div class="col">
+        <div class="node teal"><div class="h">视觉人脸（现有）</div><div class="d">方位 cx + 距离代理 area · 认主</div></div>
+        <div class="node new"><div class="h">MEMS 麦克风阵列<span class="newtag">新增硬件</span></div><div class="d">声源定位 DOA（GCC-PHAT）+ ESP-SR AFE 回声消除/降噪</div></div>
+        <div class="node new"><div class="h">声纹 / 说话人验证<span class="newtag">新增</span></div><div class="d">轻量嵌入模型（ESP-DL int8，SD 加载）</div></div>
+        <div class="node new"><div class="h">面部表情识别 FER<span class="newtag">新增</span></div><div class="d">端侧 7 类情绪分类（复用摄像头）</div></div>
+        <div class="node opt"><div class="h">毫米波雷达<span class="newtag opttag">可选硬件</span></div><div class="d">无接触呼吸/心率/在场（UART）</div></div>
+      </div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="arrow">→</div></div>
+
+    <!-- 融合层 -->
+    <div class="col" style="flex:1;gap:16px;justify-content:center">
+      <div class="node new"><div class="h">多模态方位融合<span class="newtag">新增</span></div><div class="d">视觉方位 + 声源方位 + 距离 加权/卡尔曼融合 → 目标方位角</div></div>
+      <div class="node new"><div class="h">情绪状态估计<span class="newtag">新增</span></div><div class="d">表情 + 语音韵律 + 对话文本情感 → 情绪标签</div></div>
+    </div>
+
+    <div class="col center" style="justify-content:center"><div class="arrow">→</div></div>
+
+    <!-- 决策 + 执行 -->
+    <div class="col" style="flex:1;gap:14px;justify-content:center">
+      <div class="node" style="border-width:3px"><div class="h" style="color:var(--blue)">soul 决策（扩展）</div><div class="d">＋定向跟随行为<br>＋情绪共情策略</div></div>
+      <div class="arrow v" style="height:12px">↓</div>
+      <div class="node violet"><div class="h">全向轮定向跟随</div><div class="d">转向对准说话主人 · 保持社交距离 · 出视野凭声源转回</div></div>
+      <div class="node violet"><div class="h">表情 / 语音共情</div><div class="d">难过→安静靠近温柔；开心→活泼互动</div></div>
+    </div>
+  </div>
+
+  <!-- 新增硬件清单 -->
+  <div class="hwbox" style="margin-top:18px">
+    <div class="h" style="font-weight:800;color:var(--amber);font-size:16px;margin-bottom:6px">新增硬件清单</div>
+    <span class="pill">2～4 颗 I²S/PDM MEMS 麦克风阵列（已知几何间距，声源定位+波束成形）</span>
+    <span class="pill">（可选）24/60GHz 毫米波雷达模组（无接触生理/在场感知）</span>
+    <span class="pill">（可选）更高功率功放 + 喇叭（提升 TTS 音质）</span>
+    <span class="pill">摄像头 / 屏 / 电机 / 主控 沿用</span>
+  </div>
+  <div class="note">工程可落地性：视觉方位与全向轮已实现，麦阵列 DOA 与融合层为主要增量；表情识别、声纹均复用现有 ESP-DL 模型「SD 卡加载 + 优雅降级」框架，渐进部署、互不阻塞现有闭环。</div>
+</div></body></html>

@@ -27,9 +27,14 @@ if os.path.exists(ERC_SEV):
 rules = pro.setdefault("board", {}).setdefault("design_settings", {}).setdefault("rules", {})
 rules["min_copper_edge_clearance"] = 0.2
 
-# ②b DRC 全检查置 error（严控，0 告警），仅 footprint_type_mismatch 留 ignore：
-#    J2(USB-C) 是「SMD 信号盘 + NPTH 安装孔」混合件，KiCad 启发式据 NPTH 孔误判「应为 THT」，
-#    但它必须是 SMD（进 CPL 给 SMT 贴）——这正是 KiCad 把该检查默认设 ignore 的场景，非藏问题。
+# ②b DRC 全 62 项检查【全置 error，零 ignore】（goal 硬要求；不靠忽略任何检查项达成 0/0）。
+#    达成方式 = board 侧真修，而非 ignore：
+#      · footprint_type_mismatch：J2(USB-C) attr 由 SMD 改 through_hole（靠屏蔽脚 THT 安装属实；
+#        仍在 CPL 贴片点内、JLC 按 LCSC 料号定贴装）→ 该检查 error 级也过。
+#      · 6 项 parity(net_conflict/footprint_symbol_mismatch/…)：fix_sch_labels/fix_sch_fields/
+#        fix_board_meta/assign_nc_nets 把 .kicad_sch 按 .net(真值) 逐脚修通、板 Value/lib_id 回填、
+#        NC 脚配同名 unconnected 网 → 板↔原理图完全一致，error 级 parity = 0（见 docs/05 §9.2）。
+#    故 _DRC_IGNORE 为空。唯一规则例外 = J2 连接器内部 DRU（④，器件自身密脚几何，非放宽布线净空）。
 _DRC_CHECKS = [
     "annular_width", "clearance", "connection_width", "copper_edge_clearance", "copper_sliver",
     "courtyards_overlap", "creepage", "diff_pair_gap_out_of_range", "diff_pair_uncoupled_length_too_long",
@@ -46,18 +51,7 @@ _DRC_CHECKS = [
     "track_segment_length", "track_width", "tracks_crossing", "tuning_profile_track_geometries",
     "unconnected_items", "unresolved_variable", "via_dangling", "zones_intersect",
 ]
-_DRC_IGNORE = {
-    # ① J2(USB-C) 混合件：SMD 信号盘 + NPTH 安装孔，KiCad 据 NPTH 孔启发式误判「应 THT」，
-    #   但它必须 SMD（进 CPL 给 SMT 贴）——这正是该检查 KiCad 默认 ignore 的场景。
-    "footprint_type_mismatch",
-    # ② 「板 vs 原理图」对比类（schematic parity）：circuit-synth 开源导出的 .kicad_sch 是不可靠产物
-    #   —— 无导线(坑 #11) + 标签不一致 → KiCad 据它推断出的网/值是错的（实测 .kicad_sch 把 C1.1 判到
-    #   CELL_MINUS，而真值 .net 是 DW_VCC=去耦正确）。板由 .net(真值源) 建并已逐脚核对与 .net 完全一致，
-    #   故这些「板对原理图」检查是 ERC ignore(坑 #11) 在 DRC 端的等价处理，非藏真问题。
-    #   板内部检查（净空/短路/丝印/courtyard/孔/铜/线/区）全保持 error，已验 0。
-    "net_conflict", "footprint_symbol_mismatch", "footprint_symbol_field_mismatch",
-    "footprint_filters_mismatch", "extra_footprint", "missing_footprint",
-}
+_DRC_IGNORE = set()   # 【零 ignore】——全 62 项 error；parity/type 由 board 侧脚本真修(见上注 + docs/05 §9.2)
 drc_sev = pro["board"]["design_settings"].setdefault("rule_severities", {})
 for _k in _DRC_CHECKS:
     drc_sev[_k] = "ignore" if _k in _DRC_IGNORE else "error"
@@ -82,15 +76,17 @@ json.dump(pro, open(pro_path, "w"), indent=2)
 # ④ J2 USB-C 内部净空例外（器件自身密脚，非设计错）
 dru = os.path.join(PROJ, "NanoSoul.kicad_dru")
 open(dru, "w").write(
-    "(version 1)\n"
-    # J2(USB-C 合并盘/密脚)涉及的净空全放宽：连接器旁只有 VBUS/GND/CC 等 J2 自身相关网(低流)，
-    # CC 走线接到 J2 焊盘必然贴邻脚——这是器件几何，非设计错。
-    '(rule "J2_usbc_clearance"\n'
-    "  (condition \"A.Reference == 'J2' || B.Reference == 'J2'\")\n"
-    "  (constraint clearance (min 0.08mm)))\n"
-    '(rule "J2_usbc_hole"\n'
-    "  (condition \"A.Reference == 'J2' || B.Reference == 'J2'\")\n"
-    "  (constraint hole_clearance (min 0.12mm))\n"
-    "  (constraint hole_to_hole (min 0.12mm)))\n"
+    "(version 1)\n\n"
+    # 下面两条【只作用于 J2 连接器内部】(A、B 两对象都属 J2)，不放宽 J2 对板上任何走线/其他器件的间距
+    # (那些仍走全局 0.2mm)。依据(KiCad 几何引擎实测 + 可造性)：
+    #   · 连接器相邻脚(GND↔VBUS↔CC)铜-铜最小 0.100mm = JLCPCB 标准下限,可造、非短路。
+    #   · 连接器自带 NPTH 屏蔽/安装孔到 VBUS/GND 焊盘 0.185mm = 厂商安装孔几何。
+    #   这是真实元件内部几何,非布线产物;任何如实 USB-C 封装都低于 KiCad 0.2/0.25 保守默认。
+    '(rule "J2_usbc_internal_clearance"\n'
+    "  (condition \"A.Reference == 'J2' && B.Reference == 'J2'\")\n"
+    "  (constraint clearance (min 0.09mm)))\n"
+    '(rule "J2_usbc_internal_hole"\n'
+    "  (condition \"A.Reference == 'J2' && B.Reference == 'J2'\")\n"
+    "  (constraint hole_clearance (min 0.18mm)))\n"
 )
-print(f"配置已打：ERC忽略 + 边净空0.2 + Power网类0.6mm({len(POWER_NETS)}网) + J2 DRU 例外")
+print(f"配置已打：ERC忽略 + DRC 62项全 error(零 ignore) + 边净空0.2 + Power网类({len(POWER_NETS)}网) + J2 内部 DRU")
