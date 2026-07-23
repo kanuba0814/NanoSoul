@@ -42,7 +42,7 @@ idf.py build
 
 代码优先：用 [circuit-synth](https://github.com/circuit-synth/circuit-synth) 在 Python 里描述电路，生成 KiCad 10 工程。环境与运行见 [`pcb/README.md`](pcb/README.md)。
 
-当前板：**62×72mm、4 层**（几何唯一真值 = `pcb/circuit/geom.py`），DRC 0 违规 / 0 未连 / 0 schematic-parity（零 ignore）。⚠️ `pcb/output/fab/` 现存 Gerber/CPL 为旧 2 层大板导出，**下单前必须按当前板重导**（BOM 已过嘉立创 SMT 核对，可沿用）。
+当前板：**70×90mm、4 层**（2026-07-14 重绘，对齐 7×9cm 洞洞板 + 手焊友好间距；几何唯一真值 = `pcb/circuit/geom.py`），176/176 全布通，DRC 0 违规 / 0 未连 / 0 schematic-parity（零 ignore）、ERC 0、`verify_board.py` 65/65 PASS。`pcb/output/fab/` Gerber/钻孔/CPL/BOM 已按当前板重导（2026-07-14）；下单前最后一遍人工复核即可。
 
 ```fish
 pcb/scripts/setup.fish        # 建 conda env + 装依赖 + 配 flatpak KiCad
