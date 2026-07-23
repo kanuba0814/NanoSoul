@@ -1,22 +1,56 @@
-// NanoSoul test 分支 — 最简屏控硬件自检入口（全本地，无上位机 / 无模式选择）。
-// 点屏 + 触摸 + I²C1 传感/电流 → 触摸驱动的三电机自检面板（见 test_app.c）。
+// NanoSoul 测试固件入口 — 纯 TEST 模式，无跳线判断。
+// 始终启动全量运行时 + 测试服务（USB-Serial-JTAG NDJSON 通道 + testhost）。
 // ESP-IDF v5.5.2 / ESP32-P4. flash/monitor 由持板者本地手动跑（板外纪律）。
+#include "esp_chip_info.h"
+#include "esp_idf_version.h"
 #include "esp_log.h"
+#include "nvs_flash.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-#include "board_i2c0.h"
-#include "board_i2c1.h"
-#include "display.h"
-#include "test_app.h"
+#include "app_selftests.h"
+#include "app_testmode.h"
+#include "esp_netif.h"
+#include "ns_config.h"
+#include "sd_storage.h"
+#include "selftest.h"
+#include "simsense.h"
+#include "telemetry.h"
 
 static const char *TAG = "nanosoul";
 
+// Bring up the always-on core: NVS, telemetry hub, selftest registry, SD card
+// + config. Same as main branch init_common().
+static void init_common(void)
+{
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ESP_ERROR_CHECK(nvs_flash_init());
+    }
+
+    ESP_ERROR_CHECK(telemetry_init());
+    ESP_ERROR_CHECK(selftest_init());
+    ESP_ERROR_CHECK(simsense_init());
+
+    ESP_ERROR_CHECK(esp_netif_init());
+
+    if (sd_storage_mount(SD_MOUNT_POINT) != ESP_OK) {
+        ESP_LOGW(TAG, "SD not mounted; continuing on default config");
+    }
+    ns_config_init(NS_CONFIG_PATH);
+
+    app_selftests_register();
+}
+
 void app_main(void)
 {
-    ESP_LOGI(TAG, "NanoSoul HW TEST boot — ESP32-P4, 屏控硬件自检");
+    esp_chip_info_t chip;
+    esp_chip_info(&chip);
 
-    ESP_ERROR_CHECK(board_i2c1_init());       // 传感/电流总线 (SDA=IO20/SCL=IO21)
-    ESP_ERROR_CHECK(board_i2c0_init());       // 触摸总线 (SDA=IO7/SCL=IO8)
-    ESP_ERROR_CHECK(display_init());          // ST7701 MIPI-DSI + LVGL
-    display_touch_init(board_i2c0_bus());     // FT6x36 → LVGL indev（探不到也继续）
-    ESP_ERROR_CHECK(test_app_start());        // 电机/编码器/IMU/光照 + 触摸面板
+    ESP_LOGI(TAG, "NanoSoul TEST boot — ESP-IDF %s, target %s, %d core(s)",
+             esp_get_idf_version(), CONFIG_IDF_TARGET, chip.cores);
+
+    init_common();
+    app_test_run();   // 全量运行时 + 测试服务（docs/13）
 }
