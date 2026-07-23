@@ -1,0 +1,46 @@
+{
+  "_comment": "复制到 SD 卡 /sdcard/nanosoul/config.json 再填写。真实密钥只在卡上，绝不进 git。下面是【火山直连版】默认示例；_note 开头的键固件会忽略，仅作说明。",
+
+  "_wifi_note": "机器人联网走板载 ESP32-C6，只支持 2.4GHz —— ssid 必须填 2.4G 的那个 SSID（5G 的连不上）。",
+  "wifi":   { "ssid": "<填 2.4G SSID>", "password": "<填 WiFi 密码>" },
+
+  "_chat_note": "对话二选一：①用【Agent Plan 专属 key】则 base_url 必须填 plan 端点 https://ark.cn-beijing.volces.com/api/plan/v3（套餐 key 打普通端点会 403）；②用【普通方舟按量付费 key】则 base_url 省略（默认 ark.cn-beijing.volces.com 普通端点）。",
+  "chat":   {
+    "provider": "volc",
+    "base_url": "https://ark.cn-beijing.volces.com/api/plan/v3",
+    "api_key": "<填 API Key>",
+    "model": "doubao-seed-2-0-mini-260428",
+    "max_tokens": 512,
+    "system_prompt": "你是 NanoSoul，一只桌面陪伴小机器人。回答要简短、温暖。"
+  },
+
+  "_tts_note": "语音合成用【Agent Plan 专属 API Key（作 X-Api-Key）】。voice 必须是 uranus 系音色（seed-tts-2.0 资源配套）——mars 系音色（如 *_mars_bigtts）会报 55000000 resource mismatch。resource_id 默认 seed-tts-2.0、base_url 默认 openspeech.bytedance.com，均可省。",
+  "tts":    {
+    "provider": "volc",
+    "api_key": "<填 Agent Plan 专属 Key>",
+    "voice": "zh_female_vv_uranus_bigtts"
+  },
+
+  "_stt_note": "语音识别用 doubao-seed-asr-2.0（单流 WebSocket 直连）。key 用【Agent Plan 专属 key】，与 TTS 同一把。resource_id 默认 volc.seedasr.sauc.duration、base_url 默认 openspeech.bytedance.com，均可省。",
+  "stt":    { "provider": "volc", "api_key": "<填 Agent Plan 专属 Key>" },
+
+  "vision": { "rotate": 0 },
+
+  "behavior": { "near_lo": 0.04, "near_hi": 0.18, "frontal_thresh": 0.7, "gaze_hold_ms": 1500, "gaze_cooldown_s": 30, "idle_scan": false, "autonomy": true, "autonomy_idle_s": 90 },
+  "mood": { "enabled": true, "energy_init": 0.5, "social_init": 0.5, "social_tau_min": 10 },
+  "pc": { "stale_s": 15, "respect_dnd": true, "quiet_work": true, "quiet_meeting": true, "invite_idle_s": 300, "invite_cooldown_min": 60 },
+  "light": { "dark_lux": 10, "bright_lux": 30, "dark_hold_s": 30 },
+  "imu": { "tap_th": 3.0, "lift_g_dev": 0.15, "lift_hold_ms": 300, "place_still_ms": 1500, "tilt_deg": 8 },
+  "protect": { "stall_ma": 350, "stall_ms": 200, "stall_retry": 3 },
+  "move": { "approach_budget_cm": 15, "nudge_cm": 4, "ramp_ms": 100, "jitter_pct": 15 },
+
+  "_motion_note": "电机供电已断开，保持 enabled:false（双保险；soul 仍算运动 intent，只是不驱动轮子）。",
+  "motion": { "enabled": false, "max_duty_pct": 40 },
+
+  "companion": { "enabled": true, "token": "自定一个token" },
+
+  "_audio_note": "volume=喇叭音量 0-100（默认 70）。wake_word=唤醒词，识别文本含它才应答（默认「小王」；留空=听到任何话都答）。follow_window_s=应答后免唤醒词续聊的秒数（默认 8，0=每句都要唤醒词）。",
+  "audio":  { "volume": 70, "wake_word": "小王", "follow_window_s": 8 },
+
+  "debug":  { "overlay": true, "log_level": "info" }
+}
