@@ -17,32 +17,66 @@
 #include "soul.h"
 #include "telemetry.h"
 
+#if !defined(CONFIG_NS_WAKE_WORD_VAD)
+#define NS_SR_ENGINE 1
+#include "esp_afe_config.h"
+#include "esp_afe_sr_iface.h"
+#include "esp_afe_sr_models.h"
+#include "model_path.h"
+#if defined(CONFIG_NS_WAKE_WORD_MN_XIAOWANG)
+#include "esp_mn_iface.h"
+#include "esp_mn_models.h"
+#include "esp_mn_speech_commands.h"
+#endif
+#endif
+
 static const char *TAG = "voice";
 
 #define CHUNK_MS        20
 #define CHUNK_SAMPLES   (AUDIO_SAMPLE_RATE * CHUNK_MS / 1000)  /* 320 */
 #define WAKE_RMS        1500.0f   /* energy above this = voice present */
-#define WAKE_HOLD_MS    200       /* sustained loudness to wake */
+#define WAKE_HOLD_MS    200       /* sustained loudness to wake (VAD engine) */
 #define UTTER_MAX_MS    8000      /* docs/08: utterance cap <= 8s */
 #define SILENCE_END_MS  800       /* trailing silence ends the utterance */
 #define SILENCE_RMS     350.0f    /* below this = silence; well under speech
                                      inter-word dips so pauses don't chop it */
 #define UTTER_MAX_SAMPLES (AUDIO_SAMPLE_RATE * UTTER_MAX_MS / 1000)
 /* Pre-roll: keep the last second of idle audio and prepend it to the utterance,
- * so the words that TRIGGERED the wake are inside the recording. Without it a
- * short phrase ("你好你好") burns itself on the 200ms wake hold and the record
- * starts after the speech ended -> ASR hears silence. */
+ * so the words that TRIGGERED the wake are inside the recording. With the SR
+ * engines this also carries the wake phrase ("小王小王…") into the STT text,
+ * which the wake gate then trims off. */
 #define PREROLL_CHUNKS  50        /* 1s */
 #define PREROLL_SAMPLES (PREROLL_CHUNKS * CHUNK_SAMPLES)
+
+#if NS_SR_ENGINE
+#define MN_CMD_XIAOWANG 1         /* "xiao wang xiao wang" command id */
+#define MN_TIMEOUT_MS   6000      /* multinet detect window before TIMEOUT */
+#endif
 
 static bool              s_ready;
 static volatile bool     s_force;
 static volatile float    s_last_rms;
+static char              s_say_text[160];   /* queued canned speech (voice_say) */
+static volatile bool     s_say_pending;
 static int16_t          *s_chunk;
 static int16_t          *s_utter;    /* PSRAM utterance buffer */
 static int16_t          *s_preroll;  /* PSRAM rolling ring of idle audio */
 static int               s_pre_w;    /* ring write index (chunks) */
 static int               s_pre_n;    /* valid chunks in ring */
+
+#if NS_SR_ENGINE
+static srmodel_list_t          *s_models;
+static const esp_afe_sr_iface_t *s_afe;
+static esp_afe_sr_data_t       *s_afe_data;
+static int                      s_feed_chunk;  /* samples per AFE frame (mono) */
+static int16_t                 *s_feed;        /* feed accumulator, one frame */
+static int                      s_feed_fill;
+static volatile bool            s_wake_hit;    /* set by sr_pump on detection */
+#if defined(CONFIG_NS_WAKE_WORD_MN_XIAOWANG)
+static const esp_mn_iface_t    *s_mn;
+static model_iface_data_t      *s_mn_data;
+#endif
+#endif
 
 static float rms(const int16_t *pcm, size_t n)
 {
@@ -62,12 +96,72 @@ static float read_chunk(void)
     return rms(s_chunk, CHUNK_SAMPLES);
 }
 
-static bool wake_detected(void)
+#if NS_SR_ENGINE
+/* Pump mic samples into the AFE and run the selected detector. Called per 20ms
+ * chunk while idle-listening (never during a turn — the codec is owned by the
+ * recorder then). Accumulates 20ms chunks into whole AFE frames. */
+static void sr_pump(const int16_t *pcm, int n)
 {
-    if (s_force) {
-        s_force = false;
-        return true;
+    while (n > 0 && !s_wake_hit) {
+        int take = s_feed_chunk - s_feed_fill;
+        if (take > n) {
+            take = n;
+        }
+        memcpy(s_feed + s_feed_fill, pcm, take * sizeof(int16_t));
+        s_feed_fill += take;
+        pcm += take;
+        n -= take;
+        if (s_feed_fill < s_feed_chunk) {
+            continue;
+        }
+        s_feed_fill = 0;
+        s_afe->feed(s_afe_data, s_feed);
+        afe_fetch_result_t *res = s_afe->fetch_with_delay(s_afe_data, 0);
+        if (!res || res->ret_value == ESP_FAIL) {
+            continue;
+        }
+#if defined(CONFIG_NS_WAKE_WORD_WN_MIAOBAN)
+        if (res->wakeup_state == WAKENET_DETECTED) {
+            ESP_LOGI(TAG, "wakenet detected (word index %d)", res->wake_word_index);
+            s_wake_hit = true;
+        }
+#else
+        esp_mn_state_t mst = s_mn->detect(s_mn_data, res->data);
+        if (mst == ESP_MN_STATE_DETECTED) {
+            esp_mn_results_t *r = s_mn->get_results(s_mn_data);
+            if (r->num > 0 && r->command_id[0] == MN_CMD_XIAOWANG) {
+                ESP_LOGI(TAG, "multinet: xiao wang xiao wang (prob %.2f)", r->prob[0]);
+                s_wake_hit = true;
+            }
+        } else if (mst == ESP_MN_STATE_TIMEOUT) {
+            s_mn->clean(s_mn_data);
+        }
+#endif
     }
+}
+
+/* Drop everything the detector heard so far — called whenever (re)entering
+ * wake listening, so the tail of the previous turn / canned speech can't
+ * retrigger the wake word. */
+static void sr_rearm(void)
+{
+    s_wake_hit = false;
+    if (s_afe_data) {
+        s_afe->reset_buffer(s_afe_data);
+    }
+#if defined(CONFIG_NS_WAKE_WORD_MN_XIAOWANG)
+    if (s_mn_data) {
+        s_mn->clean(s_mn_data);
+    }
+#endif
+}
+#endif /* NS_SR_ENGINE */
+
+/* One chunk through the shared idle pipeline: RMS for telemetry/mic selftest,
+ * pre-roll ring, LOUD event edge (docs/12), and (SR engines) the AFE pump.
+ * Returns RMS or -1 on read error. */
+static float poll_chunk(void)
+{
     /* RX pacing probe: a 20ms chunk must arrive every ~20ms of wall time; a
      * higher average means the mic stream runs slower than real time and
      * utterances get stretched/decimated (the empty-ASR failure mode). A gap
@@ -90,8 +184,7 @@ static bool wake_detected(void)
         win_chunks = 0;
     }
     if (e < 0) {
-        vTaskDelay(pdMS_TO_TICKS(50));
-        return false;
+        return e;
     }
     /* feed the pre-roll ring (including the chunk that ends up triggering) */
     memcpy(s_preroll + s_pre_w * CHUNK_SAMPLES, s_chunk, CHUNK_SAMPLES * sizeof(int16_t));
@@ -110,6 +203,25 @@ static bool wake_detected(void)
     } else if (e < WAKE_RMS * 2.0f) {
         loud_latched = false;
     }
+#if NS_SR_ENGINE
+    sr_pump(s_chunk, CHUNK_SAMPLES);
+#endif
+    return e;
+}
+
+/* One wake-listen step (called in the task loop). True = start a turn. */
+static bool wait_wake(void)
+{
+    if (s_force) {
+        s_force = false;
+        return true;
+    }
+    float e = poll_chunk();
+    if (e < 0) {
+        vTaskDelay(pdMS_TO_TICKS(50));
+        return false;
+    }
+#if defined(CONFIG_NS_WAKE_WORD_VAD)
     static int loud_ms;
     if (e > WAKE_RMS) {
         loud_ms += CHUNK_MS;
@@ -121,6 +233,9 @@ static bool wake_detected(void)
         loud_ms = 0;
     }
     return false;
+#else
+    return s_wake_hit;
+#endif
 }
 
 // Record until trailing silence or the cap; returns sample count. The utterance
@@ -219,7 +334,7 @@ static void converse(void)
     char text[256] = {0};
     esp_err_t stt_rc = llm_stt(s_utter, n, AUDIO_SAMPLE_RATE, text, sizeof(text));
     if (stt_rc == ESP_OK && text[0] == '\0') {
-        /* Recognized silence — a false VAD wake (clap, ambient). Drop it without
+        /* Recognized silence — a false wake (clap, ambient). Drop it without
          * the failure cue so stray noise never nags the user. */
         ESP_LOGI(TAG, "stt: no speech, ignoring");
         end_turn_idle();
@@ -235,8 +350,14 @@ static void converse(void)
     ESP_LOGI(TAG, "heard: %.60s", text);
 
     /* Wake-word gate: only respond if addressed (contains 唤醒词, or within the
-     * follow-up window). Not-addressed = silently back to idle, no cue. */
+     * follow-up window). Not-addressed = silently back to idle, no cue.
+     * WN_MIAOBAN build: the device-side wake word IS the addressing proof and
+     * its phrase ("你好喵伴") never contains the SD gate word, so bypass. */
+#if defined(CONFIG_NS_WAKE_WORD_WN_MIAOBAN)
+    const char *msg = text;
+#else
     const char *msg = wake_gate(text);
+#endif
     if (!msg) {
         ESP_LOGI(TAG, "not addressed (no wake word), ignoring");
         end_turn_idle();
@@ -286,10 +407,28 @@ static void converse(void)
     end_turn_idle();
 }
 
-/* ---- one-shot canned speech (event reactions, e.g. 认主问候) ---- */
-static char          s_say_text[160];
-static volatile bool s_say_pending;
+/* After a reply, actively listen for the rest of the follow window: a speech
+ * onset starts another turn (the gate passes via the open window). Without this
+ * the SR engines — which otherwise require the wake word — would silently lose
+ * the "免唤醒词续聊" behavior the window promises. */
+static void await_followup(void)
+{
+    while (s_follow_deadline && esp_timer_get_time() < s_follow_deadline) {
+        if (s_say_pending) {
+            return;   /* queued canned speech takes precedence */
+        }
+        float e = poll_chunk();
+        if (e < 0) {
+            vTaskDelay(pdMS_TO_TICKS(50));
+            continue;
+        }
+        if (e > WAKE_RMS) {   /* speech onset */
+            converse();
+        }
+    }
+}
 
+/* ---- one-shot canned speech (event reactions, e.g. 认主问候） ---- */
 static void speak_pending(void)
 {
     s_say_pending = false;
@@ -310,16 +449,103 @@ static void speak_pending(void)
 static void voice_task(void *arg)
 {
     (void)arg;
-    ESP_LOGI(TAG, "listening for wake (energy VAD)");
+    ESP_LOGI(TAG, "listening for wake (%s)", voice_wake_engine());
     for (;;) {
         if (s_say_pending) {
             speak_pending();
+#if NS_SR_ENGINE
+            sr_rearm();
+#endif
         }
-        if (wake_detected()) {
+        if (wait_wake()) {
+            audio_wake_chime();   /* "listening" cue, ~340ms, before recording */
             converse();
+            await_followup();
+#if NS_SR_ENGINE
+            sr_rearm();
+#endif
         }
     }
 }
+
+#if NS_SR_ENGINE
+static esp_err_t sr_init(void)
+{
+    /* The model partition is written by `idf.py flash` (esp-sr's CMake packs
+     * the Kconfig-selected models into srmodels.bin targeting partition
+     * "model"). Missing/empty here = firmware flashed but models not. */
+    s_models = esp_srmodel_init("model");
+    if (!s_models) {
+        ESP_LOGE(TAG, "model partition load failed — srmodels.bin not flashed?");
+        return ESP_ERR_NOT_FOUND;
+    }
+    afe_config_t *cfg = afe_config_init("M", s_models, AFE_TYPE_SR, AFE_MODE_LOW_COST);
+    if (!cfg) {
+        return ESP_FAIL;
+    }
+    /* Single mic, no reference channel: AEC/SE off. VAD(WebRTC) gates speech
+     * for the detectors; AGC off until bench-proven (pumping noise hurts the
+     * detector more than quiet speech does). */
+    cfg->aec_init = false;
+    cfg->se_init = false;
+    cfg->ns_init = false;
+    cfg->vad_init = true;
+    cfg->vad_mode = VAD_MODE_3;
+    cfg->agc_init = false;
+    cfg->memory_alloc_mode = AFE_MEMORY_ALLOC_MORE_PSRAM;
+    cfg->afe_linear_gain = 1.0f;
+#if defined(CONFIG_NS_WAKE_WORD_WN_MIAOBAN)
+    cfg->wakenet_init = true;   /* model auto-picked from the partition list */
+#else
+    cfg->wakenet_init = false;  /* multinet runs standalone on the AFE output */
+#endif
+    s_afe = esp_afe_handle_from_config(cfg);
+    if (!s_afe) {
+        afe_config_free(cfg);
+        return ESP_FAIL;
+    }
+    s_afe_data = s_afe->create_from_config(cfg);
+    if (!s_afe_data) {
+        afe_config_free(cfg);
+        return ESP_FAIL;
+    }
+    s_feed_chunk = s_afe->get_feed_chunksize(s_afe_data) * cfg->pcm_config.total_ch_num;
+    afe_config_free(cfg);
+    s_feed = heap_caps_malloc(s_feed_chunk * sizeof(int16_t), MALLOC_CAP_SPIRAM);
+    if (!s_feed) {
+        return ESP_ERR_NO_MEM;
+    }
+    s_afe->print_pipeline(s_afe_data);
+
+#if defined(CONFIG_NS_WAKE_WORD_MN_XIAOWANG)
+    char *mn_name = esp_srmodel_filter(s_models, ESP_MN_PREFIX, ESP_MN_CHINESE);
+    if (!mn_name) {
+        ESP_LOGE(TAG, "no chinese multinet model in partition");
+        return ESP_ERR_NOT_FOUND;
+    }
+    s_mn = esp_mn_handle_from_name(mn_name);
+    if (!s_mn) {
+        return ESP_ERR_NOT_SUPPORTED;
+    }
+    s_mn_data = s_mn->create(mn_name, MN_TIMEOUT_MS);
+    if (!s_mn_data) {
+        return ESP_FAIL;
+    }
+    esp_mn_commands_alloc(s_mn, s_mn_data);
+    esp_mn_commands_clear();
+    esp_mn_commands_add(MN_CMD_XIAOWANG, "xiao wang xiao wang");
+    esp_mn_error_t *bad = esp_mn_commands_update();
+    if (bad && bad->num > 0) {
+        for (int i = 0; i < bad->num; i++) {
+            ESP_LOGW(TAG, "rejected phrase: %s", bad->phrases[i]->string);
+        }
+    }
+    esp_mn_commands_print();
+    ESP_LOGI(TAG, "multinet %s: wake command 小王小王 registered", mn_name);
+#endif
+    return ESP_OK;
+}
+#endif /* NS_SR_ENGINE */
 
 esp_err_t voice_init(i2c_master_bus_handle_t i2c_bus)
 {
@@ -339,6 +565,13 @@ esp_err_t voice_init(i2c_master_bus_handle_t i2c_bus)
     if (!s_chunk || !s_utter || !s_preroll) {
         return ESP_ERR_NO_MEM;
     }
+#if NS_SR_ENGINE
+    err = sr_init();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "wake engine init failed: %s", esp_err_to_name(err));
+        return err;   /* app_face degrades to no-voice boot */
+    }
+#endif
     s_ready = true;
     return ESP_OK;
 }
@@ -348,7 +581,12 @@ esp_err_t voice_start(void)
     if (!s_ready) {
         return ESP_ERR_INVALID_STATE;
     }
-    return xTaskCreatePinnedToCore(voice_task, "voice", 8192, NULL, 5, NULL, 0) == pdPASS
+#if NS_SR_ENGINE
+    const uint32_t stack = 12288;   /* AFE fetch + multinet detect depth */
+#else
+    const uint32_t stack = 8192;
+#endif
+    return xTaskCreatePinnedToCore(voice_task, "voice", stack, NULL, 5, NULL, 0) == pdPASS
                ? ESP_OK : ESP_FAIL;
 }
 
@@ -376,4 +614,24 @@ esp_err_t voice_say(const char *text)
     strlcpy(s_say_text, text, sizeof(s_say_text));
     s_say_pending = true;
     return ESP_OK;
+}
+
+const char *voice_wake_engine(void)
+{
+#if defined(CONFIG_NS_WAKE_WORD_MN_XIAOWANG)
+    return "multinet(小王小王)";
+#elif defined(CONFIG_NS_WAKE_WORD_WN_MIAOBAN)
+    return "wakenet(你好喵伴)";
+#else
+    return "energy-vad";
+#endif
+}
+
+bool voice_sr_ready(void)
+{
+#if NS_SR_ENGINE
+    return s_ready && s_afe_data != NULL;
+#else
+    return false;
+#endif
 }

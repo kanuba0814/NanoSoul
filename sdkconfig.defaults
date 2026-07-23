@@ -1,4 +1,4 @@
-# NanoSoul test 分支默认配置（目标由 idf.py set-target esp32p4 写入 sdkconfig）
+# NanoSoul 整机默认配置（目标由 idf.py set-target esp32p4 写入 sdkconfig）
 CONFIG_IDF_TARGET="esp32p4"
 
 # Flash 16MB（开发板板载 ≥16MB；整机固件 gfx+esp-dl+esp-sr+hosted 都要进 app）
@@ -45,6 +45,17 @@ CONFIG_CACHE_L2_CACHE_LINE_128B=y
 
 # esp_lcd MIPI-DSI 需要
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
+
+# —— ESP-SR 唤醒词检测（voice 组件，模型烧进 model 分区，见 partitions.csv 注释）——
+# 选中模型：MultiNet7 中文（小王小王命令词）+ WakeNet9 你好喵伴（两个都烧，~2.9MB 进 3MB 分区）
+# ⚠️ 陷阱：sdkconfig.defaults 只播种「新」符号——esp-sr 首次进构建时已把 SR_MN_CN_NONE 等
+#    默认值写进 sdkconfig，之后改本文件不会覆盖。改模型选型要同步改 sdkconfig（本仓库已跟踪
+#    sdkconfig，正确选项已固化在库）或跑 menuconfig。改完确认 build/srmodels/srmodels.bin ~2.9MB
+#    （4 字节 = 模型没选上，是空包）。
+CONFIG_SR_MN_CN_MULTINET7_QUANT=y
+CONFIG_SR_WN_WN9_NIHAOMIAOBAN_TTS2=y
+# 检测器默认 MultiNet 小王小王；WN_MIAOBAN / VAD 编译期可切（main/Kconfig.projbuild）
+CONFIG_NS_WAKE_WORD_MN_XIAOWANG=y
 
 # —— 相机 (esp_video MIPI-CSI): CSI ISR 走 cache-safe, 避免偶发 0x102 崩溃 ——
 CONFIG_CAM_CTLR_MIPI_CSI_ISR_CACHE_SAFE=y

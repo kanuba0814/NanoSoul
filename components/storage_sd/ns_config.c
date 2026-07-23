@@ -23,7 +23,8 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->chat.max_tokens = 512;
     strcpy(cfg->chat.system_prompt,
            "You are NanoSoul, a small desktop companion robot. "
-           "Reply briefly and warmly in the user's language.");
+           "Reply briefly and warmly in the user's language. "
+           "Address the user as 「建材批发王总」 — they enjoy the title.");
 
     strcpy(cfg->stt.model, "whisper-1");
     strcpy(cfg->tts.model, "tts-1");
@@ -96,7 +97,7 @@ void ns_config_defaults(ns_config_t *cfg)
     cfg->companion.enabled = true;
 
     cfg->audio.volume = 70;
-    strcpy(cfg->audio.wake_word, "小王");   /* 唤醒词:识别文本含它才应答 */
+    strcpy(cfg->audio.wake_word, "小王");   /* 唤醒词:识别文本含它才应答（MultiNet 设备端唤醒词是「小王小王」，与之同源） */
     cfg->audio.follow_window_s = 8;         /* 应答后 8s 内免唤醒词续聊 */
 
     cfg->debug.overlay = true;

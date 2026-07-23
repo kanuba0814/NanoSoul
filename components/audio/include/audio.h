@@ -35,6 +35,10 @@ esp_err_t audio_record(int16_t *pcm, size_t samples);
 // Short three-note chime — plays on boot to confirm the DAC + speaker path.
 esp_err_t audio_boot_chime(void);
 
+/* Soft two-tone wake chime (A5->E6, ~340ms, exp-decay bell) — the "listening"
+ * cue played right after the wake word, before recording starts. */
+esp_err_t audio_wake_chime(void);
+
 // Two descending tones — audible cue that a voice turn failed (no net / STT / TTS).
 esp_err_t audio_fail_tone(void);
 

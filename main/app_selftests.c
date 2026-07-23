@@ -76,7 +76,7 @@ static st_report_t check_psram(void)
 
 static st_report_t check_partitions(void)
 {
-    static const char *labels[] = { "ota_0", "emote_gen", "human_face_det", "srmodel", "storage" };
+    static const char *labels[] = { "ota_0", "emote_gen", "human_face_det", "model", "storage" };
     char missing[64] = { 0 };
     for (unsigned i = 0; i < sizeof(labels) / sizeof(labels[0]); i++) {
         const esp_partition_t *p =
@@ -758,7 +758,15 @@ static st_report_t check_mic(void)
 
 static st_report_t check_wakenet(void)
 {
-    return st_skip("energy VAD (ESP-SR WakeNet is the upgrade)");
+    if (!voice_ready()) {
+        return st_skip("voice not up");
+    }
+#if defined(CONFIG_NS_WAKE_WORD_VAD)
+    return st_skip("energy VAD engine (no SR model)");
+#else
+    return voice_sr_ready() ? st_pass("%s", voice_wake_engine())
+                            : st_fail("SR engine init failed — model partition flashed?");
+#endif
 }
 
 /* ---------------- Phase F check (companion WS) ---------------- */
@@ -900,7 +908,7 @@ void app_selftests_register(void)
     /* Phase E */
     selftest_register("codec_playback", check_codec, 0);
     selftest_register("mic_record", check_mic, 0);
-    selftest_register("wakenet_load", check_wakenet, SELFTEST_FLAG_MANUAL);
+    selftest_register("wakenet_load", check_wakenet, 0);
     /* Phase F */
     selftest_register("ws_loopback", check_ws, 0);
 }

@@ -164,6 +164,45 @@ esp_err_t audio_boot_chime(void)
     return err;
 }
 
+/* Wake chime — the "I'm listening" cue after the wake word. Deliberately softer
+ * and rounder than the boot chime: pure fifth (A5 -> E6), raised-cosine attack,
+ * exponential decay with a touch of 2nd harmonic for a bell timbre — the
+ * ChatGPT-app style acknowledgement, not an alarm. Kept <= ~340ms so it doesn't
+ * eat the user's command after the wake word. */
+esp_err_t audio_wake_chime(void)
+{
+    if (!s_ready) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    const int rate = AUDIO_SAMPLE_RATE;
+    const int total_ms = 340;
+    const int n = rate * total_ms / 1000;
+    int16_t *buf = malloc(n * sizeof(int16_t));
+    if (!buf) {
+        return ESP_ERR_NO_MEM;
+    }
+    const int n1 = rate * 140 / 1000;                 /* A5 段长 */
+    const float f1 = 880.0f, f2 = 1318.51f;           /* A5 -> E6 纯五度 */
+    const float attack = 0.012f * rate;               /* 12ms 起音 */
+    for (int i = 0; i < n; i++) {
+        const bool first = i < n1;
+        const int k = first ? i : i - n1;             /* 段内样本序号 */
+        const float f = first ? f1 : f2;
+        const float seg_n = (float)(first ? n1 : n - n1);
+        float env = k < attack ? 0.5f - 0.5f * cosf(3.14159265f * k / attack)
+                               : expf(-3.2f * (k - attack) / seg_n);   /* 起音后指数衰减 */
+        float s = sinf(2.0f * 3.14159265f * f * k / rate)
+                  + 0.28f * sinf(4.0f * 3.14159265f * f * k / rate);   /* 二次泛音润色 */
+        buf[i] = (int16_t)(4200.0f * env * s);
+    }
+    gpio_set_level(BSP_PA_CTRL, 1);
+    vTaskDelay(pdMS_TO_TICKS(5));                     /* PA 稳定后再出样，防爆音 */
+    int ret = esp_codec_dev_write(s_codec, buf, n * sizeof(int16_t));
+    gpio_set_level(BSP_PA_CTRL, 0);
+    free(buf);
+    return ret == ESP_CODEC_DEV_OK ? ESP_OK : ESP_FAIL;
+}
+
 /* Two descending tones — the audible "something went wrong" cue (no network,
  * STT/chat/TTS failure), so a wake never dies silently (docs/08 acceptance). */
 esp_err_t audio_fail_tone(void)
