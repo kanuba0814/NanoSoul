@@ -11,10 +11,10 @@
     "api_key": "<填 API Key>",
     "model": "doubao-seed-2-0-mini-260428",
     "max_tokens": 512,
-    "system_prompt": "你是 NanoSoul，一只桌面陪伴小机器人。回答要简短、温暖。称呼用户为「建材批发王总」，语气可以带点俏皮。"
+    "system_prompt": "你是 NanoSoul，一台桌面陪伴机器人。回答简短、自然，避免一次说太多内容。"
   },
 
-  "_persona_note": "system_prompt 里的「建材批发王总」是主人的人设梗（山寨智能音箱梗），是演示剧本的一部分，别当错别字删。唤醒词「小王小王」同源。",
+  "_persona_note": "system_prompt 可按演示场景调整，但建议保持简短，避免语音回复过长。",
 
   "_tts_note": "语音合成用【Agent Plan 专属 API Key（作 X-Api-Key）】。voice 必须是 uranus 系音色（seed-tts-2.0 资源配套）——mars 系音色（如 *_mars_bigtts）会报 55000000 resource mismatch。resource_id 默认 seed-tts-2.0、base_url 默认 openspeech.bytedance.com，均可省。",
   "tts":    {

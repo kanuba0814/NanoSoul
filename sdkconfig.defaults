@@ -68,8 +68,8 @@ CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 #    （4 字节 = 模型没选上，是空包）。
 CONFIG_SR_MN_CN_MULTINET7_QUANT=y
 CONFIG_SR_WN_WN9_NIHAOMIAOBAN_TTS2=y
-# 检测器默认 MultiNet 小王小王；WN_MIAOBAN / VAD 编译期可切（main/Kconfig.projbuild）
-CONFIG_NS_WAKE_WORD_MN_XIAOWANG=y
+# 当前展示默认能量 VAD + STT 文本门；MultiNet / WakeNet 保留为实验选项。
+CONFIG_NS_WAKE_WORD_VAD=y
 
 # —— 相机 (esp_video MIPI-CSI): CSI ISR 走 cache-safe, 避免偶发 0x102 崩溃 ——
 CONFIG_CAM_CTLR_MIPI_CSI_ISR_CACHE_SAFE=y

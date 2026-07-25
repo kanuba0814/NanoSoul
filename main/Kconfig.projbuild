@@ -29,24 +29,22 @@ endchoice
 
 choice NS_WAKE_WORD
     prompt "Voice wake-word detector"
-    default NS_WAKE_WORD_MN_XIAOWANG
+    default NS_WAKE_WORD_VAD
     help
-        语音唤醒词检测器（音频前端，docs/00 §1.2 语音行）。编译期三选一：
-        MN_XIAOWANG — ESP-SR MultiNet7-cn 常驻识别拼音命令 "xiao wang xiao wang"
-                      （小王小王），官方模型零训练；误触发率靠 det 阈值/VAD mode 压。
-        WN_MIAOBAN  — ESP-SR WakeNet9 wn9_nihaomiaoban_tts2（你好喵伴），fallback。
-        VAD         — 能量 VAD（无模型软件兜底），响亮持续语音即触发。
-        三档共用：STT 文本门（SD audio.wake_word）、1s 预卷环、LOUD 事件、
-        唤醒提示音与 follow_window_s 续听窗口。
+        语音触发方式，编译期三选一：
+        VAD         — 当前展示默认。检测持续语音后录音，再由 STT 文本门确认是否包含“小王”。
+        MN_XIAOWANG — ESP-SR MultiNet7-cn 命令词“小王小王”。保留作实验选项。
+        WN_MIAOBAN  — ESP-SR WakeNet9“你好喵伴”。保留作实验选项。
+        三档共用 1s 预卷、LOUD 事件、提示音和 follow_window_s 续聊窗口。
 
 config NS_WAKE_WORD_MN_XIAOWANG
-    bool "MultiNet 小王小王 (ESP-SR mn7_cn, default)"
+    bool "MultiNet 小王小王 (experimental)"
 
 config NS_WAKE_WORD_WN_MIAOBAN
-    bool "WakeNet 你好喵伴 (ESP-SR wn9)"
+    bool "WakeNet 你好喵伴 (experimental)"
 
 config NS_WAKE_WORD_VAD
-    bool "Energy VAD (no model, fallback)"
+    bool "Energy VAD + STT text gate (default)"
 
 endchoice
 
