@@ -764,8 +764,12 @@ static st_report_t check_wakenet(void)
 #if defined(CONFIG_NS_WAKE_WORD_VAD)
     return st_skip("energy VAD engine (no SR model)");
 #else
-    return voice_sr_ready() ? st_pass("%s", voice_wake_engine())
-                            : st_fail("SR engine init failed — model partition flashed?");
+    switch (voice_sr_state()) {
+    case 2:  return st_pass("%s", voice_wake_engine());
+    case 1:  return st_skip("SR model loading (~16s)");
+    case 3:  return st_fail("SR engine init failed — model partition flashed?");
+    default: return st_skip("SR engine not started");
+    }
 #endif
 }
 

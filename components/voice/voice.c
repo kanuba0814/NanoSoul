@@ -5,6 +5,7 @@
 
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -34,8 +35,16 @@ static const char *TAG = "voice";
 
 #define CHUNK_MS        20
 #define CHUNK_SAMPLES   (AUDIO_SAMPLE_RATE * CHUNK_MS / 1000)  /* 320 */
-#define WAKE_RMS        1500.0f   /* energy above this = voice present */
-#define WAKE_HOLD_MS    200       /* sustained loudness to wake (VAD engine) */
+#if defined(CONFIG_NS_WAKE_WORD_VAD)
+/* Bench fallback for this board: idle is ~80–150 RMS, normal close speech is
+ * typically 220–1300 RMS. Require 160ms above 220 to reject isolated clicks
+ * while still waking on natural speech. */
+#define WAKE_RMS        220.0f
+#define WAKE_HOLD_MS    160
+#else
+#define WAKE_RMS        1500.0f   /* LOUD telemetry threshold in SR builds */
+#define WAKE_HOLD_MS    200
+#endif
 #define UTTER_MAX_MS    8000      /* docs/08: utterance cap <= 8s */
 #define SILENCE_END_MS  800       /* trailing silence ends the utterance */
 #define SILENCE_RMS     350.0f    /* below this = silence; well under speech
@@ -52,6 +61,13 @@ static const char *TAG = "voice";
 #define MN_CMD_XIAOWANG 1         /* "xiao wang xiao wang" command id */
 #define MN_TIMEOUT_MS   6000      /* multinet detect window before TIMEOUT */
 #endif
+
+/* SR 引擎生命周期（voice_sr_state）：VAD 构建恒 NONE；SR 构建 INITING(后台装模型)
+ * → READY / FAILED。 */
+#define VOICE_SR_NONE     0
+#define VOICE_SR_INITING  1
+#define VOICE_SR_READY    2
+#define VOICE_SR_FAILED   3
 
 static bool              s_ready;
 static volatile bool     s_force;
@@ -72,6 +88,7 @@ static int                      s_feed_chunk;  /* samples per AFE frame (mono) *
 static int16_t                 *s_feed;        /* feed accumulator, one frame */
 static int                      s_feed_fill;
 static volatile bool            s_wake_hit;    /* set by sr_pump on detection */
+static volatile int             s_sr_state = VOICE_SR_INITING;
 #if defined(CONFIG_NS_WAKE_WORD_MN_XIAOWANG)
 static const esp_mn_iface_t    *s_mn;
 static model_iface_data_t      *s_mn_data;
@@ -116,7 +133,11 @@ static void sr_pump(const int16_t *pcm, int n)
         }
         s_feed_fill = 0;
         s_afe->feed(s_afe_data, s_feed);
-        afe_fetch_result_t *res = s_afe->fetch_with_delay(s_afe_data, 0);
+        /* HIGH_PERF AFE runs asynchronously. A zero-tick poll races its worker
+         * and returned ESP_FAIL ~100 times/s; wait for the frame produced by
+         * this feed (normal cadence is one 512-sample frame every 32ms). */
+        afe_fetch_result_t *res =
+            s_afe->fetch_with_delay(s_afe_data, pdMS_TO_TICKS(100));
         if (!res || res->ret_value == ESP_FAIL) {
             continue;
         }
@@ -129,8 +150,10 @@ static void sr_pump(const int16_t *pcm, int n)
         esp_mn_state_t mst = s_mn->detect(s_mn_data, res->data);
         if (mst == ESP_MN_STATE_DETECTED) {
             esp_mn_results_t *r = s_mn->get_results(s_mn_data);
+            ESP_LOGI(TAG, "mn DETECTED: num=%d id0=%d prob=%.3f",
+                     r->num, r->num > 0 ? r->command_id[0] : -1,
+                     r->num > 0 ? r->prob[0] : 0.0f);
             if (r->num > 0 && r->command_id[0] == MN_CMD_XIAOWANG) {
-                ESP_LOGI(TAG, "multinet: xiao wang xiao wang (prob %.2f)", r->prob[0]);
                 s_wake_hit = true;
             }
         } else if (mst == ESP_MN_STATE_TIMEOUT) {
@@ -356,6 +379,9 @@ static void converse(void)
 #if defined(CONFIG_NS_WAKE_WORD_WN_MIAOBAN)
     const char *msg = text;
 #else
+#if defined(CONFIG_NS_WAKE_WORD_VAD)
+    bool is_followup = esp_timer_get_time() < s_follow_deadline;
+#endif
     const char *msg = wake_gate(text);
 #endif
     if (!msg) {
@@ -363,6 +389,14 @@ static void converse(void)
         end_turn_idle();
         return;
     }
+#if defined(CONFIG_NS_WAKE_WORD_VAD)
+    /* Energy VAD is only a recording trigger, not proof that the user addressed
+     * us. Acknowledge an initial turn only after cloud ASR + the text wake gate
+     * confirm "小王"; active follow-ups remain seamless and need no chime. */
+    if (!is_followup) {
+        audio_wake_chime();
+    }
+#endif
     if (msg[0] == '\0') {
         /* Pure summon ("小王小王" with nothing after) — acknowledge and open the
          * follow-up window so the user can just ask their question next. */
@@ -446,11 +480,58 @@ static void speak_pending(void)
     end_turn_idle();
 }
 
+#if NS_SR_ENGINE
+static esp_err_t sr_init(void);   /* 定义在 voice_task 之后 */
+#endif
+
 static void voice_task(void *arg)
 {
     (void)arg;
+#if NS_SR_ENGINE
+    /* SR 初始化放到这里而不是 voice_init：mn7_cn 模型装载+构建在 CPU0 上连跑 ~16s，
+     * 若在 app_main 里做会卡住整机其余启动（companion/触摸全等），还会饿死 IDLE0
+     * 触发 task WDT（rst:0x7 重启循环的实证）。在 voice 任务里后台初始化，
+     * 并把 TWDT 临时放宽到 30s 罩住这次性成本。 */
+    /* Core 1 专供 ESP-DL 视觉 SIMD：一次推理可能连续超过 15s，预编译内核内部
+     * 无法 yield。仅监视承载系统/语音的 Core 0 idle，避免把正常推理误判成死锁。 */
+    esp_task_wdt_config_t wdt_init = {
+        .timeout_ms = 30000,
+        .idle_core_mask = (1 << 0),
+        .trigger_panic = true,
+    };
+    esp_task_wdt_reconfigure(&wdt_init);
+    esp_err_t serr = sr_init();
+    esp_task_wdt_config_t wdt_run = {
+        .timeout_ms = CONFIG_ESP_TASK_WDT_TIMEOUT_S * 1000,
+        .idle_core_mask = (1 << 0),
+        .trigger_panic = true,
+    };
+    esp_task_wdt_reconfigure(&wdt_run);
+    if (serr != ESP_OK) {
+        s_sr_state = VOICE_SR_FAILED;
+        ESP_LOGE(TAG, "wake engine init failed: %s — voice wake dead (audio still up)",
+                 esp_err_to_name(serr));
+    } else {
+        s_sr_state = VOICE_SR_READY;
+    }
+#else
+    /* VAD build has no SR initialization phase, but Core 1 is still dedicated
+     * to long-running ESP-DL vision kernels and must not be watched as idle. */
+    esp_task_wdt_config_t wdt_run = {
+        .timeout_ms = CONFIG_ESP_TASK_WDT_TIMEOUT_S * 1000,
+        .idle_core_mask = (1 << 0),
+        .trigger_panic = true,
+    };
+    esp_task_wdt_reconfigure(&wdt_run);
+#endif
     ESP_LOGI(TAG, "listening for wake (%s)", voice_wake_engine());
     for (;;) {
+#if NS_SR_ENGINE
+        if (s_sr_state != VOICE_SR_READY) {
+            vTaskDelay(pdMS_TO_TICKS(200));   /* SR 初始化失败：不喂 AFE，干等 */
+            continue;
+        }
+#endif
         if (s_say_pending) {
             speak_pending();
 #if NS_SR_ENGINE
@@ -458,7 +539,11 @@ static void voice_task(void *arg)
 #endif
         }
         if (wait_wake()) {
-            audio_wake_chime();   /* "listening" cue, ~340ms, before recording */
+#if NS_SR_ENGINE
+            /* A neural detector is already addressing proof, so acknowledge
+             * immediately. VAD waits until ASR's text gate confirms "小王". */
+            audio_wake_chime();
+#endif
             converse();
             await_followup();
 #if NS_SR_ENGINE
@@ -479,23 +564,26 @@ static esp_err_t sr_init(void)
         ESP_LOGE(TAG, "model partition load failed — srmodels.bin not flashed?");
         return ESP_ERR_NOT_FOUND;
     }
-    afe_config_t *cfg = afe_config_init("M", s_models, AFE_TYPE_SR, AFE_MODE_LOW_COST);
+    afe_config_t *cfg = afe_config_init("M", s_models, AFE_TYPE_SR, AFE_MODE_HIGH_PERF);
     if (!cfg) {
         return ESP_FAIL;
     }
-    /* Single mic, no reference channel: AEC/SE off. VAD(WebRTC) gates speech
-     * for the detectors; AGC off until bench-proven (pumping noise hurts the
-     * detector more than quiet speech does). */
+    /* Single mic, no reference channel: AEC/SE off. Use the high-performance
+     * SR path with AGC: raw speech is only a few hundred RMS on this board.
+     * Keep NS off because esp-sr warns it can reduce recognition accuracy. */
     cfg->aec_init = false;
     cfg->se_init = false;
-    cfg->ns_init = false;
+    cfg->ns_init = false;   /* esp-sr 明确警告 NS 可能降低语音识别准确率 */
     cfg->vad_init = true;
     cfg->vad_mode = VAD_MODE_3;
-    cfg->agc_init = false;
+    cfg->agc_init = true;
+    cfg->agc_compression_gain_db = 18;
+    cfg->agc_target_level_dbfs = 3;
     cfg->memory_alloc_mode = AFE_MEMORY_ALLOC_MORE_PSRAM;
-    cfg->afe_linear_gain = 1.0f;
+    cfg->afe_linear_gain = 3.0f;   /* 板载麦电平偏低（hb 实测 RMS 基线 ~60、人声几百），
+                                      mn7 期望更健康的幅度；3x 先给上，bench 定终值 */
 #if defined(CONFIG_NS_WAKE_WORD_WN_MIAOBAN)
-    cfg->wakenet_init = true;   /* model auto-picked from the partition list */
+    cfg->wakenet_init = true;   /* model and default threshold from partition */
 #else
     cfg->wakenet_init = false;  /* multinet runs standalone on the AFE output */
 #endif
@@ -531,6 +619,12 @@ static esp_err_t sr_init(void)
     if (!s_mn_data) {
         return ESP_FAIL;
     }
+    /* ⚠️ 别调 s_mn->switch_loader_mode()：esp-sr 2.4.7 预置库里该函数指针是 NULL
+     * （头文件有声明、实现没填），一调就是 call 0x0 -> Instruction access fault
+     * （实测）。默认 PSRAM_FLASH 混合加载，init ~16s 由后台初始化+TWDT 30s 罩住。 */
+    ESP_LOGI(TAG, "mn chunksize=%d afe_fetch_chunk=%d (must match)",
+             s_mn->get_samp_chunksize(s_mn_data), s_afe->get_fetch_chunksize(s_afe_data));
+    /* ⚠️ open_log 同样是空指针（实测 call 0x0 重启），别调。 */
     esp_mn_commands_alloc(s_mn, s_mn_data);
     esp_mn_commands_clear();
     esp_mn_commands_add(MN_CMD_XIAOWANG, "xiao wang xiao wang");
@@ -565,17 +659,10 @@ esp_err_t voice_init(i2c_master_bus_handle_t i2c_bus)
     if (!s_chunk || !s_utter || !s_preroll) {
         return ESP_ERR_NO_MEM;
     }
-#if NS_SR_ENGINE
-    err = sr_init();
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "wake engine init failed: %s", esp_err_to_name(err));
-        return err;   /* app_face degrades to no-voice boot */
-    }
-#endif
+    /* SR 引擎初始化在 voice_task 里做（模型装载 ~16s，不能堵 app_main）。 */
     s_ready = true;
     return ESP_OK;
 }
-
 esp_err_t voice_start(void)
 {
     if (!s_ready) {
@@ -586,7 +673,19 @@ esp_err_t voice_start(void)
 #else
     const uint32_t stack = 8192;
 #endif
-    return xTaskCreatePinnedToCore(voice_task, "voice", stack, NULL, 5, NULL, 0) == pdPASS
+    /* 栈必须显式进内部 RAM：SR 构建下 voice 任务做模型装载（flash 读有 cache
+     * 禁用窗口），动态分配的栈会落 PSRAM（>4KB 阈值），窗口内取栈即
+     * Instruction access fault 重启循环（实测）。内部堆在调度器启动后有
+     * L2MEM 大块（face 后 ~247KB 空），此处分配不碰预调度期小池。 */
+    StackType_t *stack_buf = heap_caps_malloc(stack, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    StaticTask_t *tcb_buf = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (!stack_buf || !tcb_buf) {
+        free(stack_buf);
+        free(tcb_buf);
+        return ESP_ERR_NO_MEM;
+    }
+    return xTaskCreateStaticPinnedToCore(voice_task, "voice", stack / sizeof(StackType_t),
+                                         NULL, 5, stack_buf, tcb_buf, 0) != NULL
                ? ESP_OK : ESP_FAIL;
 }
 
@@ -630,8 +729,18 @@ const char *voice_wake_engine(void)
 bool voice_sr_ready(void)
 {
 #if NS_SR_ENGINE
-    return s_ready && s_afe_data != NULL;
+    return s_sr_state == VOICE_SR_READY;
 #else
     return false;
+#endif
+}
+
+/* 0=NONE(VAD) 1=INITING 2=READY 3=FAILED —自检要区分「还在装」和「真挂了」。 */
+int voice_sr_state(void)
+{
+#if NS_SR_ENGINE
+    return s_sr_state;
+#else
+    return VOICE_SR_NONE;
 #endif
 }

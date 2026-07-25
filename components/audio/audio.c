@@ -116,7 +116,8 @@ esp_err_t audio_init(i2c_master_bus_handle_t i2c_bus)
     };
     ESP_RETURN_ON_FALSE(esp_codec_dev_open(s_codec, &si) == ESP_CODEC_DEV_OK, ESP_FAIL, TAG, "codec open");
     esp_codec_dev_set_out_vol(s_codec, s_vol);
-    esp_codec_dev_set_in_gain(s_codec, 30.0f);
+    esp_codec_dev_set_in_gain(s_codec, 40.0f);   /* 30→40dB：板载麦信号太弱（hb 实测说话 RMS ~60），
+                                                     先抬到近满档，bench 定终值 */
 
     s_ready = true;
     ESP_LOGI(TAG, "ES8311 full-duplex @%d Hz mono", AUDIO_SAMPLE_RATE);

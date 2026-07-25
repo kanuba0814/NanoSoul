@@ -19,13 +19,25 @@ CONFIG_FATFS_MAX_LFN=255
 # (DSI 帧缓存+XIP+gzip 同抢 PSRAM 带宽) DMA/cache 一致性出错，长度寄存器读出 0x666
 # 之类垃圾 -> "Unrecoverable host sdio state" -> esp_hosted 整板重启。
 # OOM 改用砍队列深度解决 (20+20 -> 10+10，省 ~30KB 内部 RAM，语音链带宽够用)。
+# 2026-07-24 再砍 10+10 -> 6+6（省 ~12.6KB）：P4 rev<v3 的 L2MEM 堆区要等调度器启动才注册，
+# 开机预调度期可用堆只有 RETENT+TCM+RTCRAM ≈111KB；esp-sr 静态 DIRAM(+12.4KB) 顶破余量
+# （无 esp-sr 时仅剩 ~12KB），idle 任务 TCB 都分配失败、boot 循环 assert。
+# 语音/遥测带宽 32KB/s 级，6 深队列足够；吞吐敏感场景别再降。
 CONFIG_ESP_HOSTED_MEMPOOL_PREFER_SPIRAM=n
-CONFIG_ESP_HOSTED_SDIO_TX_Q_SIZE=10
-CONFIG_ESP_HOSTED_SDIO_RX_Q_SIZE=10
+CONFIG_ESP_HOSTED_SDIO_TX_Q_SIZE=6
+CONFIG_ESP_HOSTED_SDIO_RX_Q_SIZE=6
 
 # SDIO RX 保持默认 STREAMING：板载 C6 slave (2.12.9) 跑 streaming，host 配 packet
 # 模式会在 transport 初始化直接 assert("SDIO mode mismatch")。此前怀疑 streaming
 # 流控 bug (esp-hosted-mcu #184) 是误导——真凶是上面的 PSRAM mempool。
+
+# —— Task WDT：5s → 15s ——
+# esp-sr MultiNet 模型初始化（mn7_cn 2.6MB 装载+FST 构建）在 main 任务里连跑 2~8s 不让出 CPU，
+# 饿死 IDLE0 触发 5s 默认超时（rst:0x7 HP_WDT_RESET）。一次性初始化成本，放宽到 15s；
+# 运行时 voice 任务被 mic 读天然限速（20ms/帧），不会持续占核。若 bench 上 listening 阶段
+# 仍见 WDT，要查的是 sr_pump/AFE 帧耗时，不是再放宽。
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15
+CONFIG_TASK_WDT_TIMEOUT_S=15
 
 # 日志
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
@@ -40,6 +52,8 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 CONFIG_SPIRAM=y
 CONFIG_SPIRAM_SPEED_200M=y
 CONFIG_SPIRAM_XIP_FROM_PSRAM=y
+# L2 cache 保持 256KB（曾试 128KB 换 128KB 堆治开机 OOM——无效：该区域(L2MEM)要等调度器
+# 启动才注册进堆，帮不到预调度期；且砍半 cache 伤 XIP 性能。正解 = 砍 hosted 队列，见下）
 CONFIG_CACHE_L2_CACHE_256KB=y
 CONFIG_CACHE_L2_CACHE_LINE_128B=y
 

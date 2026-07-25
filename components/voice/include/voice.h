@@ -2,9 +2,9 @@
 /*
  * voice — the spoken conversation pipeline.
  *
- *   wake  ->  wake chime  ->  LISTEN (record utterance, VAD-trimmed)
- *         ->  THINK  (STT -> cloud chat)
- *         ->  SPEAK  (TTS -> play), then follow-window listen, then idle.
+ *   neural wake -> wake chime -> LISTEN, or
+ *   energy VAD  -> silent record -> STT text wake gate -> wake chime
+ *   then THINK (cloud chat) -> SPEAK (TTS), followed by active follow-up.
  *
  * Half-duplex: the mic is not read while a reply is playing (avoids the speaker
  * feeding back into detection). soul state + face emotion track each stage.
@@ -16,7 +16,8 @@
  *   WN_MIAOBAN — ESP-SR AFE + WakeNet9 wn9_nihaomiaoban_tts2 (你好喵伴).
  *       Device-side wake is the addressing proof, so the STT text gate is
  *       bypassed in this build.
- *   VAD — energy trigger fallback (no model; loud sustained speech wakes).
+ *   VAD — energy recording trigger fallback. It stays silent until cloud ASR
+ *       confirms the text contains "小王", then chimes and answers.
  * SR models live in the "model" flash partition (esp-sr CMake packs and flashes
  * them with `idf.py flash`). After a reply the pipeline listens actively for
  * the rest of follow_window_s, so the wake word is only needed once per chat.
@@ -54,6 +55,11 @@ const char *voice_wake_engine(void);
 /* SR engine (AFE + model) initialized — false on VAD builds or model-load
  * failure (e.g. srmodels.bin not flashed to the model partition). */
 bool voice_sr_ready(void);
+
+/* SR engine lifecycle: 0=NONE(VAD build) 1=INITING(model loading, ~16s)
+ * 2=READY 3=FAILED — the wakenet_load selftest distinguishes "still loading"
+ * from "actually broken". */
+int voice_sr_state(void);
 
 #ifdef __cplusplus
 }

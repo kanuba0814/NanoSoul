@@ -353,7 +353,9 @@ extern "C" esp_err_t vision_start(void)
         return ESP_ERR_INVALID_STATE;
     }
     // esp-dl inference wants a roomy stack; pin off the gfx core.
-    return xTaskCreatePinnedToCore(detect_task, "vision", 16 * 1024, nullptr, 4, nullptr, 0) == pdPASS
+    /* ESP-DL 与 ESP-SR 都会使用 ESP32-P4 SIMD。语音任务固定在 Core 0；二者同核
+     * 并发时实测 resize_nn_simd_helper 随机 Load access fault，因此视觉独占 Core 1。 */
+    return xTaskCreatePinnedToCore(detect_task, "vision", 16 * 1024, nullptr, 4, nullptr, 1) == pdPASS
                ? ESP_OK : ESP_FAIL;
 }
 
