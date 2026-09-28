@@ -17,18 +17,6 @@
       "command": "source /home/gxxl/.espressif/v5.5.2/esp-idf/export.sh && idf.py set-target esp32p4",
       "options": { "shell": { "executable": "bash", "args": ["-lc"] } },
       "problemMatcher": []
-    },
-    {
-      "label": "PCB: 生成 (circuit-synth → KiCad)",
-      "type": "shell",
-      "command": "fish ${workspaceFolder}/pcb/scripts/generate.fish",
-      "problemMatcher": []
-    },
-    {
-      "label": "PCB: 渲染顶视图 PNG",
-      "type": "shell",
-      "command": "flatpak run --command=kicad-cli org.kicad.KiCad pcb render ${workspaceFolder}/pcb/output/NanoSoul/NanoSoul.kicad_pcb -o ${workspaceFolder}/pcb/output/nanosoul_pcb_top.png --side top --background opaque",
-      "problemMatcher": []
     }
   ]
 }

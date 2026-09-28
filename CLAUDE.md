@@ -14,13 +14,13 @@
 
 团队里**只有一块开发板**（Captain 持有）。所有共享脚本与 `.vscode/tasks.json` **默认板外可跑**：
 
-- ✅ 共享：`idf.py build`、PCB 生成、ERC、代码检查。
+- ✅ 共享：`idf.py build`、代码检查。
 - 🚫 不进共享任务：`flash` / `monitor` / JTAG / OpenOCD 等需要真机的项——谁有板子谁本地手动跑。
 
 ## 硬件速记
 
 - 计算核心 = Waveshare **ESP32-P4-WIFI6** 开发板（Pico 长条形，2×20 / 2.54mm 边沿排针）。
-- **当前实物形态 = 无 PCB 模块版**（现成模块 + 杜邦线，应急方案）：固件直接对着它写，配置见下「固件」节 + [`docs/应急方案_无PCB/`](docs/应急方案_无PCB/)。载板 PCB（母排对插、注入 VSYS）是**后续目标**，不是当前编程对象。
+- **当前实物形态 = 无 PCB 模块版**（现成模块 + 杜邦线，应急方案）：固件直接对着它写，配置见下「固件」节 + [`docs/应急方案_无PCB/`](docs/应急方案_无PCB/)。
 - 引脚真值源：[`docs/BOARD_MAPPING.md`](docs/BOARD_MAPPING.md) + 下「固件」节（无 PCB 版实际接线）。改引脚/总线先更新它们。
 - 本版**不做悬崖传感器**（IMU 兜底 lift/碰撞）。**电机堵转过流保护**是硬需求。
 
@@ -49,15 +49,8 @@ idf.py build      # 板外必过；commit 前跑
 - 引脚是杜邦接的、可改；改了**同步更新本节 + `docs/BOARD_MAPPING.md`**。flash/monitor 谁有板谁本地跑（板外纪律）。
 - **测试模式**：上电时 **IO48 短接 GND** → 进 TEST 模式（完整运行时 + 传感覆盖注入 + `motor_test` + USB-Serial-JTAG NDJSON 通道 + 浏览器测试上位机 `tools/testhost/`），开路 = 正常 FACE。协议/真值/用法见 [`docs/13_测试模式与上位机_v1.md`](docs/13_测试模式与上位机_v1.md)。TEST 模式下 USJ 用作协议口、日志走 UART0（`ESP_CONSOLE_SECONDARY_NONE`）。
 
-## 载板 PCB
-
-circuit-synth（代码优先）→ KiCad 10（flatpak）。详见 [`pcb/README.md`](pcb/README.md)。
-KiCad 是 flatpak，命令行经 `pcb/bin/kicad-cli`（已包好 `flatpak run`）。
-器件符号/封装**不许用占位符**：非库存件用 `easyeda2kicad` 按 LCSC 号下载到 `pcb/libs/`。
-载板引脚/接口真值 = [`docs/BOARD_MAPPING.md`](docs/BOARD_MAPPING.md)（IMU 走 SPI、STBY 共用单脚(IO33)、电流走 shunt→ADC(IO52)）——与上「固件」节的**无 PCB 接线是两套硬件、本就不同**，别互相纠正。载板已与外壳解耦：板框尽量缩小、只留 ≥4 个 M3 孔供后续支架。
-
 ## 几条硬规矩
 
 - commit 前固件能 `idf.py build`。
 - 不在仓库放硬编码密钥 / Token。
-- AI 的一切产出（原理图、布线、电平、上电顺序）**人必复核**，关键项不赌。
+- AI 的一切产出（接线、电平、上电顺序）**人必复核**，关键项不赌。

@@ -12,7 +12,7 @@ description: >-
 
 # NanoSoul 开发板（Waveshare ESP32-P4-WIFI6）疑难杂症
 
-本技能管**开发板本体**的固件调试；载板 PCB 绘制归 `nanosoul-pcb`。协议/引脚真值源仍是
+本技能管**开发板本体**的固件调试。协议/引脚真值源仍是
 `docs/13_测试模式与上位机_v1.md`、`docs/BOARD_MAPPING.md`、`components/bsp/include/bsp_pins.h`——
 本技能只记它们没写的**坑**。
 
