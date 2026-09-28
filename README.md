@@ -1,107 +1,73 @@
-# NanoSoul
+# NanoSoul · ESP32-P4 桌面陪伴机器人
 
-NanoSoul 是一台基于 ESP32-P4 的桌面陪伴机器人。设备在本地处理摄像头和传感器数据，根据人脸位置、距离和环境状态调整表情与运动；联网后可完成语音识别、对话和语音合成。实时状态判断不依赖云端，断网时表情、视觉和运动控制仍可运行。
+NanoSoul 是一台桌面陪伴机器人。它在本地检测人脸和环境，据此决定表情和动作；联网后可以进行语音对话。项目是团队参赛作品（2026 中国高校计算机大赛·人工智能创意赛），本仓库中的固件、测试上位机和文档由我提交。
 
-## 项目背景
+当前实物是 **Waveshare ESP32-P4-WIFI6 开发板 + 现成模块 + 杜邦线**。
 
-NanoSoul 是团队参赛作品（2026 中国高校计算机大赛·人工智能创意赛）。本仓库中的固件、测试上位机、洞洞板 / 载板设计和文档均由我提交；开发过程中与 Claude Code 协作完成，协作约定见 [`CLAUDE.md`](CLAUDE.md)：优先复用乐鑫官方组件，现成没有的由 AI 产出、人工复核；团队只有一块开发板，所以共享脚本必须能在板外运行，commit 前必须通过 `idf.py build`；AI 给出的原理图、布线、电平和上电顺序全部由人复核。
+## 几个关键判断
 
-## 当前版本
+- **实时决策不依赖云端。** 赛题要求主要功能运行在乐鑫芯片上，所以感知 → 决策 → 表情这条链全部在 ESP32-P4 本地完成：OV5647 → PPA 降采样 → ESP-DL 人脸检测 → 10 Hz、9 个状态的状态机。云端只负责深度对话，不进入决策环，因此断网时机器人照样能运转。
+- **语音触发选能用的方案，而不是看起来高级的方案。** WakeNet9 和 MultiNet7 的模型加载和 AFE 管线都能跑，但在当前板载麦克风下口令检测不稳定。所以演示默认使用能量 VAD（检测到持续语音后才录音），再用 STT 文本判断是否包含唤醒词「小王」；神经网络方案保留为实验选项。
+- **安全是硬需求，不是附加功能。** 电机堵转判定条件是 INA219 电流升高且编码器不动，触发后拉低 TB6612 的 STBY 急停；电机默认关闭，只有显式使能后才会驱动。
+- **只有一块开发板，所以尽量把验证做在板外。** 共享脚本必须能在没有开发板的机器上运行；状态机、运动仲裁、堵转判定等逻辑都有板外自检（`soul_sim`、`arbiter`、`stall_sim` 等），上板后再用 SELFTEST 模式逐项确认。
 
-当前实物为现成模块加杜邦线连接的无 PCB 版本，主控是 Waveshare ESP32-P4-WIFI6 开发板。赛前版本已在实物上验证：
+## 验证状态
 
-- OV5647 本地人脸检测，约 8 fps；
-- 480×640 屏幕动画表情，约 30 fps；
-- 本地状态机和断网运行；
-- 麦克风录音、STT、云端对话、TTS 和扬声器播放；
-- WebSocket 上位机与测试模式；
-- 三轮全向运动控制和堵转保护逻辑。
-
-语音展示默认使用能量 VAD：检测到持续语音后录音，再由 STT 文本确认是否包含“小王”。MultiNet 和 WakeNet 代码仍保留为实验选项；在当前开发板、麦克风和模型配置下，口令检测尚未达到稳定展示要求。
-
-仓库中的 `v1.0-submission` 标签保存赛前验证版本；当前 `main` 在此基础上保留后续语音调整和 70×90 mm 载板设计。
-
-## 分支
-
-| 分支 | 内容 |
+| 状态 | 内容 |
 |---|---|
-| `main` | 当前整机固件 + 70×90 mm 四层载板 |
-| `test` | 完整测试固件：全量组件、testhost 与工具链 |
-| `test-host` | 测试上位机与公开版文档整理 |
-| `soul-app` | 交互里程碑 M1–M8：自主行为、堵转保护、微动作 |
-| `pcb-62x72-4layer` | 62×72 mm 四层载板的早期设计（175/176 布通） |
-| `perfboard` | 洞洞板三电机自检固件与 IMU 选型 |
-| `feat-p4-hw-baseline-from-testP4` | 从测试板迁移 P4 硬件基线的最早版本 |
+| ✅ 实物验证 | 本地人脸检测约 8 fps；480×640 屏幕动画表情约 30 fps；断网运行本地状态机；录音 → STT → LLM → TTS → 播放全链路（2026-07-08 打通，120 s 稳定性测试无 panic / WDT / reset）；WebSocket 上位机与测试模式 |
+| 🟡 代码完成，只通过板外自检 | 三轮全向运动原语、堵转保护闭环、轮速闭环与里程计（校准记录尚未填写）；IMU、环境光组件需接线后实测 |
+| ⬜ 未完成 | 外壳打印装配（目前只完成 SolidWorks 初步建模）、工具调用、OTA |
+
+完整的功能清单和每一项的状态见 [`docs/00_成品全景与技术框架.md`](docs/00_成品全景与技术框架.md)。
+
+## 开发方式
+
+开发过程与 Claude Code 协作完成，约定写在 [`CLAUDE.md`](CLAUDE.md)：优先复用乐鑫官方组件，现成没有的由 AI 产出、人工复核；commit 前固件必须通过 `idf.py build`；AI 给出的接线、电平和上电顺序全部由人复核。
 
 ## 目录
 
 ```text
-NanoSoul/
-├── main/                 程序入口和无 PCB 版板级驱动
-├── components/           视觉、状态机、表情、运动、语音、联网等组件
-├── esp_emote_gen_player/ 乐鑫表情播放器
-├── spiffs_image/         表情资源包
-├── sdcard_template/      SD 卡配置示例，不含真实密钥
-├── tools/testhost/       浏览器测试上位机与诊断工具
-├── perfboard/            7×9 cm 洞洞板布局和接线表，尚待焊接
-├── pcb/                  70×90 mm 四层载板设计和制造文件
-├── enclosure/            SolidWorks 外壳源文件与打印文件
-└── docs/                 系统说明、接口协议、引脚表和测试记录
+main/                 程序入口和板级驱动（电机、编码器、INA219）
+components/           视觉、状态机（soul）、表情、运动、语音、联网、自检等组件
+esp_emote_gen_player/ 乐鑫表情播放器（vendored）
+spiffs_image/         表情资源包
+sdcard_template/      SD 卡配置示例，不含真实密钥
+tools/testhost/       浏览器测试上位机与诊断工具
+enclosure/            SolidWorks 外壳源文件与导出
+docs/                 系统说明、接口协议、引脚表和测试记录
 ```
 
-## 编译
+## 编译与烧录
 
 开发环境：ESP-IDF v5.5.2，目标芯片 ESP32-P4。
 
 ```bash
-source $IDF_PATH/export.sh   # ESP-IDF v5.5.2
+source $IDF_PATH/export.sh
 idf.py set-target esp32p4
 idf.py build
+idf.py -p /dev/ttyACM0 flash monitor   # 需要连接开发板
 ```
 
-烧录和串口监视需要连接开发板：
-
-```bash
-idf.py -p /dev/ttyACM0 flash monitor
-```
-
-首次烧录、SD 卡配置和自检方法见 [`docs/10_上板验证_SD配置与烧录.md`](docs/10_上板验证_SD配置与烧录.md)。
+SD 卡配置和上板自检见 [`docs/10_上板验证_SD配置与烧录.md`](docs/10_上板验证_SD配置与烧录.md)。复制 `sdcard_template/nanosoul/config.example.json` 到 SD 卡 `/nanosoul/config.json`，填写 Wi-Fi 和模型服务配置；真实密码和 API Key 不进仓库。
 
 ## 运行模式
 
 - `FACE`：默认模式，运行表情、视觉、状态机、语音、联网和上位机服务。
-- `SELFTEST`：运行整机自检并输出 JSON 结果。
-- `TEST`：在完整运行时上增加传感值覆盖、电机测试和串口协议。上电时 IO48 接地可进入。
-- `TESTPANEL`：旧版三电机点检界面。
+- `SELFTEST`：循环运行整机自检，输出 JSON 结果。
+- `TEST`：在完整运行时之上增加传感值注入、电机测试和串口协议；上电时 IO48 接地即可进入。浏览器上位机为 [`tools/testhost/index.html`](tools/testhost/index.html)，协议见 [`docs/13_测试模式与上位机_v1.md`](docs/13_测试模式与上位机_v1.md)。
 
-测试上位机是单文件网页：[`tools/testhost/index.html`](tools/testhost/index.html)。协议和操作说明见 [`docs/13_测试模式与上位机_v1.md`](docs/13_测试模式与上位机_v1.md)。
+## 硬件接线
 
-## 硬件版本
+开发板由 USB 供电，电池经 XL6009 升压后单独给电机供电，两路电源必须共地；电机干线走母排并星形接地，避免电机一转电机电源就被拉低到 1.3 V。引脚见 [`docs/BOARD_MAPPING.md`](docs/BOARD_MAPPING.md)，接线图见 [`docs/应急方案_无PCB/`](docs/应急方案_无PCB/)。
 
-### 当前实物：无 PCB 模块版
+## 分支与标签
 
-开发板由 USB 供电，电池经 XL6009 单独为电机供电，两路电源共地。外接 IMU、环境光、电流传感器、电机和编码器的接线见 [`docs/BOARD_MAPPING.md`](docs/BOARD_MAPPING.md) 与 [`docs/应急方案_无PCB/`](docs/应急方案_无PCB/)。
-
-### 洞洞板方案
-
-`perfboard/layout.py` 描述 7×9 cm 洞洞板的器件位置和连线，可生成布局图和接线表。该方案与无 PCB 版本使用相同引脚，目前尚待焊接。
-
-### 载板方案
-
-`pcb/` 中是 70×90 mm 四层载板。当前设计已完成 176/176 网络布线，KiCad DRC、ERC 和项目校验均通过；Gerber、钻孔、BOM 与 CPL 位于 `pcb/output/fab/`。载板尚未制造，状态属于设计验证，不属于实物测试。
-
-### 外壳
-
-外壳采用低矮圆润的桌面造型，由 SolidWorks 2024 建模。源文件和 STL/3MF 导出位于 `enclosure/models/`。
-
-## 配置与密钥
-
-复制 `sdcard_template/nanosoul/config.example.json` 到 SD 卡 `/nanosoul/config.json` 后填写 Wi-Fi 和模型服务配置。真实密码、API Key 和访问令牌不得写入仓库。
-
-## 文档入口
-
-- [`docs/00_成品全景与技术框架.md`](docs/00_成品全景与技术框架.md)：系统现状与组成
-- [`docs/09_上位机接口协议_v1.md`](docs/09_上位机接口协议_v1.md)：WebSocket 协议
-- [`docs/10_上板验证_SD配置与烧录.md`](docs/10_上板验证_SD配置与烧录.md)：烧录和实物验证
-- [`docs/13_测试模式与上位机_v1.md`](docs/13_测试模式与上位机_v1.md)：测试模式
-- [`docs/BOARD_MAPPING.md`](docs/BOARD_MAPPING.md)：引脚分配
+| 分支 / 标签 | 内容 |
+|---|---|
+| `main` | 当前整机固件 |
+| `v1.0-submission` | 赛前提交时的验证版本 |
+| `test` | 完整测试固件：全量组件、testhost 与工具链 |
+| `test-host` | 测试上位机与公开版文档整理 |
+| `soul-app` | 交互里程碑 M1–M8：自主行为、堵转保护、微动作 |
+| `feat-p4-hw-baseline-from-testP4` | 从测试板迁移 P4 硬件基线的最早版本 |
